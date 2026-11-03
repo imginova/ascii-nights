@@ -129,6 +129,21 @@ function newGame() {
     mon: { level: levelOf(MOON), room: null, sleep: 0, yawns: 0, timer: moonWait(levelOf(MOON)) },
     // The Flamethrower endo: whether he's here and how much longer he stays.
     end: { level: levelOf(ENDO), present: false, stayT: 0, crackleT: 0, timer: endoWait(levelOf(ENDO)) },
+    // Nightmare Foxy: which way he's coming, how far along (0 Dining, 1 a hall, 2 the door), how long
+    // he's been in the hall, and, once inside, his stage (1 far ... 3 close) and timers.
+    nfx: { level: levelOf(NFOXY), route: pick(NFOXY.routes), step: 0, timer: NFOXY_INTERVAL * rand(0.7, 1.3), hallT: 0,
+      inside: false, stage: 0, creepT: 0, pushT: 0 },
+    // Funtime Freddy: whether he's out, which hall (side), whether BonBon is on his hand, when you first
+    // saw him on the cameras (null until you do), and how long BonBon has been in the light.
+    fun: { level: levelOf(FUNFRED), active: false, side: 'L', bonbon: false, seenAt: null, flashT: 0, deadline: 0,
+      timer: funWait(levelOf(FUNFRED)) },
+    // Chica: how far along her walk she is (CHICA.route), and her timers.
+    chi: { level: levelOf(CHICA), step: 0, timer: CHICA_INTERVAL * rand(0.7, 1.3), hallT: 0 },
+    // Plushtrap: where he's hiding in the office (null when he isn't), and his timers.
+    plu: { level: levelOf(PLUSH), spot: null, deadline: 0, timer: plushWait(levelOf(PLUSH)) },
+    // Nightmare Chica: which camera her cupcake is hidden on (null when it isn't) and where on it.
+    nch: { level: levelOf(NCHICA), room: null, spot: null, deadline: 0, timer: nchicaWait(levelOf(NCHICA)) },
+    shutAt: { L: -1, R: -1 },      // when each door was last shut (Funtime Freddy checks you looked first)
     heat: 0,                       // the office heat in percent (see updateHeat); 100 = you pass out
     hotWarns: 0,                   // how many of the HOT_WARN marks the heat is past (for the warning breaths)
   };
@@ -153,7 +168,8 @@ function update(dt) {
   updatePower(dt);
   // Each character in turn. `for...of` runs the function for each one; we stop as soon as one ends the night.
   for (const step of [updateFreddy, updateBonnie, updateGolden, updateChica, updateBonnet, updateWithered,
-    updateStaff, updateNightmare, updateFoxy, updateMoon, updateEndo, updateHeat]) {
+    updateStaff, updateNightmare, updateFoxy, updateMoon, updateEndo, updateNightmareFoxy, updateFuntime,
+    updateChicaWalk, updatePlushtrap, updateNightmareChica, updateHeat]) {
     if (G.over || G.powerOut) return;
     step(dt);
   }
@@ -616,6 +632,186 @@ function updateHeat(dt) {
   if (G.heat >= 100) E.present ? lose(ENDO) : passOut();
 }
 
+// ---------- Nightmare Foxy ----------
+// Silent. He moves Dining area -> West or East hall -> that door, and you can only see it coming on
+// the cameras. Shut the door before he reaches it: a bonk, and he goes back to the Dining area.
+// If the door's open he gets inside, and he NEVER leaves (on request): he sits in the middle of the
+// office and creeps closer in 3 stages. Flashlight on him pushes him back a stage (never out).
+// Past stage 3 he gets you.
+function updateNightmareFoxy(dt) {
+  const X = G.nfx;
+  if (X.level === 0) return;
+  if (X.inside) {
+    const [r, c] = NFOXY_STAGES[X.stage].aim;   // the middle of his drawing at this stage (art.js)
+    if (beamOn(r, c)) {
+      X.pushT += dt;
+      if (X.pushT >= NFOXY_PUSH) { X.pushT = 0; if (X.stage > 1) { X.stage--; sfx.shove(); dirty = true; } }
+    } else {
+      X.pushT = 0;
+    }
+    X.creepT -= dt;
+    if (X.creepT <= 0) {
+      X.creepT = NFOXY_CREEP * rand(0.8, 1.2);
+      if (Math.random() < moveChance(X.level)) {
+        X.stage++;
+        dirty = true;
+        if (X.stage > 3) return lose(NFOXY);
+        sfx.creep();   // a scrape: he's a step closer
+      }
+    }
+    return;
+  }
+  if (X.step === 1) X.hallT += dt;
+  X.timer -= dt;
+  if (X.timer > 0) return;
+  X.timer = NFOXY_INTERVAL * rand(0.7, 1.3);
+  if (X.step === 1 && X.hallT < NFOXY_HALL_MIN) return;   // always gives you a moment in the hall
+  if (Math.random() >= moveChance(X.level)) return;
+  if (onCam(X.route[X.step])) camStatic(0.4);
+  X.step++;
+  if (X.step === 1) { X.hallT = 0; if (onCam(X.route[1])) camStatic(0.4); }
+  if (X.step === 2) {
+    const side = X.route[2];
+    if (G.doors[side]) { sfx.bonk(side); nfoxyHome(); }
+    else { X.inside = true; X.stage = 1; X.creepT = NFOXY_CREEP; X.pushT = 0; sfx.slip(); }   // a soft thud: he's in
+  }
+  dirty = true;
+}
+// Shut out: back to the Dining area, picking a new hall for next time.
+function nfoxyHome() {
+  const X = G.nfx;
+  X.route = pick(NFOXY.routes);
+  X.step = 0;
+  X.timer = NFOXY_INTERVAL * rand(0.7, 1.3);
+}
+
+// ---------- Funtime Freddy and BonBon ----------
+// He makes his sound and waits in the West or East hall. You must LOOK at him on the cameras first
+// (seenAt): actions before that don't count, so you can't guess blindly. Then:
+//   BonBon on his hand  -> shut the door on his side (after looking);
+//   no BonBon           -> she's at the other door: shine the flashlight there for FUN_FLASH seconds.
+// A wrong move just doesn't count (on request). Too slow, and they get you.
+function updateFuntime(dt) {
+  const F = G.fun;
+  if (F.level === 0) return;
+  if (!F.active) {
+    F.timer -= dt;
+    if (F.timer > 0) return;
+    F.active = true;
+    F.side = pick(['L', 'R']);
+    F.bonbon = Math.random() < 0.5;
+    F.seenAt = null;
+    F.flashT = 0;
+    F.deadline = G.t + funWindow(F.level);
+    sfx.funIn();
+    dirty = true;
+    return;
+  }
+  const other = otherSide(F.side);
+  if (F.seenAt == null && onCam(F.side === 'L' ? 'whall' : 'ehall')) F.seenAt = G.t;
+  if (F.seenAt != null) {
+    if (F.bonbon && G.doors[F.side] && G.shutAt[F.side] >= F.seenAt) return funtimeDone(F.side);
+    if (!F.bonbon && beamOnDoor(other)) {
+      F.flashT += dt;
+      if (F.flashT >= FUN_FLASH) return funtimeDone(other);
+    }
+  }
+  if (G.t >= F.deadline) lose(FUNFRED, F.bonbon ? F.side : other);
+}
+function funtimeDone(side) {
+  const F = G.fun;
+  F.active = false;
+  F.timer = funWait(F.level);
+  sfx.bonk(side);
+  dirty = true;
+}
+
+// ---------- Chica ----------
+// She walks CHICA.route (Backstage, Dining area, West hall) slowly and silently: the only way to know
+// where she is is to check the cameras. Clicking her (pushChica) sends her back a room. From the West
+// hall her next move gets you (on request), but she always waits there CHICA_HALL_MIN seconds first.
+const chicaRoom = () => CHICA.route[G.chi.step];
+const chicaLast = () => G.chi.step === CHICA.route.length - 1;   // is she in the West hall?
+function updateChicaWalk(dt) {
+  const C = G.chi;
+  if (C.level === 0) return;
+  if (chicaLast()) C.hallT += dt;
+  C.timer -= dt;
+  if (C.timer > 0) return;
+  C.timer = CHICA_INTERVAL * rand(0.7, 1.3);
+  if (chicaLast() && C.hallT < CHICA_HALL_MIN) return;
+  if (Math.random() >= moveChance(C.level)) return;
+  if (chicaLast()) return lose(CHICA);
+  if (onCam(chicaRoom())) camStatic(0.4);
+  C.step++;
+  C.hallT = 0;
+  if (onCam(chicaRoom())) camStatic(0.4);
+  dirty = true;
+}
+// Clicking her on her camera (input.js).
+function pushChica() {
+  const C = G && G.chi;
+  if (!C || !ready() || C.step === 0 || !onCam(chicaRoom())) return;
+  C.step--;
+  C.timer = CHICA_INTERVAL * rand(0.7, 1.3);
+  sfx.shoo();
+  dirty = true;
+}
+
+// ---------- Plushtrap ----------
+// He giggles and hides somewhere in the office (PLUSH_SPOTS). Any flashlight on him sends him away at
+// once, but his timer is short.
+function updatePlushtrap(dt) {
+  const P = G.plu;
+  if (P.level === 0) return;
+  if (!P.spot) {
+    P.timer -= dt;
+    if (P.timer > 0) return;
+    P.spot = pick(PLUSH_SPOTS);
+    P.deadline = G.t + plushTime(P.level);
+    sfx.giggle((P.spot[1] - 18) / 18);   // the giggle leans toward where he's hiding
+    dirty = true;
+    return;
+  }
+  const [r, c] = P.spot;
+  if (beamOn(r + 0.5, c + 1.5)) {   // + 0.5 and + 1.5: the middle of his 4 x 2 drawing
+    P.spot = null;
+    P.timer = plushWait(P.level);
+    sfx.pop();
+    dirty = true;
+  } else if (G.t >= P.deadline) {
+    lose(PLUSH);
+  }
+}
+
+// ---------- Nightmare Chica ----------
+// A strange noise, and her cupcake is HIDDEN on one of the cameras (small and dim, tucked into the
+// room's picture, see NCHICA_SPOTS in art.js). Find it and click it before nchicaTime runs out.
+function updateNightmareChica(dt) {
+  const N = G.nch;
+  if (N.level === 0) return;
+  if (!N.room) {
+    N.timer -= dt;
+    if (N.timer > 0) return;
+    N.room = pick(CAM_ORDER);
+    N.spot = pick(NCHICA_SPOTS[N.room]);
+    N.deadline = G.t + nchicaTime(N.level);
+    sfx.nchicaIn();
+    dirty = true;
+    return;
+  }
+  if (G.t >= N.deadline) lose(NCHICA);
+}
+// Clicking her cupcake on its camera (input.js).
+function clickCupcakeCam() {
+  const N = G && G.nch;
+  if (!N || !ready() || !N.room || !onCam(N.room)) return;
+  N.room = null;
+  N.timer = nchicaWait(N.level);
+  sfx.pop();
+  dirty = true;
+}
+
 // ---------- power-out ----------
 // Power hit 0%: doors open, the monitor, the flashlight and the fan die, everyone else gives up,
 // and one character comes for you in the dark: Sleepy Moon if he's on tonight, otherwise Freddy.
@@ -635,6 +831,10 @@ function powerOutStart() {
   G.nfr.present = false;
   G.end.present = false;
   G.mon.room = null;   // the cameras are off, so Moon leaves them (but he's still coming, see outBy)
+  if (G.nfx.inside) { G.nfx.inside = false; nfoxyHome(); }   // Nightmare Foxy slinks off in the dark too
+  G.fun.active = false;
+  G.plu.spot = null;
+  G.nch.room = null;
   sfx.humOff();
   sfx.powerDown();
   dirty = true;
@@ -655,6 +855,7 @@ function toggleDoor(side) {
   if (!ready()) return;
   if (!powered()) { sfx.deny(); return; }
   G.doors[side] = !G.doors[side];   // flip: open becomes closed, closed becomes open
+  if (G.doors[side]) G.shutAt[side] = G.t;   // remember when it was shut (see updateFuntime)
   sfx.door(side);
   dirty = true;
 }

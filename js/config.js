@@ -17,8 +17,10 @@ const NIGHT_HOURS = 6;     // 12 AM to 6 AM
 
 // ---------- power ----------
 // Everything that uses power drains the same amount (on request): the monitor, each closed door,
-// the flashlight and the fan each cost 0.5% per second while in use. The mask is free.
-const UNIT_DRAIN = 0.5;
+// the flashlight and the fan each cost UNIT_DRAIN % per second while in use. The mask is free.
+// (It was 0.5. With 17 characters, checking the cameras for everyone used more power than the battery
+// holds, so the biggest challenges couldn't be won; the owner chose 0.35 for everything.)
+const UNIT_DRAIN = 0.35;
 const POWER_OUT_WAIT = [5, 13];   // seconds of darkness after a power-out before something gets you
 
 // ---------- difficulty levels (custom night) ----------
@@ -31,10 +33,11 @@ const clampLevel = n => Math.max(MIN_LEVEL, Math.min(MAX_LEVEL, Math.round(Numbe
 
 // How hard each level really plays (on request: easier, so that even All 20 stays humanly possible
 // when more characters are added later). Level 0 stays off and level 1 stays level 1, but every step
-// above 1 only counts LEVEL_SCALE of a step: with 0.6, level 20 plays like level 12.4.
+// above 1 only counts LEVEL_SCALE of a step: with 0.5, level 20 plays like level 10.5.
 // Everything a level controls goes through this (newGame in game.js turns each level into its
 // "playing" level). The setup screen, the score and the challenges still use the real level.
-const LEVEL_SCALE = 0.6;
+// (0.6 with 12 characters; lowered to 0.5 when the second batch made it 17.)
+const LEVEL_SCALE = 0.5;
 const effLevel = level => level === 0 ? 0 : 1 + (level - 1) * LEVEL_SCALE;
 
 // A character at level L gets a chance to act every so often, and each chance works L times in 20.
@@ -147,3 +150,48 @@ const endoWait = level => rand(byLevel(level, 60, 20), byLevel(level, 90, 35));
 const endoStay = level => byLevel(level, 10, 16);
 const endoHeat = level => byLevel(level, 5, 11);
 const FAN_SLOW = 0.25;
+
+// ---------- Nightmare Foxy ----------
+// He moves (silently!) from the Dining area into the West or East hall and then to that door, a
+// chance every NFOXY_INTERVAL seconds. In a hall he always waits at least NFOXY_HALL_MIN seconds, so
+// someone checking the cameras has time to shut the door. Once he's inside, every NFOXY_CREEP
+// seconds he may creep one stage closer (3 stages; past the last one he gets you), and every
+// NFOXY_PUSH seconds of flashlight on him push him back one stage. He never leaves (on request).
+// (Interval 6 -> 7 s and hall wait 4 -> 6 s after the bot test: with every character on, the
+// camera checks needed to catch him cost too much power.)
+const NFOXY_INTERVAL = 7;
+const NFOXY_HALL_MIN = 6;
+const NFOXY_CREEP = 5;
+const NFOXY_PUSH = 0.8;
+
+// ---------- Funtime Freddy and BonBon ----------
+// Seconds between his visits, and how long you get once he's made his sound: time to raise the
+// monitor, find which hall he's in and see whether BonBon is on his hand. FUN_FLASH: seconds of
+// light it takes to send BonBon away when she's at the other door.
+const funWait = level => rand(byLevel(level, 50, 18), byLevel(level, 75, 30));
+// (+4 s became +6 s, then +8 s, after bot tests: with lots going on, his several steps didn't fit.)
+const funWindow = level => reactWindow(level) + 8;
+const FUN_FLASH = 0.4;
+
+// ---------- Chica ----------
+// She walks Backstage -> Dining area -> West hall, slowly and without a sound: a chance every
+// CHICA_INTERVAL seconds. From the West hall her next move gets you, but she always waits there at
+// least CHICA_HALL_MIN seconds first, so checking the cameras gives you time. Clicking her on her
+// camera sends her back one room.
+// (9 -> 12 s and 5 -> 6 s after the bot test, for the same reason as Nightmare Foxy.)
+const CHICA_INTERVAL = 12;
+const CHICA_HALL_MIN = 6;
+
+// ---------- Plushtrap ----------
+// Seconds between his visits, and the short time you have to get any flashlight on him once he
+// giggles (it takes no time at all for him to go).
+const plushWait = level => rand(byLevel(level, 45, 15), byLevel(level, 70, 26));
+const plushTime = level => byLevel(level, 3.5, 2.2);
+
+// ---------- Nightmare Chica ----------
+// Seconds between her visits, and how long you have to find her hidden cupcake on the cameras
+// and click it.
+const nchicaWait = level => rand(byLevel(level, 55, 20), byLevel(level, 80, 32));
+// (20-12 s became 24-16 s after the bot test: searching every camera for something hidden takes a while
+// when other things keep interrupting.)
+const nchicaTime = level => byLevel(level, 24, 16);

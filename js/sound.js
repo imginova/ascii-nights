@@ -274,6 +274,37 @@ const sfx = (() => {
     // Clicked him away: you snap awake with a quick rising note.
     wakeUp() { tone(440, 0.25, { type: 'triangle', vol: 0.15, slide: 440 }); },
 
+    // ----- Nightmare Foxy -----
+    // Getting inside: one soft, heavy thud (no warning before this: you had to see him on the cameras).
+    slip() { tone(55, 0.3, { type: 'sine', vol: 0.5, slide: -15 }); noise(0.2, { vol: 0.25, freq: 300 }); },
+    // Creeping a stage closer: a dragging scrape.
+    creep() { noise(0.35, { vol: 0.45, freq: 900 }); tone(98, 0.3, { type: 'sawtooth', vol: 0.15, slide: -20 }); },
+    // Pushed back a stage by the light: a short scrape the other way.
+    shove() { noise(0.2, { vol: 0.3, freq: 700 }); tone(140, 0.2, { type: 'sawtooth', vol: 0.1, slide: -60 }); },
+
+    // ----- Funtime Freddy -----
+    // His cue: a jaunty little three-note fanfare, then a low chuckle.
+    funIn() {
+      [523, 659, 784].forEach((f, i) => tone(f, 0.12, { type: 'square', vol: 0.12, delay: i * 0.12 }));
+      tone(130, 0.4, { type: 'sawtooth', vol: 0.15, slide: -40, delay: 0.45 });
+    },
+
+    // ----- Chica -----
+    // Clicked back a room: a quick swoosh down.
+    shoo() { tone(900, 0.12, { type: 'triangle', vol: 0.18, slide: -600 }); },
+
+    // ----- Plushtrap -----
+    // A cutesy giggle: three quick rising chirps. pan says which side of the office he's hiding on.
+    giggle(pan) { [1046, 1318, 1568].forEach((f, i) => tone(f, 0.09, { type: 'triangle', vol: 0.18, slide: 300, delay: i * 0.1, pan })); },
+
+    // ----- Nightmare Chica -----
+    // Her cue: a weird, warbling, glitchy squawk.
+    nchicaIn() {
+      for (let i = 0; i < 4; i++) tone(300 + (i % 2) * 260, 0.08, { type: 'square', vol: 0.12, delay: i * 0.07 });
+      noise(0.5, { vol: 0.2, freq: 2000, type: 'highpass', delay: 0.3 });
+      tone(180, 0.5, { type: 'sawtooth', vol: 0.12, slide: 120, delay: 0.3 });
+    },
+
     // ----- the office heat -----
     // Getting too hot: a heavy, tired breath (plays at 70% and 85% heat).
     hot() { noise(1.0, { vol: 0.25, freq: 600 }); tone(140, 1.0, { type: 'sine', vol: 0.1, slide: -60 }); },

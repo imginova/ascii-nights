@@ -1,6 +1,6 @@
 # ASCII Nights
 
-A custom-night fan game in the style of Five Nights at Freddy's, drawn in ASCII art and played in the browser. You sit in the office from 12 AM to 6 AM with two doors, a flashlight, a mask, a fan, a monitor with 7 cameras and a battery that drains whenever you use anything. Twelve characters each get their own level from 0 to 20 on the custom night screen, and each one works its own way (the rules are in the game's **How to play**).
+A custom-night fan game in the style of Five Nights at Freddy's, drawn in ASCII art and played in the browser. You sit in the office from 12 AM to 6 AM with two doors, a flashlight, a mask, a fan, a monitor with 7 cameras and a battery that drains whenever you use anything. Seventeen characters each get their own level from 0 to 20 on the custom night screen, and each one works its own way (the rules are in the game's **How to play**).
 
 > **A fan game.** ASCII Nights is not affiliated with Scott Cawthon or Five Nights at Freddy's. The characters belong to their creator. The game is free and must stay free: no price, no ads, no donations. All the drawings and sounds were made from scratch for this game.
 
@@ -20,7 +20,7 @@ The game is split into files by job. Every file starts with a comment that expla
 | `style.css` | How everything looks: colors (one per character), fonts, layout, the flashlight's glow |
 | `js/helpers.js` | Tiny tools: `$`, `store` (saving in the browser), `pick`, `rand`, `byLevel` |
 | `js/config.js` | **The numbers to tweak**: power, timings and how hard each level is |
-| `js/data.js` | The rooms, the 12 characters, the office spots and the challenges |
+| `js/data.js` | The rooms, the 17 characters, the office spots and the challenges |
 | `js/sound.js` | Every sound effect, generated in code (there are no sound files) |
 | `js/art.js` | The ASCII pictures: rooms, the office and every character's drawings |
 | `js/game.js` | The rules: what each character does, doors, power, winning and losing |
@@ -35,7 +35,7 @@ The scripts are loaded in that order at the bottom of `index.html`, and **the or
 
 - **Make something easier or harder:** change its numbers in `js/config.js`. Most are written as `byLevel(level, at1, at20)`: the value at level 1 and the value at level 20.
 - **Add a challenge:** add a line to `PRESETS` in `js/data.js`, and a line of flavour text to `FLAVOR`.
-- **How hard every level plays:** `LEVEL_SCALE` in `js/config.js` (0.6 means level 20 plays like 12.4).
+- **How hard every level plays:** `LEVEL_SCALE` in `js/config.js` (0.5 means level 20 plays like 10.5), and `UNIT_DRAIN` (how much power each thing uses per second).
 - **Check it's still humanly possible:** `tools/bot.js` is a test bot that plays every challenge with a person's reaction times and mouse speed (the comment at its top says how to run it). Use it after adding or changing a character.
 - **Made a challenge harder?** Raise its `v` in `PRESETS` (for example `v: 1` to `v: 2`), so its ✓ has to be earned again. Only do this for the challenges your change actually affects.
 

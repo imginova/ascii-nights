@@ -37,6 +37,13 @@
   --c-mon: #c8d4ff;   /* Sleepy Moon: moonlight */
   --c-end: #ff4a24;   /* the Flamethrower endo: fire */
   --c-cup: #7a4fa8;   /* Phantom Chica's shadow cupcakes: dark violet, hard to spot */
+  --c-nfx: #d1304a;   /* Nightmare Foxy: deep crimson */
+  --c-fun: #ffd6e8;   /* Funtime Freddy: white and pink */
+  --c-bb: #6fb7ff;    /* BonBon: bright blue */
+  --c-chi: #f2ee6b;   /* Chica: lemon yellow */
+  --c-plu: #a6d61c;   /* Plushtrap: lime green */
+  --c-nch: #e0a030;   /* Nightmare Chica: dark orange-yellow */
+  --c-ncup: #6e5560;  /* Nightmare Chica's hidden cupcake: dull, so it blends in */
   --font-display: "VT323", "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
   --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
   --art: min(16px, calc((100vw - 60px) / 37));
@@ -119,8 +126,16 @@ pre.art { font-family: var(--font-mono); font-size: var(--art); line-height: 1.1
 .c-pch { color: var(--c-pch); } .c-bnt { color: var(--c-bnt); } .c-wbn { color: var(--c-wbn); }
 .c-pup { color: var(--c-pup); } .c-stf { color: var(--c-stf); } .c-nfr { color: var(--c-nfr); }
 .c-wfx { color: var(--c-wfx); } .c-mon { color: var(--c-mon); } .c-end { color: var(--c-end); }
+.c-nfx { color: var(--c-nfx); } .c-fun { color: var(--c-fun); } .c-bb { color: var(--c-bb); }
+.c-chi { color: var(--c-chi); } .c-plu { color: var(--c-plu); } .c-nch { color: var(--c-nch); }
 pre .c-fre, pre .c-bon, pre .c-gol, pre .c-pch, pre .c-bnt, pre .c-wbn, pre .c-pup,
-pre .c-stf, pre .c-nfr, pre .c-wfx, pre .c-mon, pre .c-end { font-weight: 600; }
+pre .c-stf, pre .c-nfr, pre .c-wfx, pre .c-mon, pre .c-end,
+pre .c-nfx, pre .c-fun, pre .c-bb, pre .c-chi, pre .c-plu, pre .c-nch { font-weight: 600; }
+/* Chica and Nightmare Chica's cupcake on the cameras: clickable, with a bigger invisible box. */
+.chi-hit, .nch-hit { position: relative; cursor: pointer; }
+.chi-hit::after, .nch-hit::after { content: ""; position: absolute; inset: -4px -2px; }
+/* The hidden cupcake: dull and not bold, so it blends into the room's picture. */
+.nch-cup { color: var(--c-ncup); }
 /* A character's tiny 3-line face on the menus (ICONS in art.js). white-space: pre keeps its lines and
    spaces exactly as drawn; the mono font keeps its columns lined up. */
 .icon { display: inline-block; white-space: pre; font-family: var(--font-mono); font-weight: 600; font-size: 13px; line-height: 1.05; }

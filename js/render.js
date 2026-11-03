@@ -146,6 +146,13 @@ function drawVisitors(g, now) {
     sprite(g, r, c, SPRITES.bnt.office, 'c-bnt');
     if (g[r + 1] && g[r + 1][c + 2]) g[r + 1][c + 2] = { ch: '*', cls: 'c-bnt bnt-nose' };
   }
+  // Nightmare Foxy, inside and never leaving: bigger the closer he's crept (NFOXY_STAGES in art.js).
+  if (G.nfx.inside) {
+    const S = NFOXY_STAGES[Math.min(3, G.nfx.stage)];
+    sprite(g, ...S.at, S.lines, 'c-nfx' + (G.nfx.pushT > 0 ? ' stunned' : ''));
+  }
+  // Plushtrap hiding somewhere in the office.
+  if (G.plu.spot) sprite(g, ...G.plu.spot, SPRITES.plu.office, 'c-plu');
   // Phantom Chica's shadow cupcakes. "cup cup-2" says which one, for clicking (input.js).
   if (G.pch.active) G.pch.cups.forEach(([r, c], i) => write(g, r, c, '{^}', `cup cup-${i}`));
   // Sleepy Moon: once you're getting drowsy, Zs float near the top.
@@ -177,6 +184,9 @@ function doorGrid(side, now) {
     const fading = G.wfx.phase === 'open' && G.wfx.flashT > 0;
     sprite(g, 4, 1, SPRITES.wfx.door, 'c-wfx' + (fading ? ' stunned' : ''));
   }
+  // BonBon, off Funtime Freddy's hand and waiting at the other door: only seen in the flashlight.
+  const F = G.fun;
+  if (F.active && !F.bonbon && side === otherSide(F.side) && beamOnDoor(side)) sprite(g, 6, 2, SPRITES.fun.door, 'c-bb');
   return g;
 }
 
@@ -214,6 +224,20 @@ function renderFeed(now) {
     // Sleepy Moon, if he's turned up in this room. "mon-hit" is what input.js listens for when you
     // click him.
     if (G.mon.room === room) sprite(g, ...MOON_SLOTS[room], SPRITES.mon.cam, 'c-mon mon-hit');
+    // Nightmare Foxy on his way (silent: this is the only place you can see him coming).
+    const NX = G.nfx;
+    if (NX.level > 0 && !NX.inside && NX.route[NX.step] === room) sprite(g, ...NFOXY_SLOTS[room], SPRITES.nfx.cam, 'c-nfx');
+    // Funtime Freddy in his hall, with BonBon on his hand or without her.
+    const F = G.fun;
+    if (F.active && room === (F.side === 'L' ? 'whall' : 'ehall')) {
+      const [r, c] = FUN_SLOTS[room];
+      sprite(g, r, c, SPRITES.fun.cam, 'c-fun');
+      if (F.bonbon) sprite(g, r, c + 5, SPRITES.fun.bonbon, 'c-bb');
+    }
+    // Chica on her walk. "chi-hit" is what input.js listens for when you click her.
+    if (G.chi.level > 0 && chicaRoom() === room) sprite(g, ...CHICA_SLOTS[room], SPRITES.chi.cam, 'c-chi chi-hit');
+    // Nightmare Chica's cupcake, hidden in the picture: small and dim ("nch-hit" for clicking).
+    if (G.nch.room === room) write(g, ...G.nch.spot, SPRITES.nch.cupcake, 'nch-cup nch-hit');
   }
   setHtml($('feed'), toHtml(g));
 

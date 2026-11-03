@@ -79,6 +79,11 @@ const ICONS = {
   wfx: ['/\\ /\\', '(# o)', ' \\vv/J'],      // Withered Foxy: eyepatch and hook
   mon: [' .-. z', '( -_-)', " '-'  "],       // Sleepy Moon: dozing
   end: ['<O_O>', '|=+=|~~', '/   \\'],       // the endo and its flamethrower
+  nfx: ['/\\_/\\', '(O O)', ' VVV '],         // Nightmare Foxy: ears and a mouthful of teeth
+  fun: ['[_]  /\\', '(o^o)(o)', ' >=<    '],  // Funtime Freddy with BonBon on his hand
+  chi: [' \\|/ ', '(o>o)', '|EAT|'],          // Chica: beak and bib
+  plu: ['(\\/)', '(oo)', ' || '],             // Plushtrap: a little rabbit plush
+  nch: [' \\|/ ', '(@>@)', '{VVV}'],          // Nightmare Chica: teeth everywhere
 };
 // Which line of the icon is the face (the middle one, except for the endo, whose face is on top).
 const FACE_ROW = { end: 0 };
@@ -173,7 +178,19 @@ for (const room in ROOM_ART) ROOM_ART[room] = ROOM_ART[room].split('\n').slice(1
 // counted in the framed 40 x 11 camera picture (row 0 and column 0 are the border).
 const BONNIE_SLOTS = { stage: [3, 17], dining: [5, 15], back: [5, 21], whall: [5, 17], ehall: [5, 24] };
 // Where Sleepy Moon hides in each room when he turns up on the cameras (away from Bonnie's spots).
-const MOON_SLOTS = { stage: [3, 5], dining: [6, 31], back: [5, 6], cove: [5, 1], whall: [5, 26], ehall: [5, 7], prize: [6, 3] };
+const MOON_SLOTS = { stage: [3, 5], dining: [6, 31], back: [5, 6], cove: [5, 1], whall: [4, 26], ehall: [4, 7], prize: [6, 3] };
+// Where the second batch of characters stand on the cameras they visit.
+const CHICA_SLOTS = { back: [5, 28], dining: [5, 22], whall: [6, 11] };
+const NFOXY_SLOTS = { dining: [6, 1], whall: [3, 18], ehall: [5, 29] };
+// Funtime Freddy; BonBon sits 5 to his right. Placed so nobody else covers them: you have to be able
+// to see whether BonBon is on his hand.
+const FUN_SLOTS = { whall: [7, 21], ehall: [7, 6] };
+// Where Nightmare Chica's cupcake can hide on each camera: tucked into the busy parts of the picture
+// (the stars, the hats, the shelf, the sign, the floor...), so you have to really look.
+const NCHICA_SPOTS = {
+  stage: [[1, 20], [8, 12], [6, 30]], dining: [[2, 25], [8, 14]], back: [[2, 13], [8, 20]],
+  cove: [[2, 30], [9, 15]], whall: [[3, 25], [8, 20]], ehall: [[3, 16], [8, 28]], prize: [[2, 10], [2, 27]],
+};
 
 // ---------- the characters' drawings ----------
 // Each one is a list of lines. `cam` is the small camera version, `door` fits a doorway,
@@ -404,6 +421,112 @@ const SPRITES = {
         /     \
        /       \ `),
   },
+  // ----- the second batch -----
+  nfx: {
+    cam: art(String.raw`
+/\_/\
+(O O)
+ VVV`),
+    // Inside your office he's drawn bigger the closer he gets (see NFOXY_STAGES below).
+    near1: art(String.raw`
+/\_/\
+(o o)
+ vvv`),
+    near2: art(String.raw`
+ /\_/\
+( O O )
+ \VVV/
+ /   \ `),
+    near3: art(String.raw`
+  /\     /\
+ /  \___/  \
+|  (O) (O)  |
+|   VVVVV   |
+ \  ^^^^^  /
+  '-------'`),
+    scare: art(String.raw`
+   /\               /\
+  /  \_____________/  \
+ |   ___       ___     |
+ |  (_O_)     (_O_)    |
+ |         ^           |
+ |  VVVVVVVVVVVVVVVVV  |
+ |  ^^^^^^^^^^^^^^^^^  |
+  \___________________/  J`),
+  },
+  fun: {
+    cam: art(String.raw`
+ [_]
+(o^o)
+/|=|\ `),
+    bonbon: art(String.raw`
+/\/\
+(oo)`),
+    // BonBon at the other door, seen only in the flashlight.
+    door: art(String.raw`
+ /\  /\
+(  oo  )
+ ( -- )`),
+    scare: art(String.raw`
+       _____
+      |_____|
+   .-'       '-.
+  /   O     O   \
+ |       ^       |
+ |   \_______/   |
+  \             /
+   '-----------'   /\/\
+        >=<        (oo)`),
+  },
+  chi: {
+    cam: art(String.raw`
+ \|/
+(o>o)
+|EAT|`),
+    scare: art(String.raw`
+       \ | /
+     .-------.
+    /  O   O  \
+   |    /\     |
+   |    \/     |
+    \  _____  /
+     '-------'
+     | EAT!! |
+     '-------'`),
+  },
+  plu: {
+    office: art(String.raw`
+(\/)
+(oo)`),
+    scare: art(String.raw`
+    (\      /)
+     \\    //
+    .-'----'-.
+   /  O    O  \
+  |     /\     |
+  |   \____/   |
+   '----------'`),
+  },
+  nch: {
+    cupcake: '{w}',
+    scare: art(String.raw`
+      \ | | /
+    .---------.
+   /  @     @  \
+  |    /\_/\    |
+  |   /VVVVV\   |
+  |   \^^^^^/   |
+   \           /
+    '---------'
+     {w}   {w}`),
+  },
+};
+// Nightmare Foxy inside your office, stage by stage: which drawing, its top-left [row, column], and
+// `aim`, the middle of the drawing (where the flashlight has to be to push him back).
+const NFOXY_STAGES = {
+  1: { lines: SPRITES.nfx.near1, at: [12, 16], aim: [13, 18] },
+  2: { lines: SPRITES.nfx.near2, at: [10, 15], aim: [11.5, 18] },
+  3: { lines: SPRITES.nfx.near3, at: [8, 12], aim: [10.5, 18] },
 };
 // Golden Freddy's jumpscare: Freddy's, with his O eyes swapped for dots. (.map makes a new list with
 // every line changed; .replace(/O/g, '.') swaps every capital O on the line for a dot.)

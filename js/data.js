@@ -85,10 +85,40 @@ const ENDO = {
   desc: 'Heats up your office fast. While he\'s there the fan can\'t cool it, only slow the heat down until he leaves. At 100% heat it\'s over.',
   how: 'cooked your office',
 };
+// The second batch of characters (added 2026-11-03, the owner's designs).
+const NFOXY = {
+  id: 'nfx', name: 'Nightmare Foxy', where: 'EITHER DOOR',
+  desc: 'Silent: only the cameras show him heading down a hall. Shut that door in time. If he gets in he never leaves, and creeps closer: keep pushing him back with the flashlight.',
+  how: 'got all the way to you',
+  // His two ways in. The last step is the door; after that he's inside.
+  routes: [['dining', 'whall', 'L'], ['dining', 'ehall', 'R']],
+};
+const FUNFRED = {
+  id: 'fun', name: 'Funtime Freddy', where: 'EITHER DOOR',
+  desc: 'Makes a sound, then waits in a hall. Look on the cameras: BonBon on his hand means shut his door; no BonBon means she\'s at the other door, so shine the light there.',
+};
+const CHICA = {
+  id: 'chi', name: 'Chica', where: 'WEST HALL',
+  desc: 'Walks slowly and silently from Backstage to the West hall; her next move from there gets you. Check on her: clicking her on her camera sends her back one room.',
+  how: 'got you from the West hall',
+  // Her walk (on request it ends in the West hall: from there, her next move gets you).
+  route: ['back', 'dining', 'whall'],
+};
+const PLUSH = {
+  id: 'plu', name: 'Plushtrap', where: 'OFFICE',
+  desc: 'Giggles and hides in your office. Get the flashlight on him quickly; any light at all sends him away.',
+  how: 'jumped out at you',
+};
+const NCHICA = {
+  id: 'nch', name: 'Nightmare Chica', where: 'CAMERAS',
+  desc: 'Makes a strange noise, then hides her cupcake on one of the cameras. Find it and click it before time runs out.',
+  how: 'came looking for her cupcake',
+};
 
 // Everything with a level on the custom night screen, in the order of the saved `levels` list.
 // NEW CHARACTERS GO AT THE END, so levels saved by older versions still line up.
-const SETUP = [FREDDY, BONNIE, GOLDEN, PCHICA, BONNET, WBONNIE, PUPPET, STAFF, NFREDDY, WFOXY, MOON, ENDO];
+const SETUP = [FREDDY, BONNIE, GOLDEN, PCHICA, BONNET, WBONNIE, PUPPET, STAFF, NFREDDY, WFOXY, MOON, ENDO,
+  NFOXY, FUNFRED, CHICA, PLUSH, NCHICA];
 
 // ---------- spots in the office ----------
 // [row, column] places in the office picture (36 wide, 16 tall, see officeLines in art.js).
@@ -96,6 +126,8 @@ const SETUP = [FREDDY, BONNIE, GOLDEN, PCHICA, BONNET, WBONNIE, PUPPET, STAFF, N
 const CUPCAKE_SPOTS = [[2, 12], [5, 20], [5, 30], [8, 15], [11, 29], [11, 3], [13, 14], [14, 6], [15, 25], [13, 22]];
 // The three places on the desk where Freddles sit (the left end of each 4-wide Freddle).
 const FREDDLE_SPOTS = [[11, 11], [11, 17], [11, 23]];
+// Where Plushtrap hides in the office (4 wide, 2 tall).
+const PLUSH_SPOTS = [[1, 14], [5, 28], [12, 6], [12, 26], [13, 16], [4, 12]];
 
 // ---------- challenges ----------
 // Ready-made nights: one click sets every level. Surviving a night set up EXACTLY like one earns it a ✓.
@@ -113,50 +145,55 @@ const everyone = level => lv(Object.fromEntries(SETUP.map(c => [c.id, level])));
 // limits (tools/bot.js: it only reacts to what a player could see or hear, with human reaction times,
 // a mouse that moves at a person's speed, one action at a time). The ones it won less often come
 // later, and ties are sorted by points. Warm-up stays first and All 20 stays last.
-// Measured 2026-11-03 (after the office heat and Sleepy Moon's camera rework), 30 nights each, wins by
-// an "average" player and a "beginner": the first 23 were 29 or 30 of 30 for both; then Snack time
-// (24, 19), Everyone at 10 (23, 13), at 15 (20, 13), at 18 (19, 3) and All 20 (18, 0).
-// Every challenge must stay humanly possible like this (the top two are for experienced players).
+// Measured 2026-11-03 after the second batch of characters (17 in all; UNIT_DRAIN 0.35, LEVEL_SCALE 0.5),
+// 30 nights each, wins by an "average" player / a "beginner": the first 28 were won 30/30 by the average
+// player and 25-30 by the beginner; then Everyone at 5 (26 / 24), at 10 (24 / 17), at 15 (16 / 3),
+// at 18 (12 / 0) and All 20 (6 / 0).
+// Every challenge must stay humanly possible like this (the top ones are for experienced players).
 const PRESETS = [
   { name: 'Warm-up', v: 2, levels: lv({ fre: 3, bon: 3, pup: 3, wfx: 2 }) },
-  // The two "classic" challenges have no Withered Foxy (taken out on request, in case a standard Foxy
-  // is added later). That made them easier, so they kept their version and their ✓.
-  { name: 'The classics', v: 2, levels: lv({ fre: 8, bon: 8, gol: 5 }) },
   { name: 'Quiet night', v: 3, levels: lv({ pup: 8, mon: 8, end: 8 }) },
+  // The two "classic" challenges have no Withered Foxy (taken out on request, in case a standard Foxy
+  // is added later). Chica joined both when she was added (v3).
+  { name: 'The classics', v: 3, levels: lv({ fre: 8, bon: 8, gol: 5, chi: 8 }) },
   { name: 'Wind it up', v: 2, levels: lv({ pup: 14, bon: 8, pch: 8 }) },
   { name: 'Caution', v: 2, levels: lv({ stf: 14, bon: 10, fre: 6 }) },
   { name: 'Heat wave', v: 2, levels: lv({ end: 15, stf: 8, fre: 8 }) },
   { name: 'Bedtime', v: 3, levels: lv({ mon: 12, nfr: 10, bnt: 10 }) },
   { name: 'Withered away', v: 2, levels: lv({ wbn: 16, wfx: 16 }) },
   { name: 'Hot and sleepy', v: 3, levels: lv({ end: 16, mon: 16 }) },
-  { name: 'Pirate\'s dance', v: 2, levels: lv({ wfx: 15, bon: 10, fre: 10 }) },
-  { name: 'Night light', v: 3, levels: lv({ mon: 14, nfr: 12, wfx: 10 }) },
-  { name: 'Bunny trouble', v: 2, levels: lv({ bon: 14, bnt: 14, wbn: 14 }) },
-  { name: 'Freddy fever', v: 2, levels: lv({ fre: 14, gol: 14, nfr: 14 }) },
+  // New with the second batch of characters (2026-11-03).
+  { name: 'Fun time', v: 1, levels: lv({ fun: 15, plu: 12, bnt: 12 }) },
+  { name: 'Patrol', v: 1, levels: lv({ chi: 15, nfx: 12, bon: 12 }) },
+  { name: 'Cupcake hunt', v: 1, levels: lv({ nch: 15, pch: 15, chi: 10 }) },
   { name: 'Music lesson', v: 2, levels: lv({ pup: 18, wfx: 12, bon: 12 }) },
-  { name: 'Nightmare crew', v: 2, levels: lv({ stf: 15, nfr: 15, pch: 15 }) },
-  // v3: the Puppet (5) added and Golden Freddy raised from 15 to 20 (on request). Harder, so a new version.
-  // The bot still won it 30/30 as an average player and a beginner.
+  { name: 'Pirate\'s dance', v: 3, levels: lv({ wfx: 15, bon: 10, fre: 10, nfx: 12 }) },   // v3: + Nightmare Foxy
+  { name: 'Night light', v: 4, levels: lv({ mon: 14, nfr: 12, wfx: 10, plu: 12 }) },      // v4: + Plushtrap
+  { name: 'Snack time', v: 3, levels: lv({ pch: 16, bnt: 12, pup: 10, nch: 12 }) },       // v3: + Nightmare Chica
+  // v3: the Puppet (5) added and Golden Freddy raised from 15 to 20 (on request).
   { name: 'Mask on', v: 3, levels: lv({ wbn: 15, gol: 20, nfr: 12, pup: 5 }) },
+  { name: 'Bunny trouble', v: 3, levels: lv({ bon: 14, bnt: 14, wbn: 14, plu: 12 }) },    // v3: + Plushtrap
+  { name: 'Nightmare hour', v: 1, levels: lv({ nfx: 15, nch: 15, nfr: 12, stf: 12 }) },
+  { name: 'Freddy fever', v: 3, levels: lv({ fre: 14, gol: 14, nfr: 14, fun: 14 }) },     // v3: + Funtime Freddy
   { name: 'Masquerade', v: 2, levels: lv({ gol: 16, wbn: 16, nfr: 14, bnt: 10 }) },
   { name: 'Door duty', v: 2, levels: lv({ fre: 16, bon: 16, stf: 16, wfx: 12 }) },
-  { name: 'Classic 20', v: 2, levels: lv({ fre: 20, bon: 20, gol: 20 }) },
   // v3: the Puppet and Sleepy Moon added (on request): they make you use the monitor, and every time you
-  // look away from it the other three can be waiting. Harder, so a new version. The bot still won it
-  // 30/30 as an average player and a beginner.
+  // look away from it the other three can be waiting.
   { name: 'Don\'t look away', v: 3, levels: lv({ gol: 12, pch: 12, wbn: 12, pup: 12, mon: 12 }) },
-  // v3: Sleepy Moon added (on request), clicked on the cameras. Harder, so a new version.
-  // The bot still won it 30/30 as an average player and a beginner.
-  { name: 'Click frenzy', v: 3, levels: lv({ pch: 18, bnt: 18, gol: 10, mon: 15 }) },
-  // v2: Phantom Chica added (on request: she takes power, so she belongs here). Harder, so a new version.
+  // v2: Phantom Chica added (on request: she takes power, so she belongs here).
   // v3: the office heat (like every challenge). v4: Sleepy Moon's rework (like every challenge he's in).
   { name: 'Power hungry', v: 4, levels: lv({ end: 14, mon: 14, stf: 14, wfx: 14, pch: 14 }) },
-  { name: 'Everyone at 5', v: 3, levels: everyone(5) },
-  { name: 'Snack time', v: 2, levels: lv({ pch: 16, bnt: 12, pup: 10 }) },
-  { name: 'Everyone at 10', v: 3, levels: everyone(10) },
-  { name: 'Everyone at 15', v: 3, levels: everyone(15) },
-  { name: 'Everyone at 18', v: 3, levels: everyone(18) },
-  { name: 'All 20', v: 3, levels: everyone(20) },
+  { name: 'Little terrors', v: 1, levels: lv({ plu: 18, bnt: 18, nfr: 10 }) },
+  // v3: Sleepy Moon added (on request). v4: + Chica (more clicking).
+  { name: 'Click frenzy', v: 4, levels: lv({ pch: 18, bnt: 18, gol: 10, mon: 15, chi: 12 }) },
+  { name: 'Classic 20', v: 3, levels: lv({ fre: 20, bon: 20, gol: 20, chi: 20 }) },       // v3: + Chica
+  { name: 'Nightmare crew', v: 3, levels: lv({ stf: 15, nfr: 15, pch: 15, nfx: 12, nch: 12 }) },   // v3: + both nightmares
+  // The "everyone" ones include every character, so each new batch makes them harder (v4: the second batch).
+  { name: 'Everyone at 5', v: 4, levels: everyone(5) },
+  { name: 'Everyone at 10', v: 4, levels: everyone(10) },
+  { name: 'Everyone at 15', v: 4, levels: everyone(15) },
+  { name: 'Everyone at 18', v: 4, levels: everyone(18) },
+  { name: 'All 20', v: 4, levels: everyone(20) },
 ];
 
 // One line of flavour text per challenge, shown under the list when it's picked.
@@ -166,7 +203,7 @@ const FLAVOR = {
   'Wind it up': 'Keep the music playing, whatever walks in.',
   'Don\'t look away': 'You need the monitor tonight. But every time you look up from it, someone is there.',
   'Caution': 'Watch the arrow. Then watch the doors.',
-  'Pirate\'s dance': 'Two doors, one fox, no rest.',
+  'Pirate\'s dance': 'Two doors, two foxes, no rest.',
   'Bedtime': 'Lights on, eyes open, Freddles off the desk.',
   'Heat wave': 'The fan is your best friend tonight.',
   'Mask on': 'You will be wearing this a lot.',
@@ -177,18 +214,23 @@ const FLAVOR = {
   'Quiet night': 'Just a music box, a nap and a warm room. What could go wrong?',
   'Everyone at 5': 'Meet the whole gang, on their best behaviour.',
   'Night light': 'Keep that flashlight handy.',
-  'Bunny trouble': 'Three rabbits, three different problems.',
+  'Bunny trouble': 'Four rabbits, four different problems.',
   'Freddy fever': 'Every Freddy in the building wants a word.',
   'Withered away': 'Old, broken, and still coming.',
   'Snack time': 'Cupcakes everywhere, and someone small and fast.',
   'Hot and sleepy': 'The heat makes you drowsy. Stay awake, stay cool.',
   'Music lesson': 'Wind the box between visitors at both doors.',
-  'Nightmare crew': 'Beeps, Freddles and burnt cupcakes.',
+  'Nightmare crew': 'Every nightmare in the building is awake.',
   'Door duty': 'Your hands never leave the door buttons.',
   'Masquerade': 'The mask is barely off before you need it again.',
   'Power hungry': 'Doors, lights, the fan and a cupcake thief. Watch your battery.',
   'Click frenzy': 'Fast hands and sharp eyes win tonight.',
   'Everyone at 18': 'Almost the worst. Almost.',
+  'Fun time': 'Showtime! Watch the halls, the doors and the floor.',
+  'Patrol': 'Keep your eyes on the cameras. They are not making a sound.',
+  'Cupcake hunt': 'So many cupcakes. Only some of them are real.',
+  'Little terrors': 'The small ones are the worst.',
+  'Nightmare hour': 'The nightmares are all awake, and one of them wants in.',
 };
 
 // The name a beaten challenge is saved under: its name plus its version, like "Bedtime v1".

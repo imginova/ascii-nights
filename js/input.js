@@ -125,12 +125,17 @@ function officePress(e) {
 $('officeArt').addEventListener('mousedown', e => { if (e.button === 0) officePress(e); });
 $('officeArt').addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') officePress(e); });
 
-// Clicking Sleepy Moon on a camera ("mon-hit", see renderFeed) sends him away. The camera picture is
-// redrawn often too, so this also reacts when the button goes down, the same way as officePress.
+// Clicking things on a camera (see renderFeed): Sleepy Moon ("mon-hit") sends him away, Chica
+// ("chi-hit") sends her back a room, and Nightmare Chica's cupcake ("nch-hit") gets rid of her.
+// The camera picture is redrawn often too, so this also reacts when the button goes down, the same
+// way as officePress.
 function feedPress(e) {
-  if (!e.target.closest('.mon-hit')) return;
+  const hit = e.target.closest('.mon-hit, .chi-hit, .nch-hit');
+  if (!hit) return;
   sfx.init();
-  clickMoon();
+  if (hit.classList.contains('mon-hit')) clickMoon();
+  else if (hit.classList.contains('chi-hit')) pushChica();
+  else clickCupcakeCam();
   e.preventDefault();
 }
 $('feed').addEventListener('mousedown', e => { if (e.button === 0) feedPress(e); });
