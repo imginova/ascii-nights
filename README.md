@@ -6,8 +6,9 @@ A custom-night fan game in the style of Five Nights at Freddy's, drawn in ASCII 
 
 ## Playing it
 
+- **Online:** https://imginova.github.io/ascii-nights/ (updated automatically on every push to `main`).
 - **On your computer:** double-click `index.html`. No installing, no internet needed (except for the fonts).
-- **Online:** once GitHub Pages is set up (below), every merge to `main` puts the game online automatically.
+- **The code:** https://github.com/imginova/ascii-nights
 
 ## How the code is organized
 

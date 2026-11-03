@@ -7,7 +7,9 @@ This file holds everything a new Claude session, or a person, needs to keep work
 **ASCII Nights** is a free, browser-based **FNAF fan game**: a single custom night drawn in ASCII art. It was made on 2026-11-02 as a separate project from *Bare Bones Custom Night* (`C:\git\bbcn`, repo `imginova/bbcn`). It reused that game's code layout, setup screen, sound engine and game loop, but none of BBCN's threats, ★ modifiers, modes, vents, ads, kill tally or analytics. The owner designed every character's mechanics.
 
 - **Owner:** the `imginova` GitHub account (Jake Harris's son). They're new to programming, so explain changes in plain language and avoid jargon.
-- **Folder:** `C:\git\ascii-nights`. **Planned repo:** `imginova/ascii-nights` (public), with GitHub Pages. It hadn't been created when this was written, and this Windows computer has no `gh` or Node.js.
+- **Folder:** `C:\git\ascii-nights`. **GitHub:** https://github.com/imginova/ascii-nights (public; the owner created it on 2026-11-03 and pushed the first commit).
+- **Public website:** https://imginova.github.io/ascii-nights/ (GitHub Pages, redeployed on every push to `main`). Live since 2026-11-03: Pages was switched on (Settings → Pages → Source = GitHub Actions) and the link was added as the repo's About → Website. The very first deploy had failed only because Pages wasn't on yet.
+- This Windows computer has no `gh` or Node.js; the GitHub API can be read with `curl` (for example `https://api.github.com/repos/imginova/ascii-nights/actions/runs`).
 
 ## Fan game rules (keep these)
 
