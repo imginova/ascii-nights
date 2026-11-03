@@ -239,7 +239,6 @@ const sfx = (() => {
       tone(40, 1.2, { type: 'sawtooth', vol: 0.5, slide: -10 });
       tone(80, 1.0, { type: 'square', vol: 0.1, slide: -30 });
     },
-    nightmareOut() { tone(90, 0.8, { type: 'sine', vol: 0.25, slide: -60 }); },
 
     // ----- Withered Foxy -----
     // Leaving the cove: fast, heavy running steps toward the left door.

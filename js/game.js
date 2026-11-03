@@ -417,24 +417,16 @@ function updateStaff(dt) {
 
 // ---------- Nightmare Freddy ----------
 // Freddles turn up on the desk one at a time. Keeping the flashlight on one for FREDDLE_SHINE
-// seconds sends it off. If all 3 sit there for too long, he comes: put the mask on and keep it on
-// for NIGHTMARE_HOLD seconds. Taking it off while he's here is deadly.
+// seconds sends it off. If all 3 sit there for too long, he comes, and once he's in your office he
+// NEVER leaves (on request: that was the owner's design; he used to leave after 5 seconds of mask).
+// Put the mask on in time and keep it on for the rest of the night: taking it off is deadly. So keep
+// those Freddles off the desk!
 function updateNightmare(dt) {
   const N = G.nfr;
   if (N.level === 0) return;
   if (N.present) {
-    if (G.mask) {
-      N.maskT += dt;
-      if (N.maskT >= NIGHTMARE_HOLD) {
-        N.present = false;
-        N.freddles = [false, false, false];
-        N.timer = freddleWait(N.level);
-        sfx.nightmareOut();
-        dirty = true;
-      }
-    } else if (N.maskT > 0 || G.t >= N.deadline) {
-      lose(NFREDDY);   // took the mask off, or never put it on
-    }
+    if (G.mask) N.maskT += dt;   // how long the mask has been on since he came (more than 0 = it went on)
+    else if (N.maskT > 0 || G.t >= N.deadline) lose(NFREDDY);   // took the mask off, or never put it on
     return;
   }
   // The light shooing Freddles away. Each Freddle needs its own steady light.

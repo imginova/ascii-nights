@@ -109,12 +109,11 @@ const staffWindow = level => reactWindow(level) + 1;
 const BLINK_EVERY = 0.5;     // seconds between its blinking beeps
 
 // ---------- Nightmare Freddy ----------
-// Seconds between new Freddles on the desk, how long the light must stay on one to send it off,
-// how long all 3 can sit there before he comes, and how long he stays (keep the mask on!).
+// Seconds between new Freddles on the desk, how long the light must stay on one to send it off, and
+// how long all 3 can sit there before he comes. Once he's come he stays for the rest of the night.
 const freddleWait = level => byLevel(level, 24, 7) * rand(0.7, 1.3);
 const FREDDLE_SHINE = 0.5;
 const nightmareArrive = level => byLevel(level, 8, 4);
-const NIGHTMARE_HOLD = 5;
 
 // ---------- Withered Foxy ----------
 const FOXY_INTERVAL = 5;     // seconds between his chances to get ready in Pirate Cove

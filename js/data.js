@@ -68,7 +68,7 @@ const STAFF = {
 };
 const NFREDDY = {
   id: 'nfr', name: 'Nightmare Freddy', where: 'OFFICE',
-  desc: 'Freddles pile up on your desk; shine the flashlight on them to send them off. If all 3 stay too long he comes: keep the mask on until he leaves.',
+  desc: 'Freddles pile up on your desk; shine the flashlight on them to send them off. If all 3 stay too long he comes and never leaves: keep the mask on for the rest of the night.',
   how: 'came for his Freddles',
 };
 const WFOXY = {
