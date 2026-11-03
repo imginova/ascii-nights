@@ -537,7 +537,8 @@ function updateFoxy(dt) {
         X.phase = 'cove';
         X.stage = 0;
         X.timer = FOXY_INTERVAL * rand(0.7, 1.3);
-        sfx.retreat();
+        sfx.bonk('L');      // the same bonk as the others: he's given up (on request)
+        sfx.retreat();      // ...and goes off grumbling
         dirty = true;
       } else if (G.t >= X.deadline) {
         lose(WFOXY, 'L');
