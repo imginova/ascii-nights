@@ -130,7 +130,6 @@ const PRESETS = [
   { name: 'Withered away', v: 2, levels: lv({ wbn: 16, wfx: 16 }) },
   { name: 'Hot and sleepy', v: 3, levels: lv({ end: 16, mon: 16 }) },
   { name: 'Pirate\'s dance', v: 2, levels: lv({ wfx: 15, bon: 10, fre: 10 }) },
-  { name: 'Don\'t look away', v: 2, levels: lv({ gol: 12, pch: 12, wbn: 12 }) },
   { name: 'Night light', v: 3, levels: lv({ mon: 14, nfr: 12, wfx: 10 }) },
   { name: 'Mask on', v: 2, levels: lv({ wbn: 15, gol: 15, nfr: 12 }) },
   { name: 'Bunny trouble', v: 2, levels: lv({ bon: 14, bnt: 14, wbn: 14 }) },
@@ -140,6 +139,10 @@ const PRESETS = [
   { name: 'Masquerade', v: 2, levels: lv({ gol: 16, wbn: 16, nfr: 14, bnt: 10 }) },
   { name: 'Door duty', v: 2, levels: lv({ fre: 16, bon: 16, stf: 16, wfx: 12 }) },
   { name: 'Classic 20', v: 2, levels: lv({ fre: 20, bon: 20, gol: 20 }) },
+  // v3: the Puppet and Sleepy Moon added (on request): they make you use the monitor, and every time you
+  // look away from it the other three can be waiting. Harder, so a new version. The bot still won it
+  // 30/30 as an average player and a beginner.
+  { name: 'Don\'t look away', v: 3, levels: lv({ gol: 12, pch: 12, wbn: 12, pup: 12, mon: 12 }) },
   // v3: Sleepy Moon added (on request), clicked on the cameras. Harder, so a new version.
   // The bot still won it 30/30 as an average player and a beginner.
   { name: 'Click frenzy', v: 3, levels: lv({ pch: 18, bnt: 18, gol: 10, mon: 15 }) },
@@ -159,7 +162,7 @@ const FLAVOR = {
   'Warm-up': 'Your first shift. Listen for the laughing.',
   'The classics': 'The old crew, back on stage. Mostly.',
   'Wind it up': 'Keep the music playing, whatever walks in.',
-  'Don\'t look away': 'Every time you look up from the monitor, someone is there.',
+  'Don\'t look away': 'You need the monitor tonight. But every time you look up from it, someone is there.',
   'Caution': 'Watch the arrow. Then watch the doors.',
   'Pirate\'s dance': 'Two doors, one fox, no rest.',
   'Bedtime': 'Lights on, eyes open, Freddles off the desk.',
