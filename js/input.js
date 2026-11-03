@@ -68,18 +68,25 @@ function updateAim(e) {
   aim.where = null;
   for (const [where, id, cols] of AIM_AREAS) {
     const r = $(id).getBoundingClientRect();
-    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) continue;
+    // Only the left-right position picks the picture: just above or below a doorway still counts as
+    // that doorway (the row is kept inside the picture). That way, moving the mouse straight down from
+    // Foxy toward the Flashlight button keeps the light on him.
+    if (e.clientX < r.left || e.clientX > r.right) continue;
     aim.where = where;
     // How far across and down the picture the pointer is (0 to 1), times its size in characters.
     // The - 0.5 makes "column 3" mean the middle of the 4th character, like the cells it's compared with.
+    // Math.min / Math.max keep the row between 0 and 15.
     aim.c = (e.clientX - r.left) / r.width * cols - 0.5;
-    aim.r = (e.clientY - r.top) / r.height * 16 - 0.5;
+    aim.r = Math.max(0, Math.min(15, (e.clientY - r.top) / r.height * 16 - 0.5));
   }
   if (G && G.cam) aim.where = null;   // the monitor is up: you're not aiming at the office at all
 }
 view.addEventListener('pointermove', updateAim);
 view.addEventListener('pointerdown', updateAim);   // on a phone there's no "move" before a tap
-view.addEventListener('pointerleave', () => { aim.where = null; });
+// When the pointer leaves the view, the aim stays where it last was (on request: Withered Foxy "didn't
+// work" when holding the on-screen Flashlight button, because moving to the button used to switch the
+// aim off). So you can point at something, move down to the Flashlight button, hold it, and the
+// light stays on what you pointed at.
 
 // The flashlight shines while the RIGHT mouse button is held down over the view (or F, or the
 // Flashlight button). We use mousedown/mouseup here, not pointer events: a second mouse button pressed
