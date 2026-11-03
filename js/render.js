@@ -50,8 +50,12 @@ function renderGame(now) {
   beam.style.setProperty('--y', aim.y + 'px');
   // Sleepy Moon: the view gets darker as the sleep meter fills (opacity 0 is see-through, 1 is black).
   $('sleepShade').style.opacity = (G.mon.sleep / 100 * 0.92).toFixed(3);
-  // The heat: a red-hot glow that gets stronger as the office heats up.
-  $('heatGlow').style.opacity = (G.heat / 100 * 0.6).toFixed(3);
+  // The heat: a red-hot glow that only starts at the first warning (HOT_WARN[0], 70%) and is at full
+  // strength by GLOW_FULL (90%), so the last stretch before passing out is solid red (both on request).
+  // Math.max(0, ...) keeps it at 0 below 70%; Math.min(1, ...) stops it growing past full.
+  const GLOW_FULL = 90;
+  const glow = Math.min(1, Math.max(0, (G.heat - HOT_WARN[0]) / (GLOW_FULL - HOT_WARN[0])));
+  $('heatGlow').style.opacity = (glow * 0.6).toFixed(3);
   // Phantom Chica's jumpscare (when you didn't find her cupcakes in time). It's over in a second.
   const chicaScare = now < G.pch.scareUntil;
   $('miniScare').hidden = !chicaScare;
