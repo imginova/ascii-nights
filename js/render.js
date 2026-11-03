@@ -72,7 +72,10 @@ function renderGame(now) {
     $(btn).classList.toggle('on', G.doors[side]);
     $(btn).setAttribute('aria-pressed', String(G.doors[side]));
     $(btn).disabled = off;
-    $(label).textContent = off ? 'NO POWER' : G.doors[side] ? 'CLOSED' : 'OPEN';
+    // Withered Foxy is flashed and dizzy in this doorway: the button blinks SHUT IT! (on request).
+    const shutIt = side === 'L' && !off && G.wfx.phase === 'flashed' && !G.doors.L;
+    $(label).textContent = off ? 'NO POWER' : shutIt ? 'SHUT IT!' : G.doors[side] ? 'CLOSED' : 'OPEN';
+    $(label).classList.toggle('alert', shutIt);
   }
   $('btnCam').classList.toggle('on', G.cam);
   $('btnCam').setAttribute('aria-pressed', String(G.cam));
@@ -165,9 +168,15 @@ function doorGrid(side, now) {
   if (shut || G.powerOut) return g;
   // Bonnie in this doorway.
   if (G.bon.level > 0 && bonnieAtDoor() && bonnieSide() === side) sprite(g, 4, 1, SPRITES.bon.door, 'c-bon');
-  // Withered Foxy in the left doorway. Once flashed he goes pale (the "stunned" class).
+  // Withered Foxy in the left doorway. Once he's been flashed enough he's dizzy: pale, an x for an eye
+  // and stars spinning over his head. That's the cue to shut the door (on request).
   if (side === 'L' && G.wfx.level > 0 && foxyInDoorway()) {
-    sprite(g, 4, 1, SPRITES.wfx.door, 'c-wfx' + (G.wfx.phase === 'flashed' ? ' stunned' : ''));
+    if (G.wfx.phase === 'flashed') {
+      sprite(g, 4, 1, SPRITES.wfx.dizzy, 'c-wfx stunned');
+      write(g, 3, 1, Math.floor(now / 200) % 2 ? ' *  .  * ' : ' .  *  . ', 'stars');
+    } else {
+      sprite(g, 4, 1, SPRITES.wfx.door, 'c-wfx');
+    }
   }
   return g;
 }

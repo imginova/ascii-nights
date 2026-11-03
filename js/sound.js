@@ -257,8 +257,13 @@ const sfx = (() => {
         noise(0.2, { vol: 0.5, freq: 200, delay: i * 0.35, pan: -0.8 });
       }
     },
-    // Flashed in the doorway: a sharp electric zap.
-    zap() { tone(1800, 0.1, { type: 'sawtooth', vol: 0.15, slide: -1500, pan: -0.8 }); },
+    // Flashed in the doorway: a sharp electric zap, then a bright two-note "ding-ding" that means
+    // "he's dizzy, shut the door now" (the ding was added on request, as a clearer cue).
+    zap() {
+      tone(1800, 0.1, { type: 'sawtooth', vol: 0.15, slide: -1500, pan: -0.8 });
+      tone(1319, 0.15, { type: 'triangle', vol: 0.22, delay: 0.12, pan: -0.8 });
+      tone(1760, 0.25, { type: 'triangle', vol: 0.22, delay: 0.24, pan: -0.8 });
+    },
     // Shut out after the flash: he backs off, grumbling.
     retreat() { tone(160, 0.6, { type: 'sawtooth', vol: 0.15, slide: -100, pan: -0.8 }); },
 
