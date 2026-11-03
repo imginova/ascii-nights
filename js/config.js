@@ -120,7 +120,7 @@ const NIGHTMARE_HOLD = 5;
 const FOXY_INTERVAL = 5;     // seconds between his chances to get ready in Pirate Cove
 const FOXY_RUN = 2.5;        // seconds from leaving the cove to reaching the left door
 const FOXY_WAIT = [3, 6];    // seconds he waits behind the shut door before the stomp
-const FOXY_FLASH = 0.4;      // seconds of steady light it takes to flash him
+const FOXY_FLASH = 0.6;      // seconds of light (in all) it takes to send him away
 const STOMP_EVERY = 3;       // seconds between stomps while he waits for you
 
 // ---------- Sleepy Moon ----------

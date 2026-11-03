@@ -484,10 +484,11 @@ function updateNightmare(dt) {
 //   'door'    in the open doorway: shut the door in time!
 //   'wait'    shut out; waiting behind the door. Opening it now just brings him back to 'door'
 //   'ready'   he stomped: now open the door...
-//   'open'    ...flash him with the light (FOXY_FLASH seconds)...
-//   'flashed' ...and shut the door again. Then he goes back to the cove.
-// Shutting the door in 'open' without flashing him first just puts him back to 'wait'.
-const foxyInDoorway = () => ['door', 'open', 'flashed'].includes(G.wfx.phase);
+//   'open'    ...and flash him with the light until he leaves (FOXY_FLASH seconds of light in all;
+//             it doesn't have to be in one go). Then he goes back to the cove. No second door shut
+//             (simplified on request: it used to be flash, then shut the door again).
+// Shutting the door in 'open' before he's had enough light just puts him back to 'wait'.
+const foxyInDoorway = () => ['door', 'open'].includes(G.wfx.phase);
 function updateFoxy(dt) {
   const X = G.wfx;
   if (X.level === 0) return;
@@ -527,26 +528,21 @@ function updateFoxy(dt) {
       if (X.stompT <= 0) { sfx.stomp(); X.stompT = STOMP_EVERY; }   // stomps until you open up
       return;
     case 'open':
-      if (shut) { foxyShutOut(); return; }   // shut before flashing him: back to waiting
+      if (shut) { foxyShutOut(); return; }   // shut before he's had enough light: back to waiting
       if (beamOnDoor('L')) {
         X.flashT += dt;
-        if (X.flashT >= FOXY_FLASH) { X.phase = 'flashed'; sfx.zap(); dirty = true; return; }
-      } else {
-        X.flashT = 0;
+        if (X.flashT >= FOXY_FLASH) {
+          // Enough light: he gives up and goes back to the cove. The zap ends in a ding-ding.
+          X.phase = 'cove';
+          X.stage = 0;
+          X.timer = FOXY_INTERVAL * rand(0.7, 1.3);
+          sfx.zap();
+          sfx.retreat();
+          dirty = true;
+          return;
+        }
       }
       if (G.t >= X.deadline) lose(WFOXY, 'L');
-      return;
-    case 'flashed':
-      if (shut) {
-        X.phase = 'cove';
-        X.stage = 0;
-        X.timer = FOXY_INTERVAL * rand(0.7, 1.3);
-        sfx.bonk('L');      // the same bonk as the others: he's given up (on request)
-        sfx.retreat();      // ...and goes off grumbling
-        dirty = true;
-      } else if (G.t >= X.deadline) {
-        lose(WFOXY, 'L');
-      }
   }
 }
 // The left door is shut on him: a bang, and he waits behind it until his stomp.

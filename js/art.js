@@ -366,16 +366,6 @@ const SPRITES = {
 ||\/\/||
  \/\/\/
   \__/ J`),
-    // Flashed and dizzy (his eye is an x, his mouth hangs open): the cue that he's done, so shut the
-    // door now. render.js adds spinning stars over his head.
-    dizzy: art(String.raw`
-/\    /\
-| \__/ |
-|(#) x |
-|  /\  |
-||    ||
- \    /
-  \__/ J`),
     scare: art(String.raw`
    /\               /\
   /  \_____________/  \

@@ -73,7 +73,7 @@ const NFREDDY = {
 };
 const WFOXY = {
   id: 'wfx', name: 'Withered Foxy', where: 'LEFT DOOR',
-  desc: 'Charges the left door from Pirate Cove; being on the cameras stalls him. Shut the door, wait for the stomp, then open it, flash him and shut it again.',
+  desc: 'Charges the left door from Pirate Cove; being on the cameras stalls him. Shut the door, wait for the stomp, then open it and flash him until he leaves.',
 };
 const MOON = {
   id: 'mon', name: 'Sleepy Moon', where: 'CAMERAS',

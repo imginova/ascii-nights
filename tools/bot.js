@@ -73,7 +73,7 @@
         const shutNeed = side => (side === 'R' && G.fre.level > 0 && G.fre.step === FREDDY_LAUGHS)
           || (G.bon.level > 0 && bonnieAtDoor() && bonnieSide() === side)
           || (S.active && !S.stalled && S.side === side && ready('arrow'))
-          || (side === 'L' && X.level > 0 && ['run', 'door', 'flashed'].includes(X.phase));
+          || (side === 'L' && X.level > 0 && ['run', 'door'].includes(X.phase));
         const keepShut = side => side === 'L' && X.level > 0 && X.phase === 'wait';
         const boxLow = G.pup.level > 0 && !G.pup.out && G.pup.wind < BOX_LOW;
         const freddles = N.freddles.filter(Boolean).length;
@@ -81,7 +81,7 @@
         // before going camera-hunting for Sleepy Moon): the mask, cupcakes, Bonnet, the staff bot's arrow,
         // or Foxy's open-flash-shut routine.
         const busyInOffice = () => G.mask || maskNeed || G.pch.active || Bn.active
-          || (S.active && !S.stalled) || ['ready', 'open', 'flashed'].includes(X.phase);
+          || (S.active && !S.stalled) || ['ready', 'open'].includes(X.phase);
 
         // Cues. Sounds can be heard anywhere; office sights need the monitor down.
         notice('mask', maskNeed);

@@ -131,10 +131,8 @@ pre .c-stf, pre .c-nfr, pre .c-wfx, pre .c-mon, pre .c-end { font-weight: 600; }
 .alert { color: var(--danger) !important; }
 .dim { color: var(--dim); }
 .door { color: var(--dim); }
-/* Withered Foxy, flashed in the doorway: he goes pale. */
+/* Withered Foxy in the flashlight after his stomp: he goes pale while the light works on him. */
 .stunned { color: #f6f0e0; text-shadow: 0 0 8px #fff; }
-/* The stars spinning over a dizzy Withered Foxy. */
-.stars { color: #fff6c0; text-shadow: 0 0 6px #fff6c0; font-weight: 600; }
 /* A Freddle in the flashlight: it glows while it's being shooed away. */
 .shone { text-shadow: 0 0 8px var(--c-nfr); color: #ffd0b0; }
 /* Phantom Chica's shadow cupcakes: dark and dim, so you have to look. The invisible ::after box
