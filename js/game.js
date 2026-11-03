@@ -21,6 +21,18 @@ if (levels.every(l => l === 0)) levels = PRESETS[0].levels.slice();   // first v
 
 let best = store.get('best', null);   // hardest night survived: { sum, levels } or null
 
+// How many times each character has got you, by its id: { fre: 3, bon: 1, ... }, plus `heat` for
+// passing out. Saved in the browser and shown on the game over and custom night screens (on request).
+let kills = store.get('kills', {}) || {};
+// Add one to `id`'s tally, save it, and return a line for the game over screen like
+// "Bonnie has got you 3 times." (`name` is what the line calls it.)
+function countKill(id, name) {
+  kills[id] = (kills[id] || 0) + 1;
+  store.set('kills', kills);
+  const n = kills[id];
+  return `<br><span class="dim">${name} has got you ${n === 1 ? 'once' : n + ' times'}.</span>`;
+}
+
 // The challenges (from PRESETS) you've survived, saved by clearKey (name plus version, see data.js).
 // RULE: the only saved ✓s ever deleted are those of challenges that got harder, which shows as their
 // version going up. Everything else stays saved, even a ✓ this version of the game doesn't recognise.
@@ -959,6 +971,7 @@ function lose(c, side = null, dark = false) {
   else if (c === PUPPET) message = `The music box ran down. ${who} got out at ${when}.`;
   else if (side) message = `${who} came through the ${side === 'L' ? 'LEFT' : 'RIGHT'} door at ${when}.`;
   else message = `${who} ${c.how} at ${when}.`;
+  message += countKill(c.id, c.name);   // a power-out death counts for whoever came in the dark
   // The jumpscare: the character's big drawing, shaking (see showScare in screens.js).
   const big = SPRITES[c.id].scare;
   const g = blank(Math.max(...big.map(l => l.length)), big.length);
@@ -974,5 +987,5 @@ function passOut() {
   sfx.faint();
   const g = blank(Math.max(...PASSED_OUT.map(l => l.length)), PASSED_OUT.length);
   sprite(g, 0, 0, PASSED_OUT, 'c-end');
-  showScare(`It got too hot in the office. You passed out at ${hourLabel(hourOf(G.t))}.`, toHtml(g), false);
+  showScare(`It got too hot in the office. You passed out at ${hourLabel(hourOf(G.t))}.` + countKill('heat', 'The heat'), toHtml(g), false);
 }
