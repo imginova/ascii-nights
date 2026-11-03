@@ -131,11 +131,13 @@ const PRESETS = [
   { name: 'Hot and sleepy', v: 3, levels: lv({ end: 16, mon: 16 }) },
   { name: 'Pirate\'s dance', v: 2, levels: lv({ wfx: 15, bon: 10, fre: 10 }) },
   { name: 'Night light', v: 3, levels: lv({ mon: 14, nfr: 12, wfx: 10 }) },
-  { name: 'Mask on', v: 2, levels: lv({ wbn: 15, gol: 15, nfr: 12 }) },
   { name: 'Bunny trouble', v: 2, levels: lv({ bon: 14, bnt: 14, wbn: 14 }) },
   { name: 'Freddy fever', v: 2, levels: lv({ fre: 14, gol: 14, nfr: 14 }) },
   { name: 'Music lesson', v: 2, levels: lv({ pup: 18, wfx: 12, bon: 12 }) },
   { name: 'Nightmare crew', v: 2, levels: lv({ stf: 15, nfr: 15, pch: 15 }) },
+  // v3: the Puppet (5) added and Golden Freddy raised from 15 to 20 (on request). Harder, so a new version.
+  // The bot still won it 30/30 as an average player and a beginner.
+  { name: 'Mask on', v: 3, levels: lv({ wbn: 15, gol: 20, nfr: 12, pup: 5 }) },
   { name: 'Masquerade', v: 2, levels: lv({ gol: 16, wbn: 16, nfr: 14, bnt: 10 }) },
   { name: 'Door duty', v: 2, levels: lv({ fre: 16, bon: 16, stf: 16, wfx: 12 }) },
   { name: 'Classic 20', v: 2, levels: lv({ fre: 20, bon: 20, gol: 20 }) },
