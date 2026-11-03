@@ -36,9 +36,10 @@
     const { react, gap, find, mouse: speed } = profile;
     levels = lvls.slice();
     const result = { won: false, killer: null };
-    const realWin = win, realLose = lose;
+    const realWin = win, realLose = lose, realPassOut = passOut;
     win = () => { G.over = true; result.won = true; };
     lose = c => { G.over = true; result.killer = c.id; };
+    passOut = () => { G.over = true; result.killer = 'heat'; };
     try {
       newGame();
       G.paused = false;
@@ -93,8 +94,10 @@
         notice('box', boxLow);
         notice('fred', down && (freddles >= 2 || (freddles >= 1 && G.t > busy + 2)));
         notice('moon', G.mon.level > 0 && G.mon.sleep >= 50);
-        notice('fanOn', G.end.present && !G.fan);
-        notice('fanOff', !G.end.present && G.fan && G.end.heat < 5, 0.5);
+        // The fan: on when the endo arrives or the first hot breath plays (70%), off once it's cool again.
+        const fanNeed = G.end.present || G.heat >= HOT_WARN[0];
+        notice('fanOn', fanNeed && !G.fan);
+        notice('fanOff', !G.end.present && G.fan && G.heat < 10, 0.5);
 
         // ----- the mouse: Bonnet first, then the flashlight's target -----
         if (fredIdx >= 0 && !N.freddles[fredIdx]) fredIdx = -1;
@@ -131,7 +134,7 @@
             if (G.t >= cupFoundAt) { act(() => clickCupcake(0)); cupFoundAt = null; }
           }
           else if (ready('box') && boxLow && !G.mask && !maskNeed && !chasing) act(onCam('prize') ? windBox : () => setCam('prize'));
-          else if (ready('fanOn') && G.end.present && !G.fan) act(toggleFan);
+          else if (ready('fanOn') && fanNeed && !G.fan) act(toggleFan);
           else if (ready('openL') && G.doors.L && !shutNeed('L') && !keepShut('L') && !S.stalled) act(() => toggleDoor('L'));
           else if (ready('openR') && G.doors.R && !shutNeed('R') && !S.stalled) act(() => toggleDoor('R'));
           else if (ready('fanOff') && G.fan) act(toggleFan);
@@ -141,7 +144,7 @@
       }
       result.power = Math.round(G.power);
     } finally {
-      win = realWin; lose = realLose;
+      win = realWin; lose = realLose; passOut = realPassOut;
       flashKey = false;
     }
     return result;

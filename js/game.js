@@ -126,8 +126,10 @@ function newGame() {
       stompT: 0, flashT: 0, deadline: 0 },
     // Sleepy Moon: the sleep meter (0 wide awake, 100 asleep), and how many yawns have played.
     mon: { level: levelOf(MOON), sleep: 0, yawns: 0 },
-    // The Flamethrower endo: whether he's here, how much longer he stays, and the office heat (percent).
-    end: { level: levelOf(ENDO), present: false, stayT: 0, heat: 0, crackleT: 0, timer: endoWait(levelOf(ENDO)) },
+    // The Flamethrower endo: whether he's here and how much longer he stays.
+    end: { level: levelOf(ENDO), present: false, stayT: 0, crackleT: 0, timer: endoWait(levelOf(ENDO)) },
+    heat: 0,                       // the office heat in percent (see updateHeat); 100 = you pass out
+    hotWarns: 0,                   // how many of the HOT_WARN marks the heat is past (for the warning breaths)
   };
 }
 
@@ -150,7 +152,7 @@ function update(dt) {
   updatePower(dt);
   // Each character in turn. `for...of` runs the function for each one; we stop as soon as one ends the night.
   for (const step of [updateFreddy, updateBonnie, updateGolden, updateChica, updateBonnet, updateWithered,
-    updateStaff, updateNightmare, updateFoxy, updateMoon, updateEndo]) {
+    updateStaff, updateNightmare, updateFoxy, updateMoon, updateEndo, updateHeat]) {
     if (G.over || G.powerOut) return;
     step(dt);
   }
@@ -567,21 +569,36 @@ function updateMoon(dt) {
 }
 
 // ---------- the Flamethrower endo ----------
+// He only comes and goes here; the heat he adds is worked out in updateHeat below.
 function updateEndo(dt) {
   const E = G.end;
   if (E.level === 0) return;
   if (E.present) {
-    E.heat += endoHeat(E.level) * (G.fan ? FAN_SLOW : 1) * dt;
     E.stayT -= dt;
     E.crackleT -= dt;
     if (E.crackleT <= 0) { sfx.crackle(); E.crackleT = 0.6; }
     if (E.stayT <= 0) { E.present = false; E.timer = endoWait(E.level); sfx.flameOff(); dirty = true; }
   } else {
-    E.heat = Math.max(0, E.heat - (G.fan ? FAN_COOL : COOL_RATE) * dt);
     E.timer -= dt;
     if (E.timer <= 0) { E.present = true; E.stayT = endoStay(E.level); sfx.flameOn(); dirty = true; }
   }
-  if (E.heat >= 100) lose(ENDO);
+}
+
+// ---------- the office heat ----------
+// Every night the office slowly heats up (AMBIENT_HEAT), and much faster while the endo is here.
+// The fan cools it down, except while the endo is here: then it only slows the heating.
+// At 100% you pass out (or, if the endo is in the room, he gets the blame).
+function updateHeat(dt) {
+  const E = G.end;
+  const rise = AMBIENT_HEAT + (E.present ? endoHeat(E.level) : 0);
+  if (!G.fan) G.heat += rise * dt;
+  else if (E.present) G.heat += rise * FAN_SLOW * dt;
+  else G.heat = Math.max(0, G.heat - FAN_COOL * dt);
+  // A heavy breath each time it passes one of the HOT_WARN marks (filter counts how many it's past).
+  const warns = HOT_WARN.filter(mark => G.heat >= mark).length;
+  if (warns > G.hotWarns) sfx.hot();
+  G.hotWarns = warns;
+  if (G.heat >= 100) E.present ? lose(ENDO) : passOut();
 }
 
 // ---------- power-out ----------
@@ -730,4 +747,15 @@ function lose(c, side = null, dark = false) {
   const g = blank(Math.max(...big.map(l => l.length)), big.length);
   sprite(g, 0, 0, big, 'c-' + c.id);
   showScare(message, toHtml(g));
+}
+
+// The office got too hot and you passed out. No one jumps out: the screen just shows a woozy face
+// (PASSED_OUT in art.js), without the shake.
+function passOut() {
+  G.over = true;
+  sfx.humOff();
+  sfx.faint();
+  const g = blank(Math.max(...PASSED_OUT.map(l => l.length)), PASSED_OUT.length);
+  sprite(g, 0, 0, PASSED_OUT, 'c-end');
+  showScare(`It got too hot in the office. You passed out at ${hourLabel(hourOf(G.t))}.`, toHtml(g), false);
 }

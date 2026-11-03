@@ -125,13 +125,20 @@ const STOMP_EVERY = 3;       // seconds between stomps while he waits for you
 const moonRate = level => byLevel(level, 1.6, 8);
 const MOON_WAKE = 30;
 
+// ---------- the office heat ----------
+// The office slowly heats up all night, every night, whoever is on (on request): AMBIENT_HEAT % per
+// second, so if you never used the fan you'd pass out at about 4:30 AM. While the fan is on it cools
+// the office by FAN_COOL % per second instead. At 100% you pass out and the night is over.
+// HOT_WARN: a heavy breath plays when the heat passes each of these, as a warning.
+const AMBIENT_HEAT = 0.75;
+const FAN_COOL = 6;
+const HOT_WARN = [70, 85];
+
 // ---------- the Flamethrower endo ----------
-// Seconds between visits, how long a visit lasts, and how fast the office heats up while he's
-// there (% per second). The fan slows the heat to FAN_SLOW of that, but doesn't stop it.
-// Once he's gone, the office cools down (faster with the fan on).
+// Seconds between visits, how long a visit lasts, and how much faster the office heats up while
+// he's there (% per second, on top of AMBIENT_HEAT). While he's there the fan can't cool the office:
+// it only slows the heating down to FAN_SLOW of it.
 const endoWait = level => rand(byLevel(level, 60, 20), byLevel(level, 90, 35));
 const endoStay = level => byLevel(level, 10, 16);
 const endoHeat = level => byLevel(level, 5, 11);
 const FAN_SLOW = 0.25;
-const COOL_RATE = 3;
-const FAN_COOL = 6;

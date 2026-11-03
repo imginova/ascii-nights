@@ -407,6 +407,16 @@ const SPRITES = {
   },
 };
 
+// Passing out from the heat: a woozy face in heat waves (shown instead of a jumpscare).
+const PASSED_OUT = art(String.raw`
+    ~   ~   ~   ~   ~
+  ~    .-------.    ~
+     /  x     x  \
+ ~  |      o      |  ~
+     \   _____   /
+  ~    '-------'    ~
+    ~   ~ z Z ~   ~`);
+
 // ---------- the office ----------
 // The middle of the office: 36 wide and 16 tall. A poster and kids' drawings on the wall,
 // the desk with the monitor in the middle, and the floor. The staff bot, the fan, Freddles,

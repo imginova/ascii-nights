@@ -30,9 +30,8 @@ function renderGame(now) {
   const units = powerUnits();                   // 0 to 5 things using power
   $('usage').textContent = '▮'.repeat(units) + '▯'.repeat(5 - units);
   $('usage').classList.toggle('low', units >= 3);
-  // The heat meter only shows on nights with the Flamethrower endo.
-  $('heatMeter').hidden = G.end.level === 0;
-  const heat = Math.floor(G.end.heat);
+  // The office heat (it rises every night; the fan cools it down).
+  const heat = Math.floor(G.heat);
   $('heat').textContent = heat + '%';
   $('heat').classList.toggle('low', heat >= 60);
 
@@ -51,8 +50,8 @@ function renderGame(now) {
   beam.style.setProperty('--y', aim.y + 'px');
   // Sleepy Moon: the view gets darker as the sleep meter fills (opacity 0 is see-through, 1 is black).
   $('sleepShade').style.opacity = (G.mon.sleep / 100 * 0.92).toFixed(3);
-  // The endo: a red-hot glow that gets stronger as the office heats up.
-  $('heatGlow').style.opacity = (G.end.heat / 100 * 0.6).toFixed(3);
+  // The heat: a red-hot glow that gets stronger as the office heats up.
+  $('heatGlow').style.opacity = (G.heat / 100 * 0.6).toFixed(3);
   // Phantom Chica's jumpscare (when you didn't find her cupcakes in time). It's over in a second.
   const chicaScare = now < G.pch.scareUntil;
   $('miniScare').hidden = !chicaScare;

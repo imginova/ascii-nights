@@ -262,6 +262,18 @@ const sfx = (() => {
     // Getting drowsy: a soft, slow, falling hum. Plays when the sleep meter passes 50% and 80%.
     yawn() { tone(330, 1.2, { type: 'sine', vol: 0.12, slide: -160 }); tone(165, 1.2, { type: 'sine', vol: 0.08, slide: -80 }); },
 
+    // ----- the office heat -----
+    // Getting too hot: a heavy, tired breath (plays at 70% and 85% heat).
+    hot() { noise(1.0, { vol: 0.25, freq: 600 }); tone(140, 1.0, { type: 'sine', vol: 0.1, slide: -60 }); },
+    // Passing out: two slow heartbeats and a long sinking tone.
+    faint() {
+      for (let i = 0; i < 2; i++) {
+        tone(55, 0.18, { type: 'sine', vol: 0.6, delay: i * 0.6 });
+        tone(50, 0.18, { type: 'sine', vol: 0.45, delay: i * 0.6 + 0.2 });
+      }
+      tone(300, 1.6, { type: 'sine', vol: 0.15, slide: -260, delay: 0.3 });
+    },
+
     // ----- the Flamethrower endo -----
     // The flamethrower lighting up: a big whoosh.
     flameOn() { noise(0.9, { vol: 0.6, freq: 1200 }); tone(90, 0.9, { type: 'sawtooth', vol: 0.15, slide: 60 }); },
