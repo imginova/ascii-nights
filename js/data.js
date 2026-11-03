@@ -137,10 +137,12 @@ const PRESETS = [
   { name: 'Freddy fever', v: 2, levels: lv({ fre: 14, gol: 14, nfr: 14 }) },
   { name: 'Music lesson', v: 2, levels: lv({ pup: 18, wfx: 12, bon: 12 }) },
   { name: 'Nightmare crew', v: 2, levels: lv({ stf: 15, nfr: 15, pch: 15 }) },
-  { name: 'Click frenzy', v: 2, levels: lv({ pch: 18, bnt: 18, gol: 10 }) },
   { name: 'Masquerade', v: 2, levels: lv({ gol: 16, wbn: 16, nfr: 14, bnt: 10 }) },
   { name: 'Door duty', v: 2, levels: lv({ fre: 16, bon: 16, stf: 16, wfx: 12 }) },
   { name: 'Classic 20', v: 2, levels: lv({ fre: 20, bon: 20, gol: 20 }) },
+  // v3: Sleepy Moon added (on request), clicked on the cameras. Harder, so a new version.
+  // The bot still won it 30/30 as an average player and a beginner.
+  { name: 'Click frenzy', v: 3, levels: lv({ pch: 18, bnt: 18, gol: 10, mon: 15 }) },
   // v2: Phantom Chica added (on request: she takes power, so she belongs here). Harder, so a new version.
   // v3: the office heat (like every challenge). v4: Sleepy Moon's rework (like every challenge he's in).
   { name: 'Power hungry', v: 4, levels: lv({ end: 14, mon: 14, stf: 14, wfx: 14, pch: 14 }) },
@@ -180,7 +182,7 @@ const FLAVOR = {
   'Door duty': 'Your hands never leave the door buttons.',
   'Masquerade': 'The mask is barely off before you need it again.',
   'Power hungry': 'Doors, lights, the fan and a cupcake thief. Watch your battery.',
-  'Click frenzy': 'Fast hands win tonight.',
+  'Click frenzy': 'Fast hands and sharp eyes win tonight.',
   'Everyone at 18': 'Almost the worst. Almost.',
 };
 
