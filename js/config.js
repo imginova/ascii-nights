@@ -29,6 +29,14 @@ const MAX_LEVEL = 20;
 // Used whenever we load or change a level, so a bad value can never sneak in.
 const clampLevel = n => Math.max(MIN_LEVEL, Math.min(MAX_LEVEL, Math.round(Number(n) || MIN_LEVEL)));
 
+// How hard each level really plays (on request: easier, so that even All 20 stays humanly possible
+// when more characters are added later). Level 0 stays off and level 1 stays level 1, but every step
+// above 1 only counts LEVEL_SCALE of a step: with 0.6, level 20 plays like level 12.4.
+// Everything a level controls goes through this (newGame in game.js turns each level into its
+// "playing" level). The setup screen, the score and the challenges still use the real level.
+const LEVEL_SCALE = 0.6;
+const effLevel = level => level === 0 ? 0 : 1 + (level - 1) * LEVEL_SCALE;
+
 // A character at level L gets a chance to act every so often, and each chance works L times in 20.
 const moveChance = level => level / 20;
 
@@ -61,7 +69,8 @@ const goldenWindow = level => byLevel(level, 2.0, 1.2);
 // how many shadow cupcakes you must click (1, 2 or 3 by level), how long you have, and what
 // failing costs you: a jumpscare and 10% of your power (not the night).
 const chicaChance = level => level / 20;
-const cupcakeCount = level => level <= 7 ? 1 : level <= 14 ? 2 : 3;
+// (Written with effLevel so it's still 1 cupcake for levels 1-7, 2 for 8-13 and 3 for 14-20.)
+const cupcakeCount = level => level < effLevel(8) ? 1 : level < effLevel(14) ? 2 : 3;
 const chicaTime = level => byLevel(level, 6, 3.5);
 const CHICA_COST = 10;
 
@@ -81,9 +90,9 @@ const MASK_HOLD = 2.0;       // seconds of mask that send him away (taking it of
 
 // ---------- the Puppet's music box ----------
 // % per second the box unwinds: 0.8 at level 1 (about 2 minutes from full) up to 3.2 at level 20
-// (about 31 seconds). Each tap of Wind adds WIND_TAP %.
+// (about 31 seconds). One tap of Wind winds it all the way back to 100%, however low it was
+// (on request; it used to add 25% per tap).
 const boxDrain = level => byLevel(level, 0.8, 3.2);
-const WIND_TAP = 25;
 const BOX_LOW = 35;          // below this, the warning symbol shows and a chime plays
 const PUPPET_DELAY = 4.5;    // seconds from the box running out to the Puppet getting you
 

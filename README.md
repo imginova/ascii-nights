@@ -35,6 +35,8 @@ The scripts are loaded in that order at the bottom of `index.html`, and **the or
 
 - **Make something easier or harder:** change its numbers in `js/config.js`. Most are written as `byLevel(level, at1, at20)`: the value at level 1 and the value at level 20.
 - **Add a challenge:** add a line to `PRESETS` in `js/data.js`, and a line of flavour text to `FLAVOR`.
+- **How hard every level plays:** `LEVEL_SCALE` in `js/config.js` (0.6 means level 20 plays like 12.4).
+- **Check it's still humanly possible:** `tools/bot.js` is a test bot that plays every challenge with a person's reaction times and mouse speed (the comment at its top says how to run it). Use it after adding or changing a character.
 - **Made a challenge harder?** Raise its `v` in `PRESETS` (for example `v: 1` to `v: 2`), so its ✓ has to be earned again. Only do this for the challenges your change actually affects.
 
 ## Putting it online (GitHub Pages)

@@ -60,7 +60,7 @@ const WBONNIE = {
 };
 const PUPPET = {
   id: 'pup', name: 'The Puppet', where: 'CAM 7',
-  desc: 'Waits in the music box on CAM 7. Tap Wind to wind it up. When it gets low, a ♪! shows on the Camera button and on CAM 7.',
+  desc: 'Waits in the music box on CAM 7. One tap of Wind winds it all the way up. When it gets low, a ♪! shows on the Camera button and on CAM 7.',
 };
 const STAFF = {
   id: 'stf', name: 'Nightmare staff bot', where: 'EITHER DOOR',
@@ -102,22 +102,46 @@ const FREDDLE_SPOTS = [[11, 11], [11, 17], [11, 23]];
 //   v      its version. RAISE IT whenever an update makes that challenge harder (by itself, or because
 //          a character in it got stronger): the ✓ is saved as "name v1", so a new version needs
 //          beating again. Only raise the ones a change actually affects.
-// lv({ fre: 10, bon: 5 }) turns a list of levels by id into the full list, with 0 for everyone else.
+// lv({ fre: 10, bon: 5 }) turns a list of levels by id into the full list, with 0 for everyone else;
+// everyone(10) puts every character at 10.
 const lv = byId => SETUP.map(c => byId[c.id] || 0);
+const everyone = level => lv(Object.fromEntries(SETUP.map(c => [c.id, level])));
+// The list is in order, easiest first. The order came from a test bot that plays with a person's
+// limits (tools/bot.js: it only reacts to what a player could see or hear, with human reaction times,
+// a mouse that moves at a person's speed, one action at a time). The ones it won less often come
+// later, and ties are sorted by points. Warm-up stays first and All 20 stays last.
+// Measured 2026-11-03, 30 nights each: the first 22 were won every time by an "average" player and a
+// "beginner"; then Snack time (27 and 20 of 30), Everyone at 5 (30, 25), at 10 (24, 22), at 15 (26, 21),
+// at 18 (26, 13) and All 20 (20, 10). Every challenge must stay humanly possible like this.
 const PRESETS = [
   { name: 'Warm-up', v: 1, levels: lv({ fre: 3, bon: 3, pup: 3, wfx: 2 }) },
+  { name: 'Quiet night', v: 1, levels: lv({ pup: 8, mon: 8, end: 8 }) },
   { name: 'The classics', v: 1, levels: lv({ fre: 8, bon: 8, gol: 5, wfx: 8 }) },
   { name: 'Wind it up', v: 1, levels: lv({ pup: 14, bon: 8, pch: 8 }) },
-  { name: 'Don\'t look away', v: 1, levels: lv({ gol: 12, pch: 12, wbn: 12 }) },
   { name: 'Caution', v: 1, levels: lv({ stf: 14, bon: 10, fre: 6 }) },
-  { name: 'Pirate\'s dance', v: 1, levels: lv({ wfx: 15, bon: 10, fre: 10 }) },
-  { name: 'Bedtime', v: 1, levels: lv({ mon: 12, nfr: 10, bnt: 10 }) },
   { name: 'Heat wave', v: 1, levels: lv({ end: 15, stf: 8, fre: 8 }) },
+  { name: 'Bedtime', v: 1, levels: lv({ mon: 12, nfr: 10, bnt: 10 }) },
+  { name: 'Withered away', v: 1, levels: lv({ wbn: 16, wfx: 16 }) },
+  { name: 'Hot and sleepy', v: 1, levels: lv({ end: 16, mon: 16 }) },
+  { name: 'Pirate\'s dance', v: 1, levels: lv({ wfx: 15, bon: 10, fre: 10 }) },
+  { name: 'Don\'t look away', v: 1, levels: lv({ gol: 12, pch: 12, wbn: 12 }) },
+  { name: 'Night light', v: 1, levels: lv({ mon: 14, nfr: 12, wfx: 10 }) },
   { name: 'Mask on', v: 1, levels: lv({ wbn: 15, gol: 15, nfr: 12 }) },
-  { name: 'Everyone at 10', v: 1, levels: lv(Object.fromEntries(SETUP.map(c => [c.id, 10]))) },
+  { name: 'Bunny trouble', v: 1, levels: lv({ bon: 14, bnt: 14, wbn: 14 }) },
+  { name: 'Freddy fever', v: 1, levels: lv({ fre: 14, gol: 14, nfr: 14 }) },
+  { name: 'Music lesson', v: 1, levels: lv({ pup: 18, wfx: 12, bon: 12 }) },
+  { name: 'Nightmare crew', v: 1, levels: lv({ stf: 15, nfr: 15, pch: 15 }) },
+  { name: 'Click frenzy', v: 1, levels: lv({ pch: 18, bnt: 18, gol: 10 }) },
+  { name: 'Masquerade', v: 1, levels: lv({ gol: 16, wbn: 16, nfr: 14, bnt: 10 }) },
+  { name: 'Power hungry', v: 1, levels: lv({ end: 14, mon: 14, stf: 14, wfx: 14 }) },
+  { name: 'Door duty', v: 1, levels: lv({ fre: 16, bon: 16, stf: 16, wfx: 12 }) },
   { name: 'Classic 20', v: 1, levels: lv({ fre: 20, bon: 20, gol: 20, wfx: 20 }) },
-  { name: 'Everyone at 15', v: 1, levels: lv(Object.fromEntries(SETUP.map(c => [c.id, 15]))) },
-  { name: 'All 20', v: 1, levels: lv(Object.fromEntries(SETUP.map(c => [c.id, 20]))) },
+  { name: 'Snack time', v: 1, levels: lv({ pch: 16, bnt: 12, pup: 10 }) },
+  { name: 'Everyone at 5', v: 1, levels: everyone(5) },
+  { name: 'Everyone at 10', v: 1, levels: everyone(10) },
+  { name: 'Everyone at 15', v: 1, levels: everyone(15) },
+  { name: 'Everyone at 18', v: 1, levels: everyone(18) },
+  { name: 'All 20', v: 1, levels: everyone(20) },
 ];
 
 // One line of flavour text per challenge, shown under the list when it's picked.
@@ -135,6 +159,21 @@ const FLAVOR = {
   'Classic 20': 'The original four, as hard as they get.',
   'Everyone at 15': 'Nobody is taking it easy now.',
   'All 20': 'Everyone, at their worst. Good luck.',
+  'Quiet night': 'Just a music box, a nap and a warm room. What could go wrong?',
+  'Everyone at 5': 'Meet the whole gang, on their best behaviour.',
+  'Night light': 'Keep that flashlight handy.',
+  'Bunny trouble': 'Three rabbits, three different problems.',
+  'Freddy fever': 'Every Freddy in the building wants a word.',
+  'Withered away': 'Old, broken, and still coming.',
+  'Snack time': 'Cupcakes everywhere, and someone small and fast.',
+  'Hot and sleepy': 'The heat makes you drowsy. Stay awake, stay cool.',
+  'Music lesson': 'Wind the box between visitors at both doors.',
+  'Nightmare crew': 'Beeps, Freddles and burnt cupcakes.',
+  'Door duty': 'Your hands never leave the door buttons.',
+  'Masquerade': 'The mask is barely off before you need it again.',
+  'Power hungry': 'Doors, lights and the fan all at once. Watch your battery.',
+  'Click frenzy': 'Fast hands win tonight.',
+  'Everyone at 18': 'Almost the worst. Almost.',
 };
 
 // The name a beaten challenge is saved under: its name plus its version, like "Bedtime v1".

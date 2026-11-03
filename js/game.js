@@ -81,8 +81,9 @@ const otherSide = side => side === 'L' ? 'R' : 'L';
 const hourOf = t => Math.min(NIGHT_HOURS, Math.floor(t / HOUR_SECONDS));
 const hourLabel = h => (h === 0 ? 12 : h) + ' AM';
 
-// The level of character c tonight (c is one of the descriptions in data.js, like BONNIE).
-const levelOf = c => levels[SETUP.indexOf(c)];
+// How hard character c plays tonight (c is one of the descriptions in data.js, like BONNIE):
+// its level from the setup screen, eased by effLevel (config.js).
+const levelOf = c => effLevel(levels[SETUP.indexOf(c)]);
 
 // Build a fresh night.
 function newGame() {
@@ -367,12 +368,13 @@ function updatePuppet(dt) {
   }
 }
 
-// One tap of Wind (the button, or W while you're on CAM 7). Only works while you're watching the box.
+// One tap of Wind (the button, or W while you're on CAM 7) winds the box all the way up at once.
+// It only works while you're watching the box.
 function windBox() {
   const P = G && G.pup;
   if (!P || G.over || G.paused) return;
   if (!onCam('prize') || P.out || P.level === 0) { sfx.deny(); return; }
-  P.wind = Math.min(100, P.wind + WIND_TAP);
+  P.wind = 100;
   sfx.windTick();
   dirty = true;
 }
