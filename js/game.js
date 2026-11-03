@@ -144,7 +144,7 @@ function newGame() {
     // Nightmare Foxy: which way he's coming, how far along (0 Dining, 1 a hall, 2 the door), how long
     // he's been in the hall, and, once inside, his stage (1 far ... 3 close) and timers.
     nfx: { level: levelOf(NFOXY), route: pick(NFOXY.routes), step: 0, timer: NFOXY_INTERVAL * rand(0.7, 1.3), hallT: 0,
-      inside: false, stage: 0, creepT: 0, pushT: 0 },
+      deadline: 0, inside: false, stage: 0, creepT: 0, pushT: 0 },
     // Funtime Freddy: whether he's out, which hall (side), whether BonBon is on his hand, when you first
     // saw him on the cameras (null until you do), and how long BonBon has been in the light.
     fun: { level: levelOf(FUNFRED), active: false, side: 'L', bonbon: false, seenAt: null, flashT: 0, deadline: 0,
@@ -646,10 +646,13 @@ function updateHeat(dt) {
 
 // ---------- Nightmare Foxy ----------
 // Silent. He moves Dining area -> West or East hall -> that door, and you can only see it coming on
-// the cameras. Shut the door before he reaches it: a bonk, and he goes back to the Dining area.
-// If the door's open he gets inside, and he NEVER leaves (on request): he sits in the middle of the
-// office and creeps closer in 3 stages. Flashlight on him pushes him back a stage (never out).
-// Past stage 3 he gets you.
+// the cameras. If the door's shut when he gets there: a bonk, and he goes back to the Dining area.
+// If it's open he waits in the doorway for reactWindow seconds (on request: a moment to shut it,
+// instead of walking straight in), still unseen (on request: no drawing in the doorway, you have to
+// know from the cameras); shut it then and he bonks too. Too slow and he gets inside, and
+// he NEVER leaves (on request): he sits in the middle of the office and creeps closer in 3 stages.
+// Flashlight on him pushes him back a stage (never out). Past stage 3 he gets you.
+const nfoxyInDoorway = () => G.nfx.level > 0 && !G.nfx.inside && G.nfx.step === 2;
 function updateNightmareFoxy(dt) {
   const X = G.nfx;
   if (X.level === 0) return;
@@ -673,6 +676,12 @@ function updateNightmareFoxy(dt) {
     }
     return;
   }
+  if (nfoxyInDoorway()) {
+    const side = X.route[2];
+    if (G.doors[side]) { sfx.bonk(side); nfoxyHome(); dirty = true; }
+    else if (G.t >= X.deadline) { X.inside = true; X.stage = 1; X.creepT = NFOXY_CREEP; X.pushT = 0; sfx.slip(); dirty = true; }   // a soft thud: he's in
+    return;
+  }
   if (X.step === 1) X.hallT += dt;
   X.timer -= dt;
   if (X.timer > 0) return;
@@ -683,9 +692,8 @@ function updateNightmareFoxy(dt) {
   X.step++;
   if (X.step === 1) { X.hallT = 0; if (onCam(X.route[1])) camStatic(0.4); }
   if (X.step === 2) {
-    const side = X.route[2];
-    if (G.doors[side]) { sfx.bonk(side); nfoxyHome(); }
-    else { X.inside = true; X.stage = 1; X.creepT = NFOXY_CREEP; X.pushT = 0; sfx.slip(); }   // a soft thud: he's in
+    if (G.doors[X.route[2]]) { sfx.bonk(X.route[2]); nfoxyHome(); }   // already shut: he gives up at once
+    else X.deadline = G.t + reactWindow(X.level);                     // in the doorway: shut it, quick!
   }
   dirty = true;
 }

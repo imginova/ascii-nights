@@ -74,7 +74,7 @@
         const down = !G.cam && !G.powerOut;
         const maskNeed = G.gol.present || G.wbn.present || N.present;
         // Nightmare Foxy is silent: the bot only knows his side once it has SEEN him in a hall.
-        if (NX.step !== 1 || NX.inside) nfxSide = null;
+        if (NX.step === 0 || NX.inside) nfxSide = null;   // (kept while he's in the hall or the doorway)
         notice('nfxSeen', NX.level > 0 && !NX.inside && NX.step === 1 && onCam(NX.route[1]), react * 0.5);
         if (ready('nfxSeen')) nfxSide = NX.route[2];
         // Funtime Freddy: BonBon on his hand means shut his door, AFTER looking at him (a door shut
