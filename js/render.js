@@ -128,6 +128,9 @@ function drawVisitors(g, now) {
   G.nfr.freddles.forEach((here, i) => {
     if (here) write(g, ...FREDDLE_SPOTS[i], SPRITES.nfr.freddle, 'c-nfr' + (G.nfr.shine[i] > 0 ? ' shone' : ''));
   });
+  // Nightmare Chica peering in while her cupcake is hidden on a camera (on request: a reminder to go
+  // and look). Drawn early, so anyone who turns up in the middle of the office is in front of her.
+  if (G.nch.room) sprite(g, ...NCHICA_SPOT, SPRITES.nch.office, 'c-nch');
   // The Puppet, out of the box, flickering on your monitor's screen.
   if (G.pup.out && Math.floor(now / 140) % 4 !== 0) write(g, SCREEN_SPOT[0], SCREEN_SPOT[1], SPRITES.pup.peek[0], 'c-pup');
   if (G.gol.present) sprite(g, ...GOLDEN_SPOT, SPRITES.gol.office, 'c-gol');

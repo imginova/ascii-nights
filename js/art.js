@@ -509,6 +509,14 @@ const SPRITES = {
   },
   nch: {
     cupcake: '{w}',
+    // Watching from the top of your office while her cupcake is hidden (a reminder to go find it).
+    office: art(String.raw`
+  \ | /
+.-------.
+|@     @|
+| /VVV\ |
+| \^^^/ |
+'-------'`),
     scare: art(String.raw`
       \ | | /
     .---------.
@@ -571,6 +579,7 @@ const GOLDEN_SPOT = [3, 11];      // Golden Freddy, slumped in front of the moni
 const WITHERED_SPOT = [3, 12];    // Withered Bonnie, leaning over the desk
 const NIGHTMARE_SPOT = [2, 10];   // Nightmare Freddy, looming over everything
 const SCREEN_SPOT = [8, 14];      // the monitor's screen: 9 characters wide
+const NCHICA_SPOT = [0, 12];      // Nightmare Chica, peering in at the top of the office
 const BONNET_ROWS = [12, 14];     // Bonnet runs along the floor, between these rows
 
 // The fan's blades in four positions; render.js shows one after another while the fan is on.
