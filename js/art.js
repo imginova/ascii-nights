@@ -172,6 +172,8 @@ for (const room in ROOM_ART) ROOM_ART[room] = ROOM_ART[room].split('\n').slice(1
 // Where Bonnie stands in each room: [row, column] of the top-left of his small drawing,
 // counted in the framed 40 x 11 camera picture (row 0 and column 0 are the border).
 const BONNIE_SLOTS = { stage: [3, 17], dining: [5, 15], back: [5, 21], whall: [5, 17], ehall: [5, 24] };
+// Where Sleepy Moon hides in each room when he turns up on the cameras (away from Bonnie's spots).
+const MOON_SLOTS = { stage: [3, 5], dining: [6, 31], back: [5, 6], cove: [5, 1], whall: [5, 26], ehall: [5, 7], prize: [6, 3] };
 
 // ---------- the characters' drawings ----------
 // Each one is a list of lines. `cam` is the small camera version, `door` fits a doorway,
@@ -384,6 +386,11 @@ const SPRITES = {
     \_____________/ __J`),
   },
   mon: {
+    // Small enough to hide in a corner of a camera picture: you have to look for him.
+    cam: art(String.raw`
+ .-. z
+( -_)
+ '-'`),
     scare: art(String.raw`
           _.---._
         .'  .-.  '.   Z

@@ -265,6 +265,10 @@ const sfx = (() => {
     // ----- Sleepy Moon -----
     // Getting drowsy: a soft, slow, falling hum. Plays when the sleep meter passes 50% and 80%.
     yawn() { tone(330, 1.2, { type: 'sine', vol: 0.12, slide: -160 }); tone(165, 1.2, { type: 'sine', vol: 0.08, slide: -80 }); },
+    // He's turned up on a camera: a slow, soft lullaby going down. Your cue to go find him.
+    lullaby() { [784, 659, 587, 523].forEach((f, i) => tone(f, 0.5, { type: 'sine', vol: 0.14, delay: i * 0.32 })); },
+    // Clicked him away: you snap awake with a quick rising note.
+    wakeUp() { tone(440, 0.25, { type: 'triangle', vol: 0.15, slide: 440 }); },
 
     // ----- the office heat -----
     // Getting too hot: a heavy, tired breath (plays at 70% and 85% heat).

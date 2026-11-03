@@ -124,8 +124,9 @@ function newGame() {
     // 1 peeking, 2 half out) and his timers.
     wfx: { level: levelOf(WFOXY), phase: 'cove', stage: 0, timer: FOXY_INTERVAL * rand(0.7, 1.3), runT: 0, waitT: 0,
       stompT: 0, flashT: 0, deadline: 0 },
-    // Sleepy Moon: the sleep meter (0 wide awake, 100 asleep), and how many yawns have played.
-    mon: { level: levelOf(MOON), sleep: 0, yawns: 0 },
+    // Sleepy Moon: which camera he's on (null while he's away), the sleep meter (0 wide awake,
+    // 100 asleep), how many yawns have played, and the countdown to his next visit.
+    mon: { level: levelOf(MOON), room: null, sleep: 0, yawns: 0, timer: moonWait(levelOf(MOON)) },
     // The Flamethrower endo: whether he's here and how much longer he stays.
     end: { level: levelOf(ENDO), present: false, stayT: 0, crackleT: 0, timer: endoWait(levelOf(ENDO)) },
     heat: 0,                       // the office heat in percent (see updateHeat); 100 = you pass out
@@ -236,7 +237,7 @@ function lookedBack() {
     // Pick different cupcake spots: shuffle a copy of the list and take the first few.
     C.cups = CUPCAKE_SPOTS.slice().sort(() => Math.random() - 0.5).slice(0, cupcakeCount(C.level));
     C.active = true;
-    C.deadline = G.t + chicaTime(C.level);
+    C.deadline = G.t + chicaTime(C.level, C.cups.length);
     sfx.chicaIn();
   }
 }
@@ -476,7 +477,9 @@ function updateNightmare(dt) {
 
 // ---------- Withered Foxy ----------
 // His routine, one `phase` at a time:
-//   'cove'    getting ready in Pirate Cove (stage 0 curtain shut, 1 peeking, 2 half out); then he runs
+//   'cove'    getting ready in Pirate Cove (stage 0 curtain shut, 1 peeking, 2 half out); then he runs.
+//             While the monitor is up (on any camera) he's stalled: his countdown stops (on request,
+//             to give a reason to use the cameras)
 //   'run'     sprinting down the West Hall to the left door
 //   'door'    in the open doorway: shut the door in time!
 //   'wait'    shut out; waiting behind the door. Opening it now just brings him back to 'door'
@@ -491,6 +494,7 @@ function updateFoxy(dt) {
   const shut = G.doors.L;
   switch (X.phase) {
     case 'cove':
+      if (G.cam) return;   // being watched on the cameras: he can't get ready
       X.timer -= dt;
       if (X.timer > 0) return;
       X.timer = FOXY_INTERVAL * rand(0.7, 1.3);
@@ -555,18 +559,40 @@ function foxyShutOut() {
 }
 
 // ---------- Sleepy Moon ----------
-// The sleep meter fills while you sit in the dark (monitor down, flashlight off) and empties while
-// the flashlight or the monitor is on. Full means you fell asleep.
+// Every so often he turns up on a random camera (M.room) with a lullaby. While he's out you drift
+// off: the sleep meter fills and the view darkens. Find him on the cameras and click him (clickMoon)
+// to send him away and wake up. If the meter fills, you fell asleep.
 function updateMoon(dt) {
   const M = G.mon;
   if (M.level === 0) return;
-  if (G.cam || flashOn()) M.sleep = Math.max(0, M.sleep - MOON_WAKE * dt);
-  else M.sleep += moonRate(M.level) * dt;
+  if (!M.room) {
+    M.timer -= dt;
+    if (M.timer > 0) return;
+    M.room = pick(CAM_ORDER);
+    if (onCam(M.room)) camStatic(0.5);   // static if he turns up on the camera you're watching
+    sfx.lullaby();
+    dirty = true;
+    return;
+  }
+  M.sleep += moonRate(M.level) * dt;
   // A yawn when you pass 50% and again at 80%: you're drifting off.
   const yawns = M.sleep >= 80 ? 2 : M.sleep >= 50 ? 1 : 0;
   if (yawns > M.yawns) sfx.yawn();
   M.yawns = yawns;
   if (M.sleep >= 100) lose(MOON);
+}
+
+// Clicking Moon on his camera (input.js): he leaves, you wake right up, and he's back later.
+function clickMoon() {
+  const M = G && G.mon;
+  if (!M || !ready() || !M.room || !onCam(M.room)) return;
+  M.room = null;
+  M.sleep = 0;
+  M.yawns = 0;
+  M.timer = moonWait(M.level);
+  sfx.pop();
+  sfx.wakeUp();
+  dirty = true;
 }
 
 // ---------- the Flamethrower endo ----------
@@ -620,6 +646,7 @@ function powerOutStart() {
   G.stf.active = false;
   G.nfr.present = false;
   G.end.present = false;
+  G.mon.room = null;   // the cameras are off, so Moon leaves them (but he's still coming, see outBy)
   sfx.humOff();
   sfx.powerDown();
   dirty = true;

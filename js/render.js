@@ -49,7 +49,8 @@ function renderGame(now) {
   beam.style.setProperty('--x', aim.x + 'px');
   beam.style.setProperty('--y', aim.y + 'px');
   // Sleepy Moon: the view gets darker as the sleep meter fills (opacity 0 is see-through, 1 is black).
-  $('sleepShade').style.opacity = (G.mon.sleep / 100 * 0.92).toFixed(3);
+  // It darkens the monitor too, but never all the way (0.85 at most), so you can still find him.
+  $('sleepShade').style.opacity = (G.mon.sleep / 100 * 0.85).toFixed(3);
   // The heat: a red-hot glow that only starts at the first warning (HOT_WARN[0], 70%) and is at full
   // strength by GLOW_FULL (90%), so the last stretch before passing out is solid red (both on request).
   // Math.max(0, ...) keeps it at 0 below 70%; Math.min(1, ...) stops it growing past full.
@@ -202,6 +203,9 @@ function renderFeed(now) {
       else if (G.pup.wind < BOX_LOW) write(g, 7, 18, '(_LOW!_)', 'c-pup blink');
       else write(g, 7, 18, '(______)', 'dim');
     }
+    // Sleepy Moon, if he's turned up in this room. "mon-hit" is what input.js listens for when you
+    // click him.
+    if (G.mon.room === room) sprite(g, ...MOON_SLOTS[room], SPRITES.mon.cam, 'c-mon mon-hit');
   }
   setHtml($('feed'), toHtml(g));
 

@@ -59,7 +59,8 @@
         return dist <= step;
       };
       const seen = {};
-      let busy = 0, fredIdx = -1, moonUntil = 0, cupFoundAt = null;
+      let busy = 0, fredIdx = -1, cupFoundAt = null;
+      const looked = new Set();   // the cameras already checked for Sleepy Moon this time
       const jitter = () => 0.8 + Math.random() * 0.7;
       const notice = (key, cond, base = react) => { if (cond) { if (!seen[key]) seen[key] = G.t + base * jitter(); } else delete seen[key]; };
       const ready = key => seen[key] != null && G.t >= seen[key];
@@ -76,6 +77,11 @@
         const keepShut = side => side === 'L' && X.level > 0 && X.phase === 'wait';
         const boxLow = G.pup.level > 0 && !G.pup.out && G.pup.wind < BOX_LOW;
         const freddles = N.freddles.filter(Boolean).length;
+        // Something in the office that needs the monitor down right now (a sensible player finishes these
+        // before going camera-hunting for Sleepy Moon): the mask, cupcakes, Bonnet, the staff bot's arrow,
+        // or Foxy's open-flash-shut routine.
+        const busyInOffice = () => G.mask || maskNeed || G.pch.active || Bn.active
+          || (S.active && !S.stalled) || ['ready', 'open', 'flashed'].includes(X.phase);
 
         // Cues. Sounds can be heard anywhere; office sights need the monitor down.
         notice('mask', maskNeed);
@@ -93,16 +99,22 @@
         notice('bonnet', Bn.active && down);
         notice('box', boxLow);
         notice('fred', down && (freddles >= 2 || (freddles >= 1 && G.t > busy + 2)));
-        notice('moon', G.mon.level > 0 && G.mon.sleep >= 50);
+        // Sleepy Moon: the lullaby says he's out; then the bot flips through the cameras, and once he's
+        // on the screen it takes a moment to spot him before clicking.
+        const moonOut = G.mon.room != null;
+        if (!moonOut) looked.clear();
+        notice('lullaby', moonOut);
+        notice('moonSeen', moonOut && onCam(G.mon.room), react * 0.5);
         // The fan: on when the endo arrives or the first hot breath plays (70%), off once it's cool again.
-        const fanNeed = G.end.present || G.heat >= HOT_WARN[0];
+        // On nights with the endo it keeps the office cooler (fan on from 40%), so he can't push a warm
+        // office over 100%. (A player reads the HEAT meter for this.)
+        const fanNeed = G.end.present || G.heat >= (G.end.level > 0 ? 40 : HOT_WARN[0]);
         notice('fanOn', fanNeed && !G.fan);
         notice('fanOff', !G.end.present && G.fan && G.heat < 10, 0.5);
 
         // ----- the mouse: Bonnet first, then the flashlight's target -----
         if (fredIdx >= 0 && !N.freddles[fredIdx]) fredIdx = -1;
         if (fredIdx < 0 && ready('fred')) fredIdx = N.freddles.indexOf(true);
-        if (ready('moon') && moonUntil < G.t) moonUntil = G.t + 1;
         let chasing = false, target = null;
         if (Bn.active && ready('bonnet') && down) {
           chasing = true;
@@ -112,7 +124,6 @@
           if (!inFront && Math.abs(m.c - nc) > 1) moveTo(nr, nc + Bn.dir * 4); else moveTo(nr, nc);
         } else if (X.phase === 'open' && ready('foxyFlash')) target = [7, -7];
         else if (fredIdx >= 0) { const [r, c] = FREDDLE_SPOTS[fredIdx]; target = [r, c + 1.5]; }
-        else if (moonUntil > G.t) target = [8, 18];
         if (target) moveTo(...target);
         placeAim();
         flashKey = !chasing && target != null && down;
@@ -127,7 +138,15 @@
           else if (ready('unmask') && G.mask && !maskNeed) act(toggleMask);
           else if (ready('stall') && S.stalled && G.doors[S.side]) act(() => toggleDoor(S.side));
           else if (ready('foxyOpen') && X.phase === 'ready' && G.doors.L) act(() => toggleDoor('L'));
-          else if (G.cam && (!boxLow || ready('beep') || G.pch.active || Bn.active)) act(toggleCam);   // look back at the office
+          else if (ready('moonSeen') && moonOut && onCam(G.mon.room)) act(clickMoon);
+          else if (ready('lullaby') && moonOut && !busyInOffice() && !onCam(G.mon.room)) {
+            // Look on the next camera not checked yet (start over if somehow all were checked).
+            if (looked.size >= CAM_ORDER.length) looked.clear();
+            const next = CAM_ORDER.find(r => !looked.has(r) && !(G.cam && r === G.camRoom));
+            looked.add(next);
+            act(() => setCam(next), react * 0.3);   // a moment to take in the picture
+          }
+          else if (G.cam && (!boxLow || busyInOffice()) && !(moonOut && ready('lullaby') && !busyInOffice())) act(toggleCam);   // look back at the office
           else if (ready('chica') && G.pch.active && down && !G.mask) {
             // Searching for the next cupcake takes a while; then click it.
             if (cupFoundAt == null) cupFoundAt = G.t + find * (0.7 + Math.random() * 0.7);

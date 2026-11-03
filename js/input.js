@@ -118,6 +118,17 @@ function officePress(e) {
 $('officeArt').addEventListener('mousedown', e => { if (e.button === 0) officePress(e); });
 $('officeArt').addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') officePress(e); });
 
+// Clicking Sleepy Moon on a camera ("mon-hit", see renderFeed) sends him away. The camera picture is
+// redrawn often too, so this also reacts when the button goes down, the same way as officePress.
+function feedPress(e) {
+  if (!e.target.closest('.mon-hit')) return;
+  sfx.init();
+  clickMoon();
+  e.preventDefault();
+}
+$('feed').addEventListener('mousedown', e => { if (e.button === 0) feedPress(e); });
+$('feed').addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') feedPress(e); });
+
 // ---------- custom night rows ----------
 // The − and + buttons change a level; clicking anywhere else on a row selects it.
 $('rows').addEventListener('click', e => {

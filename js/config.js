@@ -62,7 +62,9 @@ const BONNIE_INTERVAL = 5;   // seconds between his chances to move a room close
 // The chance he's sitting in your office when you flip the monitor down, and how long you get
 // to tap the mask on.
 const goldenChance = level => byLevel(level, 0.03, 0.35);
-const goldenWindow = level => byLevel(level, 2.0, 1.2);
+// (Raised from 2.0-1.2 s after Moon's rework: hunting him means more monitor flips, so more chances
+// for Golden Freddy, and the bot test showed slower players too often couldn't make 1.2-1.5 s.)
+const goldenWindow = level => byLevel(level, 2.3, 1.6);
 
 // ---------- Phantom Chica ----------
 // The chance she shows up when you flip the monitor down (every flip at level 20, on request),
@@ -71,7 +73,10 @@ const goldenWindow = level => byLevel(level, 2.0, 1.2);
 const chicaChance = level => level / 20;
 // (Written with effLevel so it's still 1 cupcake for levels 1-7, 2 for 8-13 and 3 for 14-20.)
 const cupcakeCount = level => level < effLevel(8) ? 1 : level < effLevel(14) ? 2 : 3;
-const chicaTime = level => byLevel(level, 6, 3.5);
+// Her time limit grows with the number of cupcakes: 2 seconds, plus 2.5 per cupcake at level 1 down
+// to 1.6 per cupcake at level 20. (It used to be one time for any number of cupcakes, 3.5 s at level
+// 20, which the bot test showed was too short for a person to find 3.)
+const chicaTime = (level, cups) => 2 + cups * byLevel(level, 2.5, 1.6);
 const CHICA_COST = 10;
 
 // ---------- Bonnet ----------
@@ -119,11 +124,12 @@ const FOXY_FLASH = 0.4;      // seconds of steady light it takes to flash him
 const STOMP_EVERY = 3;       // seconds between stomps while he waits for you
 
 // ---------- Sleepy Moon ----------
-// % per second the sleep meter fills while the monitor is down and the flashlight is off
-// (from empty to asleep: about 60 s at level 1, 12 s at level 20), and how fast the flashlight
-// or the monitor wakes you back up.
+// Reworked on request: every so often (a random time in moonWait's range) he turns up on one of the
+// cameras, and while he's out your sleep meter fills at moonRate % per second (from wide awake to
+// asleep: about 60 s at level 1, about 18 s at level 20 after the level easing). Find him on the
+// cameras and click him: he leaves and you wake right up. Nothing else keeps you awake any more.
+const moonWait = level => rand(byLevel(level, 45, 15), byLevel(level, 70, 28));
 const moonRate = level => byLevel(level, 1.6, 8);
-const MOON_WAKE = 30;
 
 // ---------- the office heat ----------
 // The office slowly heats up all night, every night, whoever is on (on request): AMBIENT_HEAT % per

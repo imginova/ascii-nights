@@ -73,11 +73,11 @@ const NFREDDY = {
 };
 const WFOXY = {
   id: 'wfx', name: 'Withered Foxy', where: 'LEFT DOOR',
-  desc: 'Charges the left door from Pirate Cove. Shut it, wait for the stomp, then open the door, flash him and shut it again.',
+  desc: 'Charges the left door from Pirate Cove; being on the cameras stalls him. Shut the door, wait for the stomp, then open it, flash him and shut it again.',
 };
 const MOON = {
-  id: 'mon', name: 'Sleepy Moon', where: 'OFFICE',
-  desc: 'The office gets darker and you start to drift off. The flashlight or the monitor keeps you awake. If he\'s on, he\'s who comes when the power goes out.',
+  id: 'mon', name: 'Sleepy Moon', where: 'CAMERAS',
+  desc: 'Turns up on a random camera and you start to drift off. Find him on the cams and click him to wake up. If he\'s on, he\'s who comes when the power goes out.',
   how: 'put you to sleep',
 };
 const ENDO = {
@@ -103,7 +103,8 @@ const FREDDLE_SPOTS = [[11, 11], [11, 17], [11, 23]];
 //          a character in it got stronger): the ✓ is saved as "name v1", so a new version needs
 //          beating again. Only raise the ones a change actually affects.
 //          (Every challenge went up one version on 2026-11-03, when the office heat started rising
-//          on every night: that made all of them a little harder.)
+//          on every night: that made all of them a little harder. The ones with Sleepy Moon went up
+//          once more the same day, when he was reworked to hide on the cameras.)
 // lv({ fre: 10, bon: 5 }) turns a list of levels by id into the full list, with 0 for everyone else;
 // everyone(10) puts every character at 10.
 const lv = byId => SETUP.map(c => byId[c.id] || 0);
@@ -112,25 +113,25 @@ const everyone = level => lv(Object.fromEntries(SETUP.map(c => [c.id, level])));
 // limits (tools/bot.js: it only reacts to what a player could see or hear, with human reaction times,
 // a mouse that moves at a person's speed, one action at a time). The ones it won less often come
 // later, and ties are sorted by points. Warm-up stays first and All 20 stays last.
-// Measured 2026-11-03 (with the office heat rising every night), 30 nights each: the first 22 were won
-// every time by an "average" player and a "beginner"; then Everyone at 5 (27 and 28 of 30), Snack time
-// (24, 23), Everyone at 10 (29, 22), at 15 (25, 21), at 18 (18, 15) and All 20 (11, 9).
-// Every challenge must stay humanly possible like this.
+// Measured 2026-11-03 (after the office heat and Sleepy Moon's camera rework), 30 nights each, wins by
+// an "average" player and a "beginner": the first 23 were 29 or 30 of 30 for both; then Snack time
+// (24, 19), Everyone at 10 (23, 13), at 15 (20, 13), at 18 (19, 3) and All 20 (18, 0).
+// Every challenge must stay humanly possible like this (the top two are for experienced players).
 const PRESETS = [
   { name: 'Warm-up', v: 2, levels: lv({ fre: 3, bon: 3, pup: 3, wfx: 2 }) },
   // The two "classic" challenges have no Withered Foxy (taken out on request, in case a standard Foxy
   // is added later). That made them easier, so they kept their version and their ✓.
   { name: 'The classics', v: 2, levels: lv({ fre: 8, bon: 8, gol: 5 }) },
-  { name: 'Quiet night', v: 2, levels: lv({ pup: 8, mon: 8, end: 8 }) },
+  { name: 'Quiet night', v: 3, levels: lv({ pup: 8, mon: 8, end: 8 }) },
   { name: 'Wind it up', v: 2, levels: lv({ pup: 14, bon: 8, pch: 8 }) },
   { name: 'Caution', v: 2, levels: lv({ stf: 14, bon: 10, fre: 6 }) },
   { name: 'Heat wave', v: 2, levels: lv({ end: 15, stf: 8, fre: 8 }) },
-  { name: 'Bedtime', v: 2, levels: lv({ mon: 12, nfr: 10, bnt: 10 }) },
+  { name: 'Bedtime', v: 3, levels: lv({ mon: 12, nfr: 10, bnt: 10 }) },
   { name: 'Withered away', v: 2, levels: lv({ wbn: 16, wfx: 16 }) },
-  { name: 'Hot and sleepy', v: 2, levels: lv({ end: 16, mon: 16 }) },
+  { name: 'Hot and sleepy', v: 3, levels: lv({ end: 16, mon: 16 }) },
   { name: 'Pirate\'s dance', v: 2, levels: lv({ wfx: 15, bon: 10, fre: 10 }) },
   { name: 'Don\'t look away', v: 2, levels: lv({ gol: 12, pch: 12, wbn: 12 }) },
-  { name: 'Night light', v: 2, levels: lv({ mon: 14, nfr: 12, wfx: 10 }) },
+  { name: 'Night light', v: 3, levels: lv({ mon: 14, nfr: 12, wfx: 10 }) },
   { name: 'Mask on', v: 2, levels: lv({ wbn: 15, gol: 15, nfr: 12 }) },
   { name: 'Bunny trouble', v: 2, levels: lv({ bon: 14, bnt: 14, wbn: 14 }) },
   { name: 'Freddy fever', v: 2, levels: lv({ fre: 14, gol: 14, nfr: 14 }) },
@@ -141,14 +142,14 @@ const PRESETS = [
   { name: 'Door duty', v: 2, levels: lv({ fre: 16, bon: 16, stf: 16, wfx: 12 }) },
   { name: 'Classic 20', v: 2, levels: lv({ fre: 20, bon: 20, gol: 20 }) },
   // v2: Phantom Chica added (on request: she takes power, so she belongs here). Harder, so a new version.
-  // v3: the office heat (like every challenge). The bot still won it 30/30 as an average player and a beginner.
-  { name: 'Power hungry', v: 3, levels: lv({ end: 14, mon: 14, stf: 14, wfx: 14, pch: 14 }) },
-  { name: 'Everyone at 5', v: 2, levels: everyone(5) },
+  // v3: the office heat (like every challenge). v4: Sleepy Moon's rework (like every challenge he's in).
+  { name: 'Power hungry', v: 4, levels: lv({ end: 14, mon: 14, stf: 14, wfx: 14, pch: 14 }) },
+  { name: 'Everyone at 5', v: 3, levels: everyone(5) },
   { name: 'Snack time', v: 2, levels: lv({ pch: 16, bnt: 12, pup: 10 }) },
-  { name: 'Everyone at 10', v: 2, levels: everyone(10) },
-  { name: 'Everyone at 15', v: 2, levels: everyone(15) },
-  { name: 'Everyone at 18', v: 2, levels: everyone(18) },
-  { name: 'All 20', v: 2, levels: everyone(20) },
+  { name: 'Everyone at 10', v: 3, levels: everyone(10) },
+  { name: 'Everyone at 15', v: 3, levels: everyone(15) },
+  { name: 'Everyone at 18', v: 3, levels: everyone(18) },
+  { name: 'All 20', v: 3, levels: everyone(20) },
 ];
 
 // One line of flavour text per challenge, shown under the list when it's picked.

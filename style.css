@@ -142,6 +142,10 @@ pre .c-stf, pre .c-nfr, pre .c-wfx, pre .c-mon, pre .c-end { font-weight: 600; }
 /* Bonnet's nose: the thing to click. Its invisible box is bigger still, because she's moving. */
 .bnt-nose { position: relative; cursor: pointer; text-shadow: 0 0 8px var(--c-bnt); }
 .bnt-nose::after { content: ""; position: absolute; inset: -10px -8px; }
+/* Sleepy Moon on a camera: clickable, with an invisible bigger box around each character so he's
+   easier to hit. */
+.mon-hit { position: relative; cursor: pointer; text-shadow: 0 0 6px var(--c-mon); }
+.mon-hit::after { content: ""; position: absolute; inset: -4px -2px; }
 /* The fan, spinning. */
 .fan.on { color: var(--fg); }
 .fan { color: var(--dim); }
