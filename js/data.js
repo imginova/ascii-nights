@@ -115,8 +115,10 @@ const everyone = level => lv(Object.fromEntries(SETUP.map(c => [c.id, level])));
 // at 18 (26, 13) and All 20 (20, 10). Every challenge must stay humanly possible like this.
 const PRESETS = [
   { name: 'Warm-up', v: 1, levels: lv({ fre: 3, bon: 3, pup: 3, wfx: 2 }) },
+  // The two "classic" challenges have no Withered Foxy (taken out on request, in case a standard Foxy
+  // is added later). That made them easier, so they kept their version and their ✓.
+  { name: 'The classics', v: 1, levels: lv({ fre: 8, bon: 8, gol: 5 }) },
   { name: 'Quiet night', v: 1, levels: lv({ pup: 8, mon: 8, end: 8 }) },
-  { name: 'The classics', v: 1, levels: lv({ fre: 8, bon: 8, gol: 5, wfx: 8 }) },
   { name: 'Wind it up', v: 1, levels: lv({ pup: 14, bon: 8, pch: 8 }) },
   { name: 'Caution', v: 1, levels: lv({ stf: 14, bon: 10, fre: 6 }) },
   { name: 'Heat wave', v: 1, levels: lv({ end: 15, stf: 8, fre: 8 }) },
@@ -133,9 +135,11 @@ const PRESETS = [
   { name: 'Nightmare crew', v: 1, levels: lv({ stf: 15, nfr: 15, pch: 15 }) },
   { name: 'Click frenzy', v: 1, levels: lv({ pch: 18, bnt: 18, gol: 10 }) },
   { name: 'Masquerade', v: 1, levels: lv({ gol: 16, wbn: 16, nfr: 14, bnt: 10 }) },
-  { name: 'Power hungry', v: 1, levels: lv({ end: 14, mon: 14, stf: 14, wfx: 14 }) },
   { name: 'Door duty', v: 1, levels: lv({ fre: 16, bon: 16, stf: 16, wfx: 12 }) },
-  { name: 'Classic 20', v: 1, levels: lv({ fre: 20, bon: 20, gol: 20, wfx: 20 }) },
+  { name: 'Classic 20', v: 1, levels: lv({ fre: 20, bon: 20, gol: 20 }) },
+  // v2: Phantom Chica added (on request: she takes power, so she belongs here). Harder, so a new version.
+  // The bot still won it 30/30 as an average player and as a beginner, with about 58% power left.
+  { name: 'Power hungry', v: 2, levels: lv({ end: 14, mon: 14, stf: 14, wfx: 14, pch: 14 }) },
   { name: 'Snack time', v: 1, levels: lv({ pch: 16, bnt: 12, pup: 10 }) },
   { name: 'Everyone at 5', v: 1, levels: everyone(5) },
   { name: 'Everyone at 10', v: 1, levels: everyone(10) },
@@ -156,7 +160,7 @@ const FLAVOR = {
   'Heat wave': 'The fan is your best friend tonight.',
   'Mask on': 'You will be wearing this a lot.',
   'Everyone at 10': 'The whole gang, taking it easy. Sort of.',
-  'Classic 20': 'The original four, as hard as they get.',
+  'Classic 20': 'The old crew, as hard as they get.',
   'Everyone at 15': 'Nobody is taking it easy now.',
   'All 20': 'Everyone, at their worst. Good luck.',
   'Quiet night': 'Just a music box, a nap and a warm room. What could go wrong?',
@@ -171,7 +175,7 @@ const FLAVOR = {
   'Nightmare crew': 'Beeps, Freddles and burnt cupcakes.',
   'Door duty': 'Your hands never leave the door buttons.',
   'Masquerade': 'The mask is barely off before you need it again.',
-  'Power hungry': 'Doors, lights and the fan all at once. Watch your battery.',
+  'Power hungry': 'Doors, lights, the fan and a cupcake thief. Watch your battery.',
   'Click frenzy': 'Fast hands win tonight.',
   'Everyone at 18': 'Almost the worst. Almost.',
 };
