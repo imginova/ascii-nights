@@ -81,6 +81,8 @@ Every level plays easier than its number: `effLevel(level)` in `config.js` is `1
 
 **Golden Freddy looks like Freddy in gold with dot eyes** (on request): his jumpscare is made from Freddy's in `art.js` (`SPRITES.gol.scare = SPRITES.fre.scare` with `O` swapped for `.`), his office drawing is a Freddy exactly as wide as the desk monitor (15, at `GOLDEN_SPOT` [3, 11]) so nothing peeks out around him, and his icon is Freddy's with dot eyes.
 
+**Nightmare crew** (v4): Phantom Chica swapped for Plushtrap at 15, on request (she's a phantom, not a nightmare; the owner counts Plushtrap with the nightmares). **To do later, on request:** Plushtrap stays in **Fun time** until more Sister Location characters are added; then take him out of it (raise its `v` if that makes it harder).
+
 **Kill tally** (on request, like BBCN's): every death adds one to `kills` (saved in `store` key `kills`, `{ id: count }`) via `countKill(id, name)` in `game.js`, called from `lose` (a power-out death counts for whoever came in the dark) and `passOut` (key `heat`, "The heat"). The game over screen adds "Bonnie has got you 3 times.", and each setup row shows "☠ Got you 3 times" in red once it's above 0 (`#kills{i}`, filled by `renderSetup`). Unknown keys in the saved tally are kept. The bot replaces `lose`/`passOut` while it plays, so bot nights never count.
 
 **Menu icons:** `ICONS` in `art.js`, a tiny 3-line ASCII face per character (on request: "change the icons to look like the characters"; they used to be three-letter tags). `iconHtml` draws the whole face (title, setup rows); `faceHtml` draws one line (`FACE_ROW`, usually the middle), on the Best line and the win screen.

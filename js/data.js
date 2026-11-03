@@ -163,6 +163,8 @@ const PRESETS = [
   { name: 'Withered away', v: 2, levels: lv({ wbn: 16, wfx: 16 }) },
   { name: 'Hot and sleepy', v: 3, levels: lv({ end: 16, mon: 16 }) },
   // New with the second batch of characters (2026-11-03).
+  // Plushtrap stays in Fun time until more Sister Location characters are added; then he comes out
+  // (on request).
   { name: 'Fun time', v: 1, levels: lv({ fun: 15, plu: 12, bnt: 12 }) },
   { name: 'Patrol', v: 1, levels: lv({ chi: 15, nfx: 12, bon: 12 }) },
   { name: 'Cupcake hunt', v: 1, levels: lv({ nch: 15, pch: 15, chi: 10 }) },
@@ -184,10 +186,12 @@ const PRESETS = [
   // v3: the office heat (like every challenge). v4: Sleepy Moon's rework (like every challenge he's in).
   { name: 'Power hungry', v: 4, levels: lv({ end: 14, mon: 14, stf: 14, wfx: 14, pch: 14 }) },
   { name: 'Little terrors', v: 1, levels: lv({ plu: 18, bnt: 18, nfr: 10 }) },
+  // v3: + both nightmares. v4: Phantom Chica (a phantom, not a nightmare) swapped for Plushtrap, on request
+  // (the bot then won it 30/30 as an average player and 29/30 as a beginner).
+  { name: 'Nightmare crew', v: 4, levels: lv({ stf: 15, nfr: 15, plu: 15, nfx: 12, nch: 12 }) },
   // v3: Sleepy Moon added (on request). v4: + Chica (more clicking).
   { name: 'Click frenzy', v: 4, levels: lv({ pch: 18, bnt: 18, gol: 10, mon: 15, chi: 12 }) },
   { name: 'Classic 20', v: 3, levels: lv({ fre: 20, bon: 20, gol: 20, chi: 20 }) },       // v3: + Chica
-  { name: 'Nightmare crew', v: 3, levels: lv({ stf: 15, nfr: 15, pch: 15, nfx: 12, nch: 12 }) },   // v3: + both nightmares
   // The "everyone" ones include every character, so each new batch makes them harder (v4: the second batch).
   { name: 'Everyone at 5', v: 4, levels: everyone(5) },
   { name: 'Everyone at 10', v: 4, levels: everyone(10) },
