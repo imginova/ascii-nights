@@ -69,7 +69,7 @@ const frame = (inner, w) => [
 const ICONS = {
   fre: [' [_] ', '(o^o)', ' >=< '],          // Freddy: top hat and bow tie
   bon: ['|\\ /|', '(o o)', ' >w< '],         // Bonnie: long ears
-  gol: [' [_] ', '(. .)', ' \\_/ '],         // Golden Freddy: empty eyes
+  gol: [' [_] ', '(.^.)', ' >=< '],          // Golden Freddy: Freddy, in gold, with dot eyes
   pch: [' \\|/ ', '(x o)', ' {V} '],         // Phantom Chica: burnt eye, beak and bib
   bnt: ['(\\_/)', '(o*o)', ' v v '],         // Bonnet: small, with her nose
   wbn: [' |\\  ', '(  o#)', ' |vv| '],       // Withered Bonnie: no face, one ear
@@ -225,28 +225,20 @@ const SPRITES = {
      \___________/
           >==<`),
   },
+  // Golden Freddy is Freddy in gold with dot eyes (on request). His jumpscare is made from Freddy's
+  // just below the SPRITES list, so the two always match.
   gol: {
+    // Slumped in front of your desk: Freddy (hat, ears, teeth, bow tie) with dot eyes. Exactly as wide
+    // as the desk monitor (15), so none of it peeks out around him.
     office: art(String.raw`
-    ___
-  _|___|_
- (_)   (_)
- / .   . \
-|    ^    |
-|  \___/  |
- \_______/
- /|     |\ `),
-    scare: art(String.raw`
-        _______
-       |       |
-     __|_______|__
-  .-.             .-.
- (   )  _______  (   )
-  '-'  /       \  '-'
-      |  @   @  |
-      |    v    |
-      |  _____  |
-       \ '---' /
-        \_____/`),
+      ___
+    _|___|_
+(_)         (_)
+/   .     .   \
+|      ^      |
+|    |vvv|    |
+\_____________/
+/_____>=<_____\ `),
   },
   pch: {
     scare: art(String.raw`
@@ -413,6 +405,9 @@ const SPRITES = {
        /       \ `),
   },
 };
+// Golden Freddy's jumpscare: Freddy's, with his O eyes swapped for dots. (.map makes a new list with
+// every line changed; .replace(/O/g, '.') swaps every capital O on the line for a dot.)
+SPRITES.gol.scare = SPRITES.fre.scare.map(line => line.replace(/O/g, '.'));
 
 // Passing out from the heat: a woozy face in heat waves (shown instead of a jumpscare).
 const PASSED_OUT = art(String.raw`
@@ -449,7 +444,7 @@ ____________________________________
 // Where things go in the office, as [row, column] of their top-left corner.
 const STAFF_SPOT = [6, 2];        // the staff bot, on the left end of the desk
 const FAN_SPOT = [7, 28];         // the desk fan, on the right
-const GOLDEN_SPOT = [3, 13];      // Golden Freddy, slumped in front of the monitor
+const GOLDEN_SPOT = [3, 11];      // Golden Freddy, slumped in front of the monitor (covering it exactly)
 const WITHERED_SPOT = [3, 12];    // Withered Bonnie, leaning over the desk
 const NIGHTMARE_SPOT = [2, 10];   // Nightmare Freddy, looming over everything
 const SCREEN_SPOT = [8, 14];      // the monitor's screen: 9 characters wide
