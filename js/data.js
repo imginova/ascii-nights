@@ -25,7 +25,8 @@ const CAM_ORDER = ['stage', 'dining', 'back', 'cove', 'whall', 'ehall', 'prize']
 //   where where it gets you, shown on the custom night screen
 //   desc  how it works, in one or two sentences
 //   how   what the game over screen says when it gets you in your office
-// They are in the order you made their mechanics, which is also the order of the setup rows.
+// They're written below in the order their mechanics were made; the order of the setup rows (game
+// order) is SETUP, further down.
 const FREDDY = {
   id: 'fre', name: 'Freddy', where: 'RIGHT DOOR',
   desc: 'Laughs every time he moves, but never shows up on the cameras. Shut the right door on the third laugh.',
@@ -115,10 +116,18 @@ const NCHICA = {
   how: 'came looking for her cupcake',
 };
 
-// Everything with a level on the custom night screen, in the order of the saved `levels` list.
-// NEW CHARACTERS GO AT THE END, so levels saved by older versions still line up.
-const SETUP = [FREDDY, BONNIE, GOLDEN, PCHICA, BONNET, WBONNIE, PUPPET, STAFF, NFREDDY, WFOXY, MOON, ENDO,
-  NFOXY, FUNFRED, CHICA, PLUSH, NCHICA];
+// Everything with a level on the custom night screen, in GAME ORDER (on request): grouped by the FNAF
+// game each character first appeared in, oldest game first. New characters go in their game's group.
+// (Levels are saved by character id, so changing this order never mixes up anyone's saved levels; see
+// LEGACY_ORDER in game.js for how older saves are read.)
+const SETUP = [
+  FREDDY, BONNIE, CHICA, GOLDEN,                 // FNAF 1
+  WBONNIE, WFOXY, PUPPET,                        // FNAF 2
+  PCHICA,                                        // FNAF 3
+  NFREDDY, NFOXY, NCHICA, PLUSH,                 // FNAF 4
+  FUNFRED, BONNET,                               // Sister Location
+  MOON, STAFF, ENDO,                             // Security Breach
+];
 
 // ---------- spots in the office ----------
 // [row, column] places in the office picture (36 wide, 16 tall, see officeLines in art.js).

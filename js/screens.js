@@ -124,7 +124,7 @@ function renderSetup() {
 // Fill in every level from a challenge in PRESETS.
 function applyPreset(p) {
   levels = p.levels.map(clampLevel);
-  store.set('levels', levels);
+  saveLevels();
   sfx.click();
   renderSetup();
 }
@@ -132,7 +132,7 @@ function applyPreset(p) {
 // Change level number i by d (+1 or -1).
 function changeLevel(i, d) {
   levels[i] = clampLevel(levels[i] + d);
-  store.set('levels', levels);
+  saveLevels();
   sel = i;
   sfx.click();
   renderSetup();
@@ -140,7 +140,7 @@ function changeLevel(i, d) {
 
 function setAllLevels(value) {
   levels = levels.map(() => clampLevel(value));
-  store.set('levels', levels);
+  saveLevels();
   sfx.click();
   renderSetup();
 }
@@ -149,7 +149,7 @@ function setAllLevels(value) {
 // left side is missing" (a best score saved before a character existed has no level for it).
 function bestText() {
   if (!best) return 'No night survived yet.';
-  const parts = SETUP.map((c, i) => `${faceHtml(c)} ${best.levels[i] ?? '–'}`).join(' · ');
+  const parts = SETUP.map(c => `${faceHtml(c)} ${best.levels[c.id] ?? '–'}`).join(' · ');
   return `Best: survived on ${parts} <b>(total ${best.sum} / ${MAX_SCORE})</b>`;
 }
 

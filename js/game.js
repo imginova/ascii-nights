@@ -13,13 +13,30 @@
    ===================================================================== */
 
 // ---------- saved between nights ----------
-// The level picked for each character in SETUP. Loaded from the browser; missing ones default to 0.
-let levels = (store.get('levels', []) || []).slice(0, SETUP.length);
-while (levels.length < SETUP.length) levels.push(0);
-levels = levels.map(clampLevel);
+// Levels are saved BY CHARACTER, like { fre: 5, bon: 3, ... }, so the roster (SETUP) can be put in any
+// order. Older versions saved a plain list in the order the characters were added (LEGACY_ORDER below);
+// such a save is converted when it's loaded, so nothing is lost (the roster was put in game order on
+// request, which would otherwise have shifted everyone's saved levels onto the wrong characters).
+const LEGACY_ORDER = ['fre', 'bon', 'gol', 'pch', 'bnt', 'wbn', 'pup', 'stf', 'nfr', 'wfx', 'mon', 'end', 'nfx', 'fun', 'chi', 'plu', 'nch'];
+// A saved list (old style) or { id: level } object (new style), as an { id: level } object.
+const savedById = saved => Array.isArray(saved)
+  ? Object.fromEntries(saved.map((lv, i) => [LEGACY_ORDER[i], lv]).filter(([id]) => id))
+  : (saved || {});
+// The levels in roster order, as a list: what the rest of the game uses.
+const loadLevels = saved => { const byId = savedById(saved); return SETUP.map(c => clampLevel(byId[c.id] ?? 0)); };
+// The other way: a list in roster order, as an { id: level } object for saving.
+const levelsById = list => Object.fromEntries(SETUP.map((c, i) => [c.id, list[i]]));
+function saveLevels() { store.set('levels', levelsById(levels)); }
+
+// The level picked for each character in SETUP. Missing ones default to 0.
+let levels = loadLevels(store.get('levels', []));
 if (levels.every(l => l === 0)) levels = PRESETS[0].levels.slice();   // first visit: start on Warm-up
 
-let best = store.get('best', null);   // hardest night survived: { sum, levels } or null
+// The hardest night survived: { sum, levels: { id: level } } or null. An old-style save (a list of
+// levels) is converted the same way. A character that didn't exist yet back then has no level in it
+// (shown as – on the custom night screen).
+let best = store.get('best', null);
+if (best && Array.isArray(best.levels)) best = { ...best, levels: savedById(best.levels) };
 
 // How many times each character has got you, by its id: { fre: 3, bon: 1, ... }, plus `heat` for
 // passing out. Saved in the browser and shown on the game over and custom night screens (on request).
@@ -931,7 +948,7 @@ function setPaused(p) {
 
 function startNight() {
   sfx.init();
-  store.set('levels', levels);
+  saveLevels();
   flashKey = flashMouse = flashButton = false;
   newGame();
   hideScare();
@@ -950,7 +967,7 @@ function win() {
   const sum = nightScore();
   const isBest = !best || sum > best.sum;
   if (isBest) {
-    best = { sum, levels: levels.slice() };
+    best = { sum, levels: levelsById(levels) };
     store.set('best', best);
   }
   // Was tonight one of the challenges? Then it earns its ✓ (if it didn't have one already).
