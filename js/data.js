@@ -177,7 +177,6 @@ const PRESETS = [
   { name: 'Nightmare hour', v: 1, levels: lv({ nfx: 15, nch: 15, nfr: 12, stf: 12 }) },
   { name: 'Freddy fever', v: 3, levels: lv({ fre: 14, gol: 14, nfr: 14, fun: 14 }) },     // v3: + Funtime Freddy
   { name: 'Masquerade', v: 2, levels: lv({ gol: 16, wbn: 16, nfr: 14, bnt: 10 }) },
-  { name: 'Door duty', v: 2, levels: lv({ fre: 16, bon: 16, stf: 16, wfx: 12 }) },
   // v3: the Puppet and Sleepy Moon added (on request): they make you use the monitor, and every time you
   // look away from it the other three can be waiting.
   { name: 'Don\'t look away', v: 3, levels: lv({ gol: 12, pch: 12, wbn: 12, pup: 12, mon: 12 }) },
@@ -187,6 +186,9 @@ const PRESETS = [
   // v2: Phantom Chica added (on request: she takes power, so she belongs here).
   // v3: the office heat (like every challenge). v4: Sleepy Moon's rework (like every challenge he's in).
   { name: 'Power hungry', v: 4, levels: lv({ end: 14, mon: 14, stf: 14, wfx: 14, pch: 14 }) },
+  // v3: + Nightmare Foxy at 12 (on request: his counter is a door too). The bot still won it 30/30
+  // as an average player and a beginner.
+  { name: 'Door duty', v: 3, levels: lv({ fre: 16, bon: 16, stf: 16, wfx: 12, nfx: 12 }) },
   { name: 'Little terrors', v: 1, levels: lv({ plu: 18, bnt: 18, nfr: 10 }) },
   // v3: + both nightmares. v4: Phantom Chica (a phantom, not a nightmare) swapped for Plushtrap, on request
   // (the bot then won it 30/30 as an average player and 29/30 as a beginner).
