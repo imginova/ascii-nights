@@ -126,7 +126,9 @@ const SETUP = [
   PCHICA,                                        // FNAF 3
   NFREDDY, NFOXY, NCHICA, PLUSH,                 // FNAF 4
   FUNFRED, BONNET,                               // Sister Location
-  MOON, STAFF, ENDO,                             // Security Breach
+  ENDO,                                          // Special Delivery
+  STAFF,                                         // Security Breach
+  MOON,                                          // Secret of the Mimic
 ];
 
 // ---------- spots in the office ----------

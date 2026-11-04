@@ -74,7 +74,7 @@ const ICONS = {
   bnt: ['(\\_/)', '(o*o)', ' v v '],         // Bonnet: small, with her nose
   wbn: [' |\\  ', '(  o#)', ' |vv| '],       // Withered Bonnie: no face, one ear
   pup: ['.---.', '(o o)', '(@v@)'],          // the Puppet: mask with red cheeks
-  stf: [' /!\\ ', '[o o]', '/   \\'],        // the staff bot: a caution cone
+  stf: ['.---.', '|@ @|', '|VVV|'],          // the Nightmare staff bot: robot head, glaring eyes, jagged mouth
   nfr: ['@   @', '(0^0)', '|vVv|'],          // Nightmare Freddy: Freddles and sharp teeth
   wfx: ['/\\ /\\', '(# o)', ' \\vv/J'],      // Withered Foxy: eyepatch and hook
   mon: [' .-. z', '( -_-)', " '-'  "],       // Sleepy Moon: dozing
@@ -321,23 +321,28 @@ const SPRITES = {
        '---------'
         | | | | |`),
   },
+  // The Nightmare staff bot (from Security Breach): a staff robot gone bad, with glaring eyes and a
+  // jagged mouth (on request: it used to be drawn as a caution cone).
   stf: {
-    // Drawn in the office by drawStaff in render.js (its eyes and arrow change while it blinks).
+    // Drawn in the office by drawVisitors in render.js: while it blinks its eyes flash (line 1) and
+    // its arm points at the door to shut (line 4, see STAFF_POINT).
     office: art(String.raw`
- /!\
-[o o]
-|___|
-/   \ `),
+.---.
+|@ @|
+|VVV|
+'-+-'
+/|=|\ `),
     scare: art(String.raw`
-         /!\
-        /   \
-     .-'-----'-.
-     | (*) (*) |
-     |   ___   |
-     |  [###]  |
-     '---------'
-       //   \\
-      //     \\`),
+        .-------.
+       /  _   _  \
+      |  (@) (@)  |
+      |     |     |
+      |  VVVVVVV  |
+      |  ^^^^^^^  |
+       \_________/
+          |===|
+      /---|===|---\
+     /    |===|    \ `),
   },
   nfr: {
     freddle: '(oo)',
@@ -573,7 +578,10 @@ ____________________________________
  . . . . . . . . . . . . . . . . . .`);
 
 // Where things go in the office, as [row, column] of their top-left corner.
-const STAFF_SPOT = [6, 2];        // the staff bot, on the left end of the desk
+const STAFF_SPOT = [5, 3];        // the staff bot, standing on the left end of the desk
+// Its body line while it points at a door (it replaces line 4 of its drawing, starting one column
+// further left for the left arm): [column offset, text].
+const STAFF_POINT = { L: [-1, '<-|=|\\'], R: [0, '/|=|->'] };
 const FAN_SPOT = [7, 28];         // the desk fan, on the right
 const GOLDEN_SPOT = [3, 11];      // Golden Freddy, slumped in front of the monitor (covering it exactly)
 const WITHERED_SPOT = [3, 12];    // Withered Bonnie, leaning over the desk
