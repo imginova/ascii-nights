@@ -174,12 +174,14 @@ const PRESETS = [
   // v3: the Puppet (5) added and Golden Freddy raised from 15 to 20 (on request).
   { name: 'Mask on', v: 3, levels: lv({ wbn: 15, gol: 20, nfr: 12, pup: 5 }) },
   { name: 'Bunny trouble', v: 3, levels: lv({ bon: 14, bnt: 14, wbn: 14, plu: 12 }) },    // v3: + Plushtrap
+  // Plushtrap was added briefly (v2) and taken out again on request. Taking him out made it easier, so it
+  // stays v2: a ✓ earned with him still counts.
+  { name: 'Nightmare hour', v: 2, levels: lv({ nfx: 15, nch: 15, nfr: 12, stf: 12 }) },
   { name: 'Freddy fever', v: 3, levels: lv({ fre: 14, gol: 14, nfr: 14, fun: 14 }) },     // v3: + Funtime Freddy
   { name: 'Masquerade', v: 2, levels: lv({ gol: 16, wbn: 16, nfr: 14, bnt: 10 }) },
   // v4: + Plushtrap. v5: + Nightmare Foxy (on request; the flashlight is what holds him back).
   // The bot still won it 30/30 as an average player and a beginner.
   { name: 'Night light', v: 5, levels: lv({ mon: 14, nfr: 12, wfx: 10, plu: 12, nfx: 12 }) },
-  { name: 'Nightmare hour', v: 2, levels: lv({ nfx: 15, nch: 15, nfr: 12, stf: 12, plu: 12 }) },   // v2: + Plushtrap
   // v2: Phantom Chica added (on request: she takes power, so she belongs here).
   // v3: the office heat (like every challenge). v4: Sleepy Moon's rework (like every challenge he's in).
   { name: 'Power hungry', v: 4, levels: lv({ end: 14, mon: 14, stf: 14, wfx: 14, pch: 14 }) },
