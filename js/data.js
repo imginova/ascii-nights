@@ -170,7 +170,6 @@ const PRESETS = [
   { name: 'Cupcake hunt', v: 1, levels: lv({ nch: 15, pch: 15, chi: 10 }) },
   { name: 'Music lesson', v: 2, levels: lv({ pup: 18, wfx: 12, bon: 12 }) },
   { name: 'Pirate\'s dance', v: 3, levels: lv({ wfx: 15, bon: 10, fre: 10, nfx: 12 }) },   // v3: + Nightmare Foxy
-  { name: 'Night light', v: 4, levels: lv({ mon: 14, nfr: 12, wfx: 10, plu: 12 }) },      // v4: + Plushtrap
   { name: 'Snack time', v: 3, levels: lv({ pch: 16, bnt: 12, pup: 10, nch: 12 }) },       // v3: + Nightmare Chica
   // v3: the Puppet (5) added and Golden Freddy raised from 15 to 20 (on request).
   { name: 'Mask on', v: 3, levels: lv({ wbn: 15, gol: 20, nfr: 12, pup: 5 }) },
@@ -182,6 +181,9 @@ const PRESETS = [
   // v3: the Puppet and Sleepy Moon added (on request): they make you use the monitor, and every time you
   // look away from it the other three can be waiting.
   { name: 'Don\'t look away', v: 3, levels: lv({ gol: 12, pch: 12, wbn: 12, pup: 12, mon: 12 }) },
+  // v4: + Plushtrap. v5: + Nightmare Foxy (on request; the flashlight is what holds him back).
+  // The bot still won it 30/30 as an average player and a beginner.
+  { name: 'Night light', v: 5, levels: lv({ mon: 14, nfr: 12, wfx: 10, plu: 12, nfx: 12 }) },
   // v2: Phantom Chica added (on request: she takes power, so she belongs here).
   // v3: the office heat (like every challenge). v4: Sleepy Moon's rework (like every challenge he's in).
   { name: 'Power hungry', v: 4, levels: lv({ end: 14, mon: 14, stf: 14, wfx: 14, pch: 14 }) },
