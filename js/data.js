@@ -156,36 +156,37 @@ const PRESETS = [
   // The two "classic" challenges have no Withered Foxy (taken out on request, in case a standard Foxy
   // is added later). Chica joined both when she was added (v3).
   { name: 'The classics', v: 3, levels: lv({ fre: 8, bon: 8, gol: 5, chi: 8 }) },
-  { name: 'Wind it up', v: 2, levels: lv({ pup: 14, bon: 8, pch: 8 }) },
-  { name: 'Caution', v: 2, levels: lv({ stf: 14, bon: 10, fre: 6 }) },
   { name: 'Heat wave', v: 2, levels: lv({ end: 15, stf: 8, fre: 8 }) },
-  { name: 'Bedtime', v: 3, levels: lv({ mon: 12, nfr: 10, bnt: 10 }) },
   { name: 'Withered away', v: 2, levels: lv({ wbn: 16, wfx: 16 }) },
   { name: 'Hot and sleepy', v: 3, levels: lv({ end: 16, mon: 16 }) },
+  { name: 'Wind it up', v: 3, levels: lv({ pup: 14, bon: 8, pch: 8, chi: 8 }) },             // v3: + Chica (whatever walks in)
+  { name: 'Caution', v: 3, levels: lv({ stf: 14, bon: 10, fre: 6, fun: 8 }) },               // v3: + Funtime Freddy (read, then pick a door)
   // New with the second batch of characters (2026-11-03).
   // Plushtrap stays in Fun time until more Sister Location characters are added; then he comes out
   // (on request).
   { name: 'Fun time', v: 1, levels: lv({ fun: 15, plu: 12, bnt: 12 }) },
   { name: 'Patrol', v: 1, levels: lv({ chi: 15, nfx: 12, bon: 12 }) },
   { name: 'Cupcake hunt', v: 1, levels: lv({ nch: 15, pch: 15, chi: 10 }) },
+  { name: 'Bedtime', v: 4, levels: lv({ mon: 12, nfr: 10, bnt: 10, plu: 10 }) },             // v4: + Plushtrap (FNAF 4's bedroom)
   { name: 'Music lesson', v: 2, levels: lv({ pup: 18, wfx: 12, bon: 12 }) },
   { name: 'Pirate\'s dance', v: 3, levels: lv({ wfx: 15, bon: 10, fre: 10, nfx: 12 }) },   // v3: + Nightmare Foxy
   { name: 'Snack time', v: 3, levels: lv({ pch: 16, bnt: 12, pup: 10, nch: 12 }) },       // v3: + Nightmare Chica
   // v3: the Puppet (5) added and Golden Freddy raised from 15 to 20 (on request).
   { name: 'Mask on', v: 3, levels: lv({ wbn: 15, gol: 20, nfr: 12, pup: 5 }) },
   { name: 'Bunny trouble', v: 3, levels: lv({ bon: 14, bnt: 14, wbn: 14, plu: 12 }) },    // v3: + Plushtrap
-  { name: 'Nightmare hour', v: 1, levels: lv({ nfx: 15, nch: 15, nfr: 12, stf: 12 }) },
   { name: 'Freddy fever', v: 3, levels: lv({ fre: 14, gol: 14, nfr: 14, fun: 14 }) },     // v3: + Funtime Freddy
   { name: 'Masquerade', v: 2, levels: lv({ gol: 16, wbn: 16, nfr: 14, bnt: 10 }) },
-  // v3: the Puppet and Sleepy Moon added (on request): they make you use the monitor, and every time you
-  // look away from it the other three can be waiting.
-  { name: 'Don\'t look away', v: 3, levels: lv({ gol: 12, pch: 12, wbn: 12, pup: 12, mon: 12 }) },
   // v4: + Plushtrap. v5: + Nightmare Foxy (on request; the flashlight is what holds him back).
   // The bot still won it 30/30 as an average player and a beginner.
   { name: 'Night light', v: 5, levels: lv({ mon: 14, nfr: 12, wfx: 10, plu: 12, nfx: 12 }) },
+  { name: 'Nightmare hour', v: 2, levels: lv({ nfx: 15, nch: 15, nfr: 12, stf: 12, plu: 12 }) },   // v2: + Plushtrap
   // v2: Phantom Chica added (on request: she takes power, so she belongs here).
   // v3: the office heat (like every challenge). v4: Sleepy Moon's rework (like every challenge he's in).
   { name: 'Power hungry', v: 4, levels: lv({ end: 14, mon: 14, stf: 14, wfx: 14, pch: 14 }) },
+  // v3: the Puppet and Sleepy Moon added (on request): they make you use the monitor, and every time you
+  // look away from it the other three can be waiting.
+  // v4: + Nightmare Chica (another reason you need the monitor).
+  { name: 'Don\'t look away', v: 4, levels: lv({ gol: 12, pch: 12, wbn: 12, pup: 12, mon: 12, nch: 12 }) },
   // v3: + Nightmare Foxy at 12 (on request: his counter is a door too). The bot still won it 30/30
   // as an average player and a beginner.
   { name: 'Door duty', v: 3, levels: lv({ fre: 16, bon: 16, stf: 16, wfx: 12, nfx: 12 }) },
