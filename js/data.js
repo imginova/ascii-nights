@@ -279,7 +279,6 @@ const PRESETS = [
   { name: 'Music lesson', v: 3, levels: lv({ pup: 18, wfx: 12, bon: 12 }) },
   { name: 'Pirate\'s dance', v: 4, levels: lv({ wfx: 15, bon: 10, fre: 10, nfx: 12 }) },   // v3: + Nightmare Foxy
   { name: 'Shopping spree', v: 1, levels: lv({ rsb: 18, fre: 10, bon: 10, chi: 10 }) },     // new with the third batch
-  { name: 'Toxic shock', v: 1, levels: lv({ tsp: 16, end: 12, stf: 10, bon: 10 }) },        // new with the third batch
   { name: 'Snack time', v: 3, levels: lv({ pch: 16, bnt: 12, pup: 10, nch: 12 }) },       // v3: + Nightmare Chica
   // v3: the Puppet (5) added and Golden Freddy raised from 15 to 20 (on request).
   { name: 'Mask on', v: 3, levels: lv({ wbn: 15, gol: 20, nfr: 12, pup: 5 }) },
@@ -296,6 +295,10 @@ const PRESETS = [
   // v4: + Plushtrap. v5: + Nightmare Foxy (on request; the flashlight is what holds him back).
   // v6: + Shadow Bonnie (more need for the flashlight).
   { name: 'Night light', v: 6, levels: lv({ mon: 14, nfr: 12, wfx: 10, plu: 12, nfx: 12, sbn: 10 }) },
+  // New with the third batch. v2: + Freddy, Foxy and Nightmare Foxy at 10 (on request: "a few more"). Door
+  // characters, because clearing the toxins needs both doors open. Moved here from after Shopping spree:
+  // the bot then won it 17/20 (average and beginner), losing only to Toxic Springtrap.
+  { name: 'Toxic shock', v: 2, levels: lv({ tsp: 16, end: 12, stf: 10, bon: 10, fre: 10, fox: 10, nfx: 10 }) },
   // v2: Phantom Chica added (on request: she takes power, so she belongs here).
   // v3: the office heat (like every challenge). v4: Sleepy Moon's rework (like every challenge he's in).
   { name: 'Power hungry', v: 5, levels: lv({ end: 14, mon: 14, stf: 14, wfx: 14, pch: 14 }) },
