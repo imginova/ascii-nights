@@ -242,13 +242,16 @@ const lv = byId => SETUP.map(c => byId[c.id] || 0);
 const everyone = level => lv(Object.fromEntries(SETUP.map(c => [c.id, level])));
 // Everyone at `level`, except the ones listed: everyoneBut(9, { tbo: 12 }) is everyone at 9, Toy Bonnie at 12.
 const everyoneBut = (level, byId) => lv({ ...Object.fromEntries(SETUP.map(c => [c.id, level])), ...byId });
+// Everyone in a list of ids at one level: these(10, ['fre', 'bon']) is Freddy and Bonnie at 10.
+const these = (level, ids) => lv(Object.fromEntries(ids.map(id => [id, level])));
 // The list is in order, easiest first. The order came from a test bot that plays with a person's
 // limits (tools/bot.js: it only reacts to what a player could see or hear, with human reaction times,
 // a mouse that moves at a person's speed, one action at a time). The ones it won less often come
 // later, and ties are sorted by points. Warm-up stays first and All 20 stays last.
 // Measured 2026-11-07 after the third batch (29 characters; UNIT_DRAIN 0.35, LEVEL_SCALE 0.5, CROWD_CALM
 // 12), 10 nights each for the new and changed ones (30 for the rest), wins by an "average" player / a
-// "beginner": everything before the ladder 9-10 / 9-10, except Over the rainbow (13 / 11 of 15); then
+// "beginner": everything before the ladder 9-10 / 9-10, except Over the rainbow (13 / 11 of 15); the bridge
+// 10 / 9-10 except Bad dreams (10 / 7); then
 // Everyone at 5 (9 / 3), Graveyard shift (6 / 3), Double shift (6 / 3), Sunrise is a lie (3 / 1),
 // Last stand (2 / 0) and All 20 (3 / 0, and 9 of 40 for the average player).
 // Every challenge must stay humanly possible like this (the top ones are for experienced players).
@@ -311,6 +314,15 @@ const PRESETS = [
   // testing; the rainbow keeps the mouse busy just when Bonnet and Plushtrap need it).
   { name: 'Fox hunt', v: 1, levels: lv({ fox: 14, wfx: 12, nfx: 12, ffx: 12, twf: 12 }) },
   { name: 'Over the rainbow', v: 1, levels: lv({ rbw: 14, bnt: 10, plu: 8 }) },
+  // The bridge from the small challenges to the ladder (on request, 2026-11-07: "add some more in between
+  // challenges from Fox hunt to Everyone at 5 to bridge the gap"): more characters at once, 80 to 140 points.
+  { name: 'Party crashers', v: 1, levels: lv({ dee: 20, fre: 10, bon: 10, chi: 10, fox: 10, tbo: 10, tch: 10 }) },
+  { name: 'Hare raising', v: 1, levels: lv({ bon: 12, tbo: 12, wbn: 12, sbn: 12, rsb: 12, bnt: 12, plu: 10 }) },
+  { name: 'Old school', v: 1, levels: these(10, ['fre', 'bon', 'chi', 'fox', 'gol', 'tbo', 'tch', 'wbn', 'wfx', 'pup', 'sbn']) },
+  { name: 'Behind the curtain', v: 1, levels: these(12, ['fun', 'ffx', 'bnt', 'rsb', 'twf', 'dee', 'end', 'tsp', 'stf', 'wti', 'mon']) },
+  { name: 'Half the gang', v: 1, levels: these(10, ['fre', 'bon', 'chi', 'fox', 'gol', 'tbo', 'tch', 'wbn', 'wfx', 'pup', 'sbn', 'pch', 'nfr', 'nfx']) },
+  // Last of the bridge: the bot (as a beginner) lost it 3 times in 10, all to Plushtrap.
+  { name: 'Bad dreams', v: 1, levels: these(12, ['pch', 'nfr', 'nfx', 'nch', 'plu', 'ned', 'rbw', 'twf', 'sbn', 'pup']) },
   // The ladder up to All 20 (on request: "a good amount scaling up to the max mode because right now it is
   // a big jump"). Everyone is in each one, with a group a bit higher.
   // The "everyone" ones include every character, so each new batch makes them harder (v4: the second
@@ -363,6 +375,12 @@ const FLAVOR = {
   'Big cat': 'Don\'t hold anything too long. He\'s watching.',
   'Toxic shock': 'Open the doors to breathe. Shut them to live.',
   'Over the rainbow': 'Keep that mouse moving.',
+  'Party crashers': 'Dee Dee is here. Somebody\'s leaving, and everybody else is angry.',
+  'Hare raising': 'Seven rabbits. None of them friendly.',
+  'Old school': 'The pizzeria\'s original crew and their toy replacements.',
+  'Bad dreams': 'Nightmares, phantoms and a rainbow. Sleep tight.',
+  'Behind the curtain': 'Everyone who came later. They all have their own rules.',
+  'Half the gang': 'Fourteen of them at once. Halfway to everyone.',
   'Graveyard shift': 'Everyone is in tonight. The old crew is restless.',
   'Double shift': 'Everyone, and the nightmares are worse.',
   'Sunrise is a lie': 'Everyone, and the foxes are hungry.',
