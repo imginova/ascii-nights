@@ -44,6 +44,20 @@
   --c-plu: #a6d61c;   /* Plushtrap: lime green */
   --c-nch: #e0a030;   /* Nightmare Chica: dark orange-yellow */
   --c-ncup: #6e5560;  /* Nightmare Chica's hidden cupcake: dull, so it blends in */
+  /* the third batch */
+  --c-tbo: #5aa8ff;   /* Toy Bonnie: bright blue */
+  --c-tch: #ffc94a;   /* Toy Chica: warm yellow */
+  --c-ned: #a87245;   /* Nedd Bear: brown */
+  --c-wti: #d9ecff;   /* White Tiger: icy white */
+  --c-rbw: #ff6ec7;   /* Chica's Magic Rainbow (drawn in rainbow colors where there's room) */
+  --c-rsb: #4f7dff;   /* Rockstar Bonnie: deep blue */
+  --c-tsp: #b04dff;   /* Toxic Springtrap: toxic purple */
+  --c-dee: #ff6f91;   /* Dee Dee: pink */
+  --c-ffx: #ffb0c8;   /* Funtime Foxy: white and pink */
+  --c-fox: #ff7a2e;   /* Foxy: fox orange */
+  --c-sbn: #8a8aa8;   /* Shadow Bonnie: a shadow you can still just see */
+  --c-twf: #d0561c;   /* Twisted Foxy: dark orange */
+  --coin: #ffd84a;    /* Fazcoins: gold */
   --font-display: "VT323", "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
   --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
   --art: min(16px, calc((100vw - 60px) / 37));
@@ -134,12 +148,26 @@ pre.art, .viewport, .hud, .controls, .map, .feed-head, .wind, .icon, .trio, .lvr
 .c-wfx { color: var(--c-wfx); } .c-mon { color: var(--c-mon); } .c-end { color: var(--c-end); }
 .c-nfx { color: var(--c-nfx); } .c-fun { color: var(--c-fun); } .c-bb { color: var(--c-bb); }
 .c-chi { color: var(--c-chi); } .c-plu { color: var(--c-plu); } .c-nch { color: var(--c-nch); }
+.c-tbo { color: var(--c-tbo); } .c-tch { color: var(--c-tch); } .c-ned { color: var(--c-ned); }
+.c-wti { color: var(--c-wti); } .c-rbw { color: var(--c-rbw); } .c-rsb { color: var(--c-rsb); }
+.c-tsp { color: var(--c-tsp); } .c-dee { color: var(--c-dee); } .c-ffx { color: var(--c-ffx); }
+.c-fox { color: var(--c-fox); } .c-sbn { color: var(--c-sbn); } .c-twf { color: var(--c-twf); }
 pre .c-fre, pre .c-bon, pre .c-gol, pre .c-pch, pre .c-bnt, pre .c-wbn, pre .c-pup,
 pre .c-stf, pre .c-nfr, pre .c-wfx, pre .c-mon, pre .c-end,
-pre .c-nfx, pre .c-fun, pre .c-bb, pre .c-chi, pre .c-plu, pre .c-nch { font-weight: 600; }
+pre .c-nfx, pre .c-fun, pre .c-bb, pre .c-chi, pre .c-plu, pre .c-nch,
+pre .c-tbo, pre .c-tch, pre .c-ned, pre .c-wti, pre .c-rbw, pre .c-rsb, pre .c-tsp, pre .c-dee,
+pre .c-ffx, pre .c-fox, pre .c-sbn, pre .c-twf { font-weight: 600; }
 /* Chica and Nightmare Chica's cupcake on the cameras: clickable, with a bigger invisible box. */
-.chi-hit, .nch-hit { position: relative; cursor: pointer; }
-.chi-hit::after, .nch-hit::after { content: ""; position: absolute; inset: -4px -2px; }
+.chi-hit, .nch-hit, .coin-hit, .twf-hit, .duct { position: relative; cursor: pointer; }
+.chi-hit::after, .nch-hit::after, .coin-hit::after, .twf-hit::after { content: ""; position: absolute; inset: -4px -2px; }
+/* Fazcoins: gold and glowing, easy to spot. Twisted Foxy shakes as he digs. */
+.coin { color: var(--coin); }
+pre .coin { font-weight: 600; text-shadow: 0 0 6px var(--coin); }
+.twf-hit { text-shadow: 0 0 6px var(--c-twf); }
+/* The ducts: the room being hovered lights up a little, and the audio lure glows. */
+.duct:hover { color: var(--fg); }
+.lure { color: var(--c-fun); font-weight: 600; animation: blink 0.8s steps(2) infinite; }
+.heater.on { color: var(--danger); text-shadow: 0 0 6px var(--danger); }
 /* The hidden cupcake: dull and not bold, so it blends into the room's picture. */
 .nch-cup { color: var(--c-ncup); }
 /* A character's tiny 3-line face on the menus (ICONS in art.js). white-space: pre keeps its lines and
@@ -247,6 +275,20 @@ pre .c-nfx, pre .c-fun, pre .c-bb, pre .c-chi, pre .c-plu, pre .c-nch { font-wei
 .shade { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
 .sleep-shade { background: #000; z-index: 2; }
 .heat-glow { background: radial-gradient(ellipse at 50% 100%, rgba(255,74,36,.9), rgba(255,74,36,.25) 60%, transparent 90%); z-index: 1; }
+/* Toxic Springtrap's fumes: a purple haze, thicker as the toxin meter rises. */
+.toxic-shade { background: radial-gradient(ellipse at 50% 60%, rgba(176,77,255,.55), rgba(110,30,160,.85)); z-index: 2; }
+/* Shadow Bonnie's darkness: almost black, except a hole where the flashlight shines (--x, --y and
+   --r, the hole's size, are set by render.js; --r is 0 when the flashlight is off). */
+.dark-shade { position: absolute; inset: 0; pointer-events: none; z-index: 2;
+  background: radial-gradient(circle var(--r, 0px) at var(--x, 50%) var(--y, 50%), transparent 0 55%, rgba(2,3,2,.97) 100%); }
+/* Short messages over the top of the view. */
+.note { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); z-index: 4; pointer-events: none;
+  background: rgba(6,10,7,.9); border: 1px solid var(--danger); color: var(--fg); padding: 4px 12px; font-size: 13px;
+  letter-spacing: .06em; text-align: center; width: max-content; max-width: 95%; }
+/* Chica's Magic Rainbow: placed over the page at the spot she's reached (render.js sets left and top). */
+.rainbow { position: fixed; z-index: 30; pointer-events: none; transform: translate(-50%, -50%); font-weight: 600;
+  background: linear-gradient(90deg, #ff4a4a, #ffa21f, #f2ee6b, #8fe39a, #6fb7ff, #b04dff); -webkit-background-clip: text; background-clip: text;
+  color: transparent; filter: drop-shadow(0 0 6px rgba(255,110,199,.7)); }
 /* Wearing the mask: a dark mask covers the whole view, and you only see (and can only click)
    through its two eye holes. The holes let clicks through; the mask itself blocks them. */
 .mask-view { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
@@ -274,6 +316,20 @@ pre .c-nfx, pre .c-fun, pre .c-bb, pre .c-chi, pre .c-plu, pre .c-nch { font-wei
 .map button { padding: 7px 4px; font-size: 11px; line-height: 1.3; letter-spacing: .04em; text-transform: none; }
 .map button[aria-current="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
 .map .you { grid-area: you; display: grid; place-items: center; font-size: 11px; color: var(--dim); border: 1px dashed var(--faint); padding: 7px 4px; }
+/* The monitor's tabs (CAMS / DUCTS / SHOP) and the pane each one shows. */
+.tabs { display: flex; gap: 6px; width: 100%; justify-content: center; }
+.tabs button { padding: 5px 12px; font-size: 12px; }
+.tabs button[aria-current="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.pane { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; align-items: flex-start; }
+/* The shop: the shopkeeper next to a list of things to buy. */
+.shop { align-items: center; }
+.shop-items { display: flex; flex-direction: column; gap: 8px; min-width: min(300px, 100%); }
+.shop-items .coins { color: var(--dim); font-size: 12px; letter-spacing: .1em; }
+.shop-items button { display: flex; justify-content: space-between; gap: 12px; text-align: left; text-transform: none; padding: 8px 12px; }
+.shop-items button:disabled { opacity: .4; cursor: not-allowed; }
+.shop-items .price { color: var(--coin); white-space: nowrap; }
+.shop-items .who-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.shop-items .who-list button { padding: 4px 8px; font-size: 12px; }
 
 .controls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
 .controls button { padding: 12px 6px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
@@ -282,6 +338,9 @@ pre .c-nfx, pre .c-fun, pre .c-bb, pre .c-chi, pre .c-plu, pre .c-nch { font-wei
 .controls button.on .state { color: var(--fg); }
 .controls button:disabled { opacity: .35; cursor: not-allowed; }
 .controls button.hold { touch-action: none; user-select: none; -webkit-user-select: none; }
+/* Broken by White Tiger for a few seconds. */
+.controls button.broken { border-color: var(--danger); }
+.controls button.broken .state { color: var(--danger); }
 .hint { margin-top: 10px; text-align: center; }
 
 .overlay {

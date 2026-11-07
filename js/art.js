@@ -84,6 +84,19 @@ const ICONS = {
   chi: [' \\|/ ', '(o>o)', '|EAT|'],          // Chica: beak and bib
   plu: ['(\\/)', '(oo)', ' || '],             // Plushtrap: a little rabbit plush
   nch: [' \\|/ ', '(@>@)', '{VVV}'],          // Nightmare Chica: teeth everywhere
+  // the third batch
+  tbo: ['/\\ /\\', '(^o^)', ' >w< '],         // Toy Bonnie: shiny and smiling
+  tch: [' \\|/ ', '(^>^)', '|PTY|'],          // Toy Chica: "let's party" bib
+  ned: ['n   n', '(o.o)', ' (u) '],           // Nedd Bear: round ears and a snout
+  wti: ['/\\_/\\', '(o=o)', '|/|\\|'],        // White Tiger: whiskers and stripes
+  rbw: ['.~~~.', '(^v^)', '~~~~~'],           // Chica's Magic Rainbow: a smiling rainbow
+  rsb: ['/\\ /\\', '(* *)', ' >#< '],         // Rockstar Bonnie: star eyes
+  tsp: ['/\\ /\\', '(#.#)', ' ~~~ '],         // Toxic Springtrap: in a cloud of fumes
+  dee: ['  __J', '(^u^)', ' /|\\ '],          // Dee Dee: with her fishing rod
+  ffx: ['/\\_/\\', '(* *)', '<SHO>'],         // Funtime Foxy: ready for the show
+  fox: ['/\\_/\\', '(o o)', ' \\vv/J'],       // Foxy: hook and sharp teeth
+  sbn: ['|\\ /|', '(. .)', ' ### '],          // Shadow Bonnie: dark, with tiny eyes
+  twf: ['/\\_/\\', '(x o)', '/vVv\\'],        // Twisted Foxy: twisted face, too many teeth
 };
 // Which line of the icon is the face (the middle one, except for the endo, whose face is on top).
 const FACE_ROW = { end: 0 };
@@ -191,6 +204,14 @@ const NCHICA_SPOTS = {
   stage: [[1, 20], [8, 12], [6, 30]], dining: [[2, 25], [8, 14]], back: [[2, 13], [8, 20]],
   cove: [[2, 30], [9, 15]], whall: [[3, 25], [8, 20]], ehall: [[3, 16], [8, 28]], prize: [[2, 10], [2, 27]],
 };
+// Where a Fazcoin ($) can lie on each camera: in open spots where it's easy to see (unlike the
+// cupcake above), away from where the characters stand.
+const COIN_SPOTS = {
+  stage: [[4, 28], [5, 11]], dining: [[6, 8], [2, 6]], back: [[6, 14], [5, 34]], cove: [[7, 35], [4, 2]],
+  whall: [[8, 31], [6, 31]], ehall: [[3, 29], [8, 20]], prize: [[1, 27], [9, 12]],
+};
+// Where Twisted Foxy digs up out of the floor on CAM 7 (top-left of his drawing).
+const TWIST_SPOTS = [[7, 32], [3, 31]];
 
 // ---------- the characters' drawings ----------
 // Each one is a list of lines. `cam` is the small camera version, `door` fits a doorway,
@@ -533,7 +554,145 @@ const SPRITES = {
     '---------'
      {w}   {w}`),
   },
+  // ----- the third batch -----
+  tbo: {
+    scare: art(String.raw`
+     /\         /\
+    /  \       /  \
+    |   \_____/   |
+    /             \
+   |   (^)   (^)   |
+   |  *    o    *  |
+   |    \_____/    |
+    \             /
+     '-----------'
+         >w<`),
+  },
+  tch: {
+    scare: art(String.raw`
+        \  |  /
+      .---------.
+     /  ^     ^  \
+    |     /\      |
+    |     \/      |
+     \  '-----'  /
+      '---------'
+      | PARTY!! |
+      '---------'`),
+  },
+  ned: {
+    scare: art(String.raw`
+    .-.         .-.
+   (   )_______(   )
+    '-'         '-'
+    /   O     O   \
+   |      ___      |
+   |     (___)     |
+   |    \_____/    |
+    \_____________/`),
+  },
+  wti: {
+    scare: art(String.raw`
+   /\               /\
+  /  \_____________/  \
+  |  |   |  |  |   |  |
+  |    (O)     (O)    |
+  | ---     /\    --- |
+  | ---  \______/ --- |
+   \   |VVVVVVVVVV|  /
+    \__|^^^^^^^^^^|_/`),
+  },
+  rbw: {
+    // Chasing your pointer: a small smiling rainbow.
+    chase: art(String.raw`
+ .-~~~-.
+( ^ v ^ )
+ ~~~~~~~`),
+    scare: art(String.raw`
+       .-~~~~~~~~~-.
+     .'  .-~~~~~-.  '.
+    /  .'  .---.  '.  \
+   |  /   / O O \   \  |
+   | |   |   v   |   | |
+   | |    \_____/    | |
+   ~~~~~~         ~~~~~~`),
+  },
+  rsb: {
+    scare: art(String.raw`
+     /\         /\
+    |  |       |  |
+    |  |       |  |
+     \  \_____/  /
+     /           \
+    |   *     *   |      __
+    |      w      |     /  )
+    |  |\/\/\/\|  |____/__/
+     \___________/   ====#`),
+  },
+  tsp: {
+    scare: art(String.raw`
+  ~  /\    ~    /\   ~
+    |  |       |  |
+  ~  \  \_____/  /  ~
+     /           \
+    |   #     #   |  ~
+  ~ |      .      |
+    |  |\/\/\/\|  |  ~
+     \___________/
+   ~   ~  ~ ~  ~   ~`),
+  },
+  ffx: {
+    scare: art(String.raw`
+   /\               /\
+  /  \_____________/  \
+  |    *         *    |
+  |   (O)       (O)   |
+  |         ^         |
+  |   \___________/   |
+   \     SHOWTIME    /
+    '---------------'`),
+  },
+  // Foxy: Withered Foxy's drawings without the eyepatch (see below the SPRITES list), plus his own
+  // jumpscare.
+  fox: {
+    scare: art(String.raw`
+   /\               /\
+  /  \_____________/  \
+  |                   |
+  |   ( o )   ( o )   |
+  |         /\        |
+  |   |\/\/\/\/\/\|   |
+   \  |/\/\/\/\/\/|  /
+    \_____________/ __J`),
+  },
+  twf: {
+    // Digging up out of the floor on CAM 7: his head and claws.
+    cam: art(String.raw`
+/\_/\
+(x o)
+/vVv\ `),
+    scare: art(String.raw`
+   /\     ___     /\
+  /  \___/   \___/  \
+  |   (X)     (o)   |
+  |   _/\_/\_/\_    |
+  |  |VVVVVVVVVVV|  |
+  |  |^^^^^^^^^^^|  |
+   \_/ \  / \  / \_/
+  ##################`),
+  },
 };
+// Foxy's camera and doorway drawings are Withered Foxy's with both eyes: every '#' (the eyepatch) swapped
+// for 'o'.
+for (const pose of ['peek', 'half', 'run', 'door']) SPRITES.fox[pose] = SPRITES.wfx[pose].map(line => line.replace(/#/g, 'o'));
+
+// The shopkeeper on the SHOP tab: a staff bot with a monocle (on request).
+const SHOPKEEPER = art(String.raw`
+ .-------.
+ | o  (@)|
+ |  ___  |
+ '-------'
+  /|$$$|\ `);
 // Nightmare Foxy inside your office, stage by stage: which drawing, its top-left [row, column], and
 // `aim`, the middle of the drawing (where the flashlight has to be to push him back).
 const NFOXY_STAGES = {
@@ -586,6 +745,8 @@ const NIGHTMARE_SPOT = [2, 10];   // Nightmare Freddy, looming over everything
 const SCREEN_SPOT = [8, 14];      // the monitor's screen: 9 characters wide
 const NCHICA_SPOT = [0, 12];      // Nightmare Chica, peering in at the top of the office
 const BONNET_ROWS = [12, 14];     // Bonnet runs along the floor, between these rows
+const VENT_SPOT = [5, 28];        // the duct vent into the office (whoever is at the front peeks out)
+const SHOWTIME_SPOT = [5, 12];    // Funtime Foxy's SHOWTIME countdown, above the monitor
 
 // The fan's blades in four positions; render.js shows one after another while the fan is on.
 const FAN_BLADES = ['--', '\\|', '||', '|/'];
@@ -596,5 +757,34 @@ function officeGrid(now) {
   // The fan: spinning blades while it's on, still blades while it's off.
   const blades = G.fan ? FAN_BLADES[Math.floor(now / 70) % 4] : '--';
   sprite(g, FAN_SPOT[0], FAN_SPOT[1], [' .--. ', `( ${blades} )`, " '||' "], G.fan ? 'fan on' : 'fan');
+  // On nights with duct crawlers there's a vent grille, glowing red while the heater is on.
+  if (DUCT_CRAWLERS.some(c => G[c.id].level > 0)) write(g, ...VENT_SPOT, '[####]', G.heater ? 'heater on' : 'dim');
+  return g;
+}
+
+// ---------- the DUCTS tab ----------
+// The duct map, 40 x 11 like a camera picture: 3 rows of 3 boxes, 12 wide and 3 tall, each with its
+// name in the top border. Inside: the first letter of whoever is there (B Toy Bonnie, C Toy Chica,
+// N Nedd Bear) and <)) where the audio lure is playing. Every cell of a box carries "duct d-d5" (and so
+// on) so a click anywhere in it knows which room it was (input.js).
+const DUCT_LETTER = { tbo: 'B', tch: 'C', ned: 'N' };
+function ductGrid() {
+  const g = blank(40, 11);
+  for (const id of DUCT_ORDER) {
+    const { r, c } = DUCTS[id];
+    const top = 1 + r * 3, left = 2 + c * 12;   // where this box starts
+    const name = id === DUCT_FRONT ? 'VENT' : id.toUpperCase();
+    const lines = ['+-' + name + '-'.repeat(8 - name.length) + '-+', '|' + ' '.repeat(10) + '|', '+' + '-'.repeat(10) + '+'];
+    const cls = `duct d-${id}` + (id === DUCT_FRONT ? ' c-stf' : ' dim');
+    lines.forEach((line, i) => write(g, top + i, left, line, cls));
+    let col = left + 2;
+    if (G.lureRoom === id) { write(g, top + 1, left + 6, '<))', `duct d-${id} lure`); }
+    for (const cr of DUCT_CRAWLERS) {
+      if (G[cr.id].level > 0 && G[cr.id].room === id) { write(g, top + 1, col, DUCT_LETTER[cr.id], `duct d-${id} c-${cr.id}`); col += 2; }
+    }
+    // The inside of the box is clickable too (spaces need the class as well).
+    for (let k = 1; k <= 10; k++) if (!g[top + 1][left + k].cls) g[top + 1][left + k].cls = `duct d-${id}`;
+  }
+  write(g, 10, 2, 'YOU are past the VENT (bottom right).', 'dim');
   return g;
 }

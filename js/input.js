@@ -34,6 +34,7 @@ onClick('btnR', () => toggleDoor('R'));
 onClick('btnCam', toggleCam);
 onClick('btnMask', toggleMask);
 onClick('btnFan', toggleFan);
+onClick('btnHeater', toggleHeater);
 onClick('btnWind', windBox);
 onClick('btnResume', () => setPaused(false));
 onClick('btnQuit', () => { showPause(false); goSetup(); });
@@ -52,6 +53,14 @@ $('map').addEventListener('click', e => {
   const b = e.target.closest('button[data-room]');
   if (!b) return;
   setCam(b.dataset.room);
+  if (e.detail) b.blur();
+});
+
+// The monitor's tabs: data-tab="ducts" (in index.html) says which one.
+$('tabs').addEventListener('click', e => {
+  const b = e.target.closest('button[data-tab]');
+  if (!b) return;
+  setTab(b.dataset.tab);
   if (e.detail) b.blur();
 });
 
@@ -83,6 +92,17 @@ function updateAim(e) {
 }
 view.addEventListener('pointermove', updateAim);
 view.addEventListener('pointerdown', updateAim);   // on a phone there's no "move" before a tap
+// Chica's Magic Rainbow chases the pointer ANYWHERE on the page, so this one listens to the whole page.
+// It's measured in view widths from the view's top left corner (see `aim` in game.js).
+function trackPointer(e) {
+  const box = view.getBoundingClientRect();
+  if (!box.width) return;   // the view isn't on screen
+  aim.vx = (e.clientX - box.left) / box.width;
+  aim.vy = (e.clientY - box.top) / box.width;
+  aim.vh = box.height / box.width;
+}
+document.addEventListener('pointermove', trackPointer);
+document.addEventListener('pointerdown', trackPointer);
 // When the pointer leaves the view, the aim stays where it last was (on request: Withered Foxy "didn't
 // work" when holding the on-screen Flashlight button, because moving to the button used to switch the
 // aim off). So you can point at something, move down to the Flashlight button, hold it, and the
@@ -129,17 +149,46 @@ $('officeArt').addEventListener('pointerdown', e => { if (e.pointerType !== 'mou
 // ("chi-hit") sends her back a room, and Nightmare Chica's cupcake ("nch-hit") gets rid of her.
 // The camera picture is redrawn often too, so this also reacts when the button goes down, the same
 // way as officePress.
+// A Fazcoin ("coin-hit") gets picked up, and Twisted Foxy ("twf-hit") gets a tap.
 function feedPress(e) {
-  const hit = e.target.closest('.mon-hit, .chi-hit, .nch-hit');
+  const hit = e.target.closest('.mon-hit, .chi-hit, .nch-hit, .coin-hit, .twf-hit');
   if (!hit) return;
   sfx.init();
   if (hit.classList.contains('mon-hit')) clickMoon();
   else if (hit.classList.contains('chi-hit')) pushChica();
+  else if (hit.classList.contains('coin-hit')) collectCoin();
+  else if (hit.classList.contains('twf-hit')) tapTwisted();
   else clickCupcakeCam();
   e.preventDefault();
 }
 $('feed').addEventListener('mousedown', e => { if (e.button === 0) feedPress(e); });
 $('feed').addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') feedPress(e); });
+
+// The DUCTS tab: every cell of a duct room carries a class like "d-d5", which says the room.
+function ductPress(e) {
+  const cell = e.target.closest('.duct');
+  if (!cell) return;
+  sfx.init();
+  playLure([...cell.classList].find(n => n.startsWith('d-')).slice(2));   // "d-d5" → "d5"
+  e.preventDefault();
+}
+$('ductMap').addEventListener('mousedown', e => { if (e.button === 0) ductPress(e); });
+$('ductMap').addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') ductPress(e); });
+
+// The SHOP tab: data-buy says which item, data-kill who a death coin is used on. The list is redrawn
+// whenever your coins change, so this also reacts when the button goes down.
+function shopPress(e) {
+  const b = e.target.closest('button');
+  if (!b || b.disabled) return;
+  sfx.init();
+  if (b.dataset.kill) useDeathCoin(b.dataset.kill);
+  else if (b.dataset.buy === 'battery') buyBattery();
+  else if (b.dataset.buy === 'guitar') buyGuitar();
+  else if (b.dataset.buy === 'death') pickDeathCoin();
+  e.preventDefault();
+}
+$('shopItems').addEventListener('mousedown', e => { if (e.button === 0) shopPress(e); });
+$('shopItems').addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') shopPress(e); });
 
 // ---------- custom night rows ----------
 // The − and + buttons change a level; clicking anywhere else on a row selects it.
@@ -249,6 +298,10 @@ document.addEventListener('keydown', e => {
     // mask on or takes it off. That works because the mask can't be worn with the monitor up.
     else if (k === 'w') { if (G.cam) windBox(); else toggleMask(); }
     else if (k === 'e') toggleFan();
+    else if (k === 'q') toggleHeater();
+    else if (k === 'c') setTab('cams');
+    else if (k === 'v') setTab('ducts');
+    else if (k === 'b') setTab('shop');
     else if (/^[1-7]$/.test(k)) setCam(CAM_ORDER[Number(k) - 1]);   // /^[1-7]$/ means "exactly one digit from 1 to 7"
     else if (k === 'h') openHowto();
 

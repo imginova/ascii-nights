@@ -40,6 +40,15 @@ const clampLevel = n => Math.max(MIN_LEVEL, Math.min(MAX_LEVEL, Math.round(Numbe
 const LEVEL_SCALE = 0.5;
 const effLevel = level => level === 0 ? 0 : 1 + (level - 1) * LEVEL_SCALE;
 
+// Crowded nights. Every character acts every so often even at level 1, so with lots of them on at once
+// there's no time left to react to each one. So the more characters are on tonight, the slower they all
+// act: with up to CROWD_CALM on, at full speed; above that, at sqrt(CROWD_CALM / how many) of it (with
+// 29 on and CROWD_CALM 12, about 64%). Only their timers slow down: the time you get to react (shut the
+// door, put the mask on...) stays the same. (Added 2026-11-07 with the third batch: the bot showed 29
+// characters at level 8 were won 11 times in 40, and the 17 older ones alone 31 times.)
+const CROWD_CALM = 12;
+const crowdPace = count => Math.min(1, Math.sqrt(CROWD_CALM / Math.max(1, count)));
+
 // A character at level L gets a chance to act every so often, and each chance works L times in 20.
 const moveChance = level => level / 20;
 
@@ -118,9 +127,14 @@ const freddleWait = level => byLevel(level, 24, 7) * rand(0.7, 1.3);
 const FREDDLE_SHINE = 0.5;
 const nightmareArrive = level => byLevel(level, 8, 4);
 
-// ---------- Withered Foxy ----------
-const FOXY_INTERVAL = 5;     // seconds between his chances to get ready in Pirate Cove
-const FOXY_RUN = 2.5;        // seconds from leaving the cove to reaching the left door
+// ---------- Foxy and Withered Foxy ----------
+// Foxy gets ready in Pirate Cove (a chance every FOXY_INTERVAL seconds, stalled while you're on the
+// cameras) and runs to the left door. Withered Foxy used to do that; now (on request) he just turns up
+// in the West hall every witheredFoxyWait seconds and runs from there. Both run for FOXY_RUN seconds.
+const FOXY_INTERVAL = 5;     // seconds between Foxy's chances to get ready in Pirate Cove
+const FOXY_RUN = 2.5;        // seconds from leaving the cove (or the West hall) to reaching the left door
+const FOXY_DOOR_COST = 5;    // % power Foxy knocks out of the battery when he slams into the shut door
+const witheredFoxyWait = level => rand(byLevel(level, 50, 18), byLevel(level, 75, 30));
 const FOXY_WAIT = [3, 6];    // seconds he waits behind the shut door before the stomp
 const FOXY_FLASH = 0.6;      // seconds of light (in all) it takes to send him away
 const STOMP_EVERY = 3;       // seconds between stomps while he waits for you
@@ -195,3 +209,95 @@ const nchicaWait = level => rand(byLevel(level, 55, 20), byLevel(level, 80, 32))
 // (20-12 s became 24-16 s after the bot test: searching every camera for something hidden takes a while
 // when other things keep interrupting.)
 const nchicaTime = level => byLevel(level, 24, 16);
+
+// ======================= the third batch: systems =======================
+
+// ---------- the ducts ----------
+// Toy Bonnie, Toy Chica and Nedd Bear crawl through the ducts (a 3 x 3 map on the DUCTS tab) toward the
+// front, the vent into your office. Each moves a room a chance every few seconds (its `interval` in
+// data.js). The AUDIO LURE (click a duct room) isn't instant or sure (on request): on each move, a duct
+// character heads toward the lure instead of the front with its own chance (its `lure` in data.js), and
+// the lure only lasts LURE_TIME seconds. LURE_COOLDOWN: seconds before the next lure.
+// The HEATER (Q): while it's on, every HEATER_STEP seconds each duct character is pushed one room back
+// toward the start (on request: "sent back not immediately but quickly"). It uses power like everything
+// else and heats the office HEATER_HEAT % per second on top of the normal heat.
+const LURE_TIME = 8;
+const LURE_COOLDOWN = 3;
+const HEATER_STEP = 0.8;
+const HEATER_HEAT = 2.5;
+// At the front: Toy Bonnie needs the mask on within reactWindow (then he's sent back to the start).
+// Toy Chica and Nedd Bear get you (on request: "straight away"), after frontWindow seconds so a lure or
+// the heater still has a moment to pull them back.
+const frontWindow = level => byLevel(level, 3, 2);
+
+// ---------- Fazcoins and the shop ----------
+// A coin turns up on a random camera every COIN_EVERY seconds (twice as long with Dee Dee) and stays
+// there COIN_STAY seconds; click it to pick it up. Fending off a character in a clear way (a bonk, the
+// mask working, a cupcake found...) also gives one. Every night starts at 0 coins (on request).
+const COIN_EVERY = 10;
+const COIN_STAY = 20;
+const COINS_ON_CAMS = 3;     // at most this many coins lying around on the cameras at once
+// The shop (the SHOP tab, run by a staff bot with a monocle):
+const DEATH_COIN_COST = 15;  // removes any one character for the rest of the night
+const DEATH_COINS = 3;       // how many can be bought per night
+const BATTERY_COST = 5;      // +BATTERY_POWER % power
+const BATTERY_STOCK = 5;
+const BATTERY_POWER = 10;
+// Rockstar Bonnie's guitar: the price depends on his level (on request).
+const guitarCost = level => Math.round(byLevel(level, 5, 15));
+
+// ======================= the third batch: characters =======================
+
+// ---------- White Tiger ----------
+// If you use any one thing without a break for longer than tigerLimit seconds (a door, the monitor, the
+// flashlight, the fan or the mask) he jumpscares you and that thing stops working for TIGER_DISABLE
+// seconds. It doesn't end the night. He leaves things alone when they must stay on (the fan while the
+// endo is there, the left door while Withered Foxy waits, the mask with Nightmare Freddy in the room,
+// the fan and doors while Toxic Springtrap's fumes are clearing).
+const tigerLimit = level => byLevel(level, 20, 8);
+const TIGER_DISABLE = 5;
+
+// ---------- Chica's Magic Rainbow ----------
+// Every so often she appears (over the office or the cameras) and chases your mouse pointer, a bit
+// slower than you can move it. Dodge her for RAINBOW_TIME seconds and she leaves; if she touches the
+// pointer, you die. Her speed and how close counts as touching are in "view widths" (1 = the whole
+// width of the game view).
+const rainbowWait = level => rand(byLevel(level, 60, 20), byLevel(level, 90, 35));
+const RAINBOW_TIME = 8;
+const rainbowSpeed = level => byLevel(level, 0.3, 0.55);
+const RAINBOW_CATCH = 0.035;
+
+// ---------- Toxic Springtrap ----------
+// Every so often his fumes fill the office (it turns purple) and a toxin meter rises toxinRate % per
+// second. With the fan on AND both doors open, the air clears instead (TOXIN_CLEAR % per second); once
+// it's back to 0 he gives up. At 100% you pass out and he gets you.
+const toxicWait = level => rand(byLevel(level, 70, 25), byLevel(level, 100, 40));
+// (3 to 7 % a second, cleared at 10, until the bot test: on busy nights a door often has to be shut.)
+const toxinRate = level => byLevel(level, 2.5, 5.5);
+const TOXIN_CLEAR = 12;
+
+// ---------- Dee Dee ----------
+// At the start of the night, with a chance of her level / 20, she takes one random character out of the
+// night and gives every other one DEEDEE_BOOST more levels (past 20 if need be), and coins turn up half
+// as often.
+const DEEDEE_BOOST = 5;
+
+// ---------- Funtime Foxy ----------
+// A countdown in your office ("SHOWTIME"); when it reaches 0 the left door had better be shut. There's
+// no other cue. Then it starts again with a new time.
+const funFoxyWait = level => rand(byLevel(level, 45, 18), byLevel(level, 70, 30));
+
+// ---------- Shadow Bonnie ----------
+// Every so often the office and the cameras go dark for shadowTime seconds; the flashlight lets you see
+// what it lights.
+const shadowWait = level => rand(byLevel(level, 60, 25), byLevel(level, 90, 40));
+const shadowTime = level => byLevel(level, 10, 20);
+
+// ---------- Twisted Foxy ----------
+// Every so often, gravelly noises: he's digging his way up out of the floor in the Prize Corner. Tap
+// (click) him there twistTaps times before twistTime runs out.
+// (twistTime was 10 to 6 s and twistTaps 3 to 7 until the bot test: with everyone on, there often isn't
+// time to get to CAM 7 while other things need you.)
+const twistWait = level => rand(byLevel(level, 55, 20), byLevel(level, 80, 32));
+const twistTaps = level => Math.round(byLevel(level, 3, 6));
+const twistTime = level => byLevel(level, 15, 10);

@@ -74,7 +74,7 @@ const NFREDDY = {
 };
 const WFOXY = {
   id: 'wfx', name: 'Withered Foxy', where: 'LEFT DOOR',
-  desc: 'Charges the left door from Pirate Cove; being on the cameras stalls him. Shut the door, wait for the stomp, then open it and flash him until he leaves.',
+  desc: 'Turns up in the West hall now and then and charges the left door. Shut the door, wait for the stomp, then open it and flash him until he leaves.',
 };
 const MOON = {
   id: 'mon', name: 'Sleepy Moon', where: 'CAMERAS',
@@ -115,21 +115,109 @@ const NCHICA = {
   desc: 'Makes a strange noise, then hides her cupcake on one of the cameras. Find it and click it before time runs out.',
   how: 'came looking for her cupcake',
 };
+// The third batch (added 2026-11-07, the owner's designs).
+// The three duct crawlers: `interval` is seconds between their chances to move a duct room, and `lure`
+// is the chance that a move heads toward the audio lure instead of the front.
+const TBONNIE = {
+  id: 'tbo', name: 'Toy Bonnie', where: 'DUCTS',
+  desc: 'Crawls through the ducts super fast and barely cares about the audio lure. When he reaches the front, put the mask on.',
+  how: 'climbed out of the duct',
+  interval: 3, lure: 0.2,
+};
+const TCHICA = {
+  id: 'tch', name: 'Toy Chica', where: 'DUCTS',
+  desc: 'Crawls through the ducts, a bit faster than Nedd Bear, but the audio lure pulls her easily. If she reaches the front, she gets you.',
+  how: 'climbed out of the duct',
+  interval: 5, lure: 0.85,
+};
+const NEDD = {
+  id: 'ned', name: 'Nedd Bear', where: 'DUCTS',
+  desc: 'Crawls slowly through the ducts and only sometimes follows the audio lure. If he reaches the front, he gets you.',
+  how: 'climbed out of the duct',
+  interval: 7, lure: 0.45,
+};
+const TIGER = {
+  id: 'wti', name: 'White Tiger', where: 'ANYTHING',
+  desc: 'Use one thing (a door, the monitor, the flashlight, the fan or the mask) for too long without a break and he jumpscares you and breaks it for a bit. He doesn\'t kill.',
+};
+const RAINBOW = {
+  id: 'rbw', name: 'Chica\'s Magic Rainbow', where: 'POINTER',
+  desc: 'Appears on the office or the cameras and chases your mouse pointer, a bit slower than you. Dodge her until she gives up; if she catches the pointer, you die.',
+  how: 'caught you',
+};
+const RSBONNIE = {
+  id: 'rsb', name: 'Rockstar Bonnie', where: 'SHOP',
+  desc: 'Lost his guitar: buy it back from the shop before 6 AM (the price goes up with his level), or he gets you at 5:59.',
+  how: 'came for his guitar',
+};
+const TOXSPRING = {
+  id: 'tsp', name: 'Toxic Springtrap', where: 'OFFICE',
+  desc: 'Fills the office with purple toxic fumes. Turn on the fan and keep both doors open to clear the air before the toxins get you.',
+  how: 'filled your lungs with fumes',
+};
+const DEEDEE = {
+  id: 'dee', name: 'Dee Dee', where: 'START',
+  desc: 'May show up at the start of the night: she takes one random character out, but everyone else gets +5 levels and coins turn up less often.',
+};
+const FUNFOXY = {
+  id: 'ffx', name: 'Funtime Foxy', where: 'LEFT DOOR',
+  desc: 'A SHOWTIME countdown runs in your office. When it hits 0, the left door had better be shut. There is no other warning.',
+};
+const FOXY = {
+  id: 'fox', name: 'Foxy', where: 'LEFT DOOR',
+  desc: 'Gets ready in Pirate Cove (the cameras stall him), then runs to the left door. Shut it in time; slamming into it knocks 5% off your power.',
+};
+const SHADOWB = {
+  id: 'sbn', name: 'Shadow Bonnie', where: 'DARKNESS',
+  desc: 'Every so often the office and the cameras go dark. Use the flashlight to see.',
+};
+const TFOXY = {
+  id: 'twf', name: 'Twisted Foxy', where: 'CAM 7',
+  desc: 'Gravelly noises: he\'s digging up out of the floor in the Prize Corner. Click him there several times before he gets out.',
+  how: 'dug his way out',
+};
 
 // Everything with a level on the custom night screen, in GAME ORDER (on request): grouped by the FNAF
 // game each character first appeared in, oldest game first. New characters go in their game's group.
 // (Levels are saved by character id, so changing this order never mixes up anyone's saved levels; see
 // LEGACY_ORDER in game.js for how older saves are read.)
 const SETUP = [
-  FREDDY, BONNIE, CHICA, GOLDEN,                 // FNAF 1
-  WBONNIE, WFOXY, PUPPET,                        // FNAF 2
+  FREDDY, BONNIE, CHICA, FOXY, GOLDEN,           // FNAF 1
+  TBONNIE, TCHICA, WBONNIE, WFOXY, PUPPET, SHADOWB,   // FNAF 2
   PCHICA,                                        // FNAF 3
   NFREDDY, NFOXY, NCHICA, PLUSH,                 // FNAF 4
-  FUNFRED, BONNET,                               // Sister Location
-  ENDO,                                          // Special Delivery
+  NEDD, RAINBOW,                                 // FNAF World
+  FUNFRED, FUNFOXY, BONNET,                      // Sister Location
+  RSBONNIE,                                      // Freddy Fazbear's Pizzeria Simulator
+  TFOXY,                                         // The Twisted Ones
+  DEEDEE,                                        // Ultimate Custom Night
+  ENDO, TOXSPRING,                               // Special Delivery
   STAFF,                                         // Security Breach
-  MOON,                                          // Secret of the Mimic
+  TIGER, MOON,                                   // Secret of the Mimic (White Tiger's game is a guess)
 ];
+// The characters who crawl through the ducts.
+const DUCT_CRAWLERS = [TBONNIE, TCHICA, NEDD];
+
+// ---------- the ducts ----------
+// 3 rows of 3 duct rooms, D1 (top left, where crawlers start) to D9 (bottom right, the front: the vent
+// into your office). Each room joins the rooms beside, above and below it; `dist` counts the moves to
+// the front plus 1, so D9 is 1 and D1 is 5.
+const DUCT_ROWS = 3, DUCT_COLS = 3;
+const DUCTS = {};
+for (let r = 0; r < DUCT_ROWS; r++) {
+  for (let c = 0; c < DUCT_COLS; c++) {
+    const id = 'd' + (r * DUCT_COLS + c + 1);
+    const next = [];
+    if (r > 0) next.push('d' + ((r - 1) * DUCT_COLS + c + 1));
+    if (r < DUCT_ROWS - 1) next.push('d' + ((r + 1) * DUCT_COLS + c + 1));
+    if (c > 0) next.push('d' + (r * DUCT_COLS + c));
+    if (c < DUCT_COLS - 1) next.push('d' + (r * DUCT_COLS + c + 2));
+    DUCTS[id] = { r, c, next, dist: (DUCT_ROWS - 1 - r) + (DUCT_COLS - 1 - c) + 1 };
+  }
+}
+const DUCT_START = 'd1';
+const DUCT_FRONT = 'd' + DUCT_ROWS * DUCT_COLS;
+const DUCT_ORDER = Object.keys(DUCTS);
 
 // ---------- spots in the office ----------
 // [row, column] places in the office picture (36 wide, 16 tall, see officeLines in art.js).
@@ -152,38 +240,49 @@ const PLUSH_SPOTS = [[1, 14], [5, 28], [12, 6], [12, 26], [13, 16], [4, 12]];
 // everyone(10) puts every character at 10.
 const lv = byId => SETUP.map(c => byId[c.id] || 0);
 const everyone = level => lv(Object.fromEntries(SETUP.map(c => [c.id, level])));
+// Everyone at `level`, except the ones listed: everyoneBut(9, { tbo: 12 }) is everyone at 9, Toy Bonnie at 12.
+const everyoneBut = (level, byId) => lv({ ...Object.fromEntries(SETUP.map(c => [c.id, level])), ...byId });
 // The list is in order, easiest first. The order came from a test bot that plays with a person's
 // limits (tools/bot.js: it only reacts to what a player could see or hear, with human reaction times,
 // a mouse that moves at a person's speed, one action at a time). The ones it won less often come
 // later, and ties are sorted by points. Warm-up stays first and All 20 stays last.
-// Measured 2026-11-03 after the second batch of characters (17 in all; UNIT_DRAIN 0.35, LEVEL_SCALE 0.5),
-// 30 nights each, wins by an "average" player / a "beginner": the first 28 were won 30/30 by the average
-// player and 25-30 by the beginner; then Everyone at 5 (26 / 24), at 10 (24 / 17), at 15 (16 / 3),
-// at 18 (12 / 0) and All 20 (6 / 0).
+// Measured 2026-11-07 after the third batch (29 characters; UNIT_DRAIN 0.35, LEVEL_SCALE 0.5, CROWD_CALM
+// 12), 10 nights each for the new and changed ones (30 for the rest), wins by an "average" player / a
+// "beginner": everything before the ladder 9-10 / 9-10, except Over the rainbow (13 / 11 of 15); then
+// Everyone at 5 (9 / 3), Graveyard shift (6 / 3), Double shift (6 / 3), Sunrise is a lie (3 / 1),
+// Last stand (2 / 0) and All 20 (3 / 0, and 9 of 40 for the average player).
 // Every challenge must stay humanly possible like this (the top ones are for experienced players).
+// The third batch (2026-11-07) reworked Withered Foxy (he now turns up in the West hall on a timer; Foxy
+// took over Pirate Cove), so every challenge with him went up a version.
 const PRESETS = [
-  { name: 'Warm-up', v: 2, levels: lv({ fre: 3, bon: 3, pup: 3, wfx: 2 }) },
+  // Warm-up: Withered Foxy (2) swapped for Foxy (2), who now has the Pirate Cove routine Withered Foxy had
+  // here, so it plays the same as before (not harder: it stays v2 and keeps its ✓).
+  { name: 'Warm-up', v: 2, levels: lv({ fre: 3, bon: 3, pup: 3, fox: 2 }) },
   { name: 'Quiet night', v: 3, levels: lv({ pup: 8, mon: 8, end: 8 }) },
-  // The two "classic" challenges have no Withered Foxy (taken out on request, in case a standard Foxy
-  // is added later). Chica joined both when she was added (v3).
-  { name: 'The classics', v: 3, levels: lv({ fre: 8, bon: 8, gol: 5, chi: 8 }) },
-  { name: 'Heat wave', v: 2, levels: lv({ end: 15, stf: 8, fre: 8 }) },
-  { name: 'Withered away', v: 2, levels: lv({ wbn: 16, wfx: 16 }) },
+  // The two "classic" challenges had no Withered Foxy, waiting for a standard Foxy: he's in now (v4).
+  // Chica joined both when she was added (v3).
+  { name: 'The classics', v: 4, levels: lv({ fre: 8, bon: 8, chi: 8, fox: 8, gol: 5 }) },
+  { name: 'Heat wave', v: 3, levels: lv({ end: 15, stf: 8, fre: 8, tsp: 10 }) },             // v3: + Toxic Springtrap (the fan again)
+  { name: 'Withered away', v: 3, levels: lv({ wbn: 16, wfx: 16 }) },
   { name: 'Hot and sleepy', v: 3, levels: lv({ end: 16, mon: 16 }) },
+  { name: 'Crawl space', v: 1, levels: lv({ tbo: 10, tch: 10, ned: 10, fre: 6 }) },        // new with the third batch
   { name: 'Wind it up', v: 3, levels: lv({ pup: 14, bon: 8, pch: 8, chi: 8 }) },             // v3: + Chica (whatever walks in)
   { name: 'Caution', v: 3, levels: lv({ stf: 14, bon: 10, fre: 6, fun: 8 }) },               // v3: + Funtime Freddy (read, then pick a door)
   // New with the second batch of characters (2026-11-03).
-  // Plushtrap stays in Fun time until more Sister Location characters are added; then he comes out
-  // (on request).
-  { name: 'Fun time', v: 1, levels: lv({ fun: 15, plu: 12, bnt: 12 }) },
+  // v2: Plushtrap out and Funtime Foxy in, now that there's another Sister Location character (on request).
+  { name: 'Fun time', v: 2, levels: lv({ fun: 15, ffx: 12, bnt: 12 }) },
   { name: 'Patrol', v: 1, levels: lv({ chi: 15, nfx: 12, bon: 12 }) },
   { name: 'Cupcake hunt', v: 1, levels: lv({ nch: 15, pch: 15, chi: 10 }) },
   { name: 'Bedtime', v: 4, levels: lv({ mon: 12, nfr: 10, bnt: 10, plu: 10 }) },             // v4: + Plushtrap (FNAF 4's bedroom)
-  { name: 'Music lesson', v: 2, levels: lv({ pup: 18, wfx: 12, bon: 12 }) },
-  { name: 'Pirate\'s dance', v: 3, levels: lv({ wfx: 15, bon: 10, fre: 10, nfx: 12 }) },   // v3: + Nightmare Foxy
+  { name: 'Lights out', v: 1, levels: lv({ sbn: 15, nfr: 10, plu: 10, bnt: 8 }) },          // new with the third batch
+  { name: 'Music lesson', v: 3, levels: lv({ pup: 18, wfx: 12, bon: 12 }) },
+  { name: 'Pirate\'s dance', v: 4, levels: lv({ wfx: 15, bon: 10, fre: 10, nfx: 12 }) },   // v3: + Nightmare Foxy
+  { name: 'Shopping spree', v: 1, levels: lv({ rsb: 18, fre: 10, bon: 10, chi: 10 }) },     // new with the third batch
+  { name: 'Toxic shock', v: 1, levels: lv({ tsp: 16, end: 12, stf: 10, bon: 10 }) },        // new with the third batch
   { name: 'Snack time', v: 3, levels: lv({ pch: 16, bnt: 12, pup: 10, nch: 12 }) },       // v3: + Nightmare Chica
   // v3: the Puppet (5) added and Golden Freddy raised from 15 to 20 (on request).
   { name: 'Mask on', v: 3, levels: lv({ wbn: 15, gol: 20, nfr: 12, pup: 5 }) },
+  { name: 'Big cat', v: 1, levels: lv({ wti: 16, stf: 12, fre: 12, end: 12 }) },           // new with the third batch
   { name: 'Bunny trouble', v: 3, levels: lv({ bon: 14, bnt: 14, wbn: 14, plu: 12 }) },    // v3: + Plushtrap
   // Plushtrap was added briefly (v2) and taken out again on request. Taking him out made it easier, so it
   // stays v2: a ✓ earned with him still counts.
@@ -191,30 +290,38 @@ const PRESETS = [
   { name: 'Freddy fever', v: 3, levels: lv({ fre: 14, gol: 14, nfr: 14, fun: 14 }) },     // v3: + Funtime Freddy
   { name: 'Masquerade', v: 2, levels: lv({ gol: 16, wbn: 16, nfr: 14, bnt: 10 }) },
   // v4: + Plushtrap. v5: + Nightmare Foxy (on request; the flashlight is what holds him back).
-  // The bot still won it 30/30 as an average player and a beginner.
-  { name: 'Night light', v: 5, levels: lv({ mon: 14, nfr: 12, wfx: 10, plu: 12, nfx: 12 }) },
+  // v6: + Shadow Bonnie (more need for the flashlight).
+  { name: 'Night light', v: 6, levels: lv({ mon: 14, nfr: 12, wfx: 10, plu: 12, nfx: 12, sbn: 10 }) },
   // v2: Phantom Chica added (on request: she takes power, so she belongs here).
   // v3: the office heat (like every challenge). v4: Sleepy Moon's rework (like every challenge he's in).
-  { name: 'Power hungry', v: 4, levels: lv({ end: 14, mon: 14, stf: 14, wfx: 14, pch: 14 }) },
+  { name: 'Power hungry', v: 5, levels: lv({ end: 14, mon: 14, stf: 14, wfx: 14, pch: 14 }) },
   // v3: the Puppet and Sleepy Moon added (on request): they make you use the monitor, and every time you
   // look away from it the other three can be waiting.
   // v4: + Nightmare Chica (another reason you need the monitor).
   { name: 'Don\'t look away', v: 4, levels: lv({ gol: 12, pch: 12, wbn: 12, pup: 12, mon: 12, nch: 12 }) },
-  // v3: + Nightmare Foxy at 12 (on request: his counter is a door too). The bot still won it 30/30
-  // as an average player and a beginner.
-  { name: 'Door duty', v: 3, levels: lv({ fre: 16, bon: 16, stf: 16, wfx: 12, nfx: 12 }) },
+  // v3: + Nightmare Foxy at 12 (on request: his counter is a door too).
+  { name: 'Door duty', v: 4, levels: lv({ fre: 16, bon: 16, stf: 16, wfx: 12, nfx: 12 }) },
   { name: 'Little terrors', v: 1, levels: lv({ plu: 18, bnt: 18, nfr: 10 }) },
-  // v3: + both nightmares. v4: Phantom Chica (a phantom, not a nightmare) swapped for Plushtrap, on request
-  // (the bot then won it 30/30 as an average player and 29/30 as a beginner).
+  // v3: + both nightmares. v4: Phantom Chica (a phantom, not a nightmare) swapped for Plushtrap, on request.
   { name: 'Nightmare crew', v: 4, levels: lv({ stf: 15, nfr: 15, plu: 15, nfx: 12, nch: 12 }) },
   // v3: Sleepy Moon added (on request). v4: + Chica (more clicking).
   { name: 'Click frenzy', v: 4, levels: lv({ pch: 18, bnt: 18, gol: 10, mon: 15, chi: 12 }) },
-  { name: 'Classic 20', v: 3, levels: lv({ fre: 20, bon: 20, gol: 20, chi: 20 }) },       // v3: + Chica
-  // The "everyone" ones include every character, so each new batch makes them harder (v4: the second batch).
-  // Everyone at 10, 15 and 18 were removed on request (2026-11-07, before more characters are added). Their
-  // saved ✓s stay in the browser (never deleted), they just aren't shown.
-  { name: 'Everyone at 5', v: 4, levels: everyone(5) },
-  { name: 'All 20', v: 4, levels: everyone(20) },
+  { name: 'Classic 20', v: 4, levels: lv({ fre: 20, bon: 20, chi: 20, fox: 20, gol: 20 }) },   // v3: + Chica. v4: + Foxy
+  // The two the bot won least often outside the ladder (Over the rainbow was rbw 16, bnt 14, plu 12 before
+  // testing; the rainbow keeps the mouse busy just when Bonnet and Plushtrap need it).
+  { name: 'Fox hunt', v: 1, levels: lv({ fox: 14, wfx: 12, nfx: 12, ffx: 12, twf: 12 }) },
+  { name: 'Over the rainbow', v: 1, levels: lv({ rbw: 14, bnt: 10, plu: 8 }) },
+  // The ladder up to All 20 (on request: "a good amount scaling up to the max mode because right now it is
+  // a big jump"). Everyone is in each one, with a group a bit higher.
+  // The "everyone" ones include every character, so each new batch makes them harder (v4: the second
+  // batch, v5: the third). Everyone at 10, 15 and 18 were removed on request (2026-11-07, before the third
+  // batch). Their saved ✓s stay in the browser (never deleted), they just aren't shown.
+  { name: 'Everyone at 5', v: 5, levels: everyone(5) },
+  { name: 'Graveyard shift', v: 1, levels: everyoneBut(7, { fre: 10, bon: 10, chi: 10, fox: 10, gol: 10 }) },
+  { name: 'Double shift', v: 1, levels: everyoneBut(11, { nfr: 14, nfx: 14, nch: 14, plu: 14 }) },
+  { name: 'Sunrise is a lie', v: 1, levels: everyoneBut(15, { fox: 18, wfx: 18, nfx: 18, ffx: 18, twf: 18 }) },
+  { name: 'Last stand', v: 1, levels: everyoneBut(20, { dee: 0, wti: 10 }) },
+  { name: 'All 20', v: 5, levels: everyone(20) },
 ];
 
 // One line of flavour text per challenge, shown under the list when it's picked.
@@ -249,6 +356,17 @@ const FLAVOR = {
   'Cupcake hunt': 'So many cupcakes. Only some of them are real.',
   'Little terrors': 'The small ones are the worst.',
   'Nightmare hour': 'The nightmares are all awake, and one of them wants in.',
+  'Crawl space': 'Something is in the ducts. Several somethings.',
+  'Fox hunt': 'Every fox in the building, and only one left door.',
+  'Lights out': 'When the lights go, the little ones come out.',
+  'Shopping spree': 'Fend them off, pocket the coins, and buy back that guitar.',
+  'Big cat': 'Don\'t hold anything too long. He\'s watching.',
+  'Toxic shock': 'Open the doors to breathe. Shut them to live.',
+  'Over the rainbow': 'Keep that mouse moving.',
+  'Graveyard shift': 'Everyone is in tonight. The old crew is restless.',
+  'Double shift': 'Everyone, and the nightmares are worse.',
+  'Sunrise is a lie': 'Everyone, and the foxes are hungry.',
+  'Last stand': 'All 20, minus a little mercy.',
 };
 
 // The name a beaten challenge is saved under: its name plus its version, like "Bedtime v1".

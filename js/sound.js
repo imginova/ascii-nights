@@ -240,9 +240,10 @@ const sfx = (() => {
       tone(80, 1.0, { type: 'square', vol: 0.1, slide: -30 });
     },
 
-    // ----- Withered Foxy -----
-    // Leaving the cove: fast, heavy running steps toward the left door.
-    run() { for (let i = 0; i < 8; i++) noise(0.07, { vol: 0.15 + i * 0.06, freq: 600, delay: i * 0.17, pan: -0.3 - i * 0.07 }); },
+    // ----- Foxy and Withered Foxy -----
+    // Running toward the left door: fast steps getting louder. Foxy's are lighter (freq 600); Withered
+    // Foxy's are deeper and heavier (freq 300), so you can tell who's coming.
+    run(freq = 600) { for (let i = 0; i < 8; i++) noise(0.07, { vol: 0.15 + i * 0.06, freq, delay: i * 0.17, pan: -0.3 - i * 0.07 }); },
     // Slamming into the shut left door.
     bang() {
       noise(0.4, { vol: 0.9, freq: 300, pan: -0.8 });
@@ -304,6 +305,61 @@ const sfx = (() => {
       noise(0.5, { vol: 0.2, freq: 2000, type: 'highpass', delay: 0.3 });
       tone(180, 0.5, { type: 'sawtooth', vol: 0.12, slide: 120, delay: 0.3 });
     },
+
+    // ===== the third batch =====
+    // ----- the ducts -----
+    // Someone crawling a duct room closer: a metal clank, louder the closer they are (dist 1 = the front).
+    ductMove(dist) {
+      const vol = 0.1 + 0.25 / dist;
+      noise(0.08, { vol, freq: 1800, type: 'highpass', pan: 0.3 });
+      tone(320 + 60 * dist, 0.1, { type: 'square', vol: vol * 0.4, slide: -80, pan: 0.3 });
+    },
+    // At the vent into your office: a loud double BANG on metal.
+    ductBang() {
+      for (let i = 0; i < 2; i++) {
+        noise(0.15, { vol: 0.7, freq: 1200, delay: i * 0.18, pan: 0.3 });
+        tone(130, 0.2, { type: 'square', vol: 0.25, slide: -60, delay: i * 0.18, pan: 0.3 });
+      }
+    },
+    // Toy Bonnie fooled by the mask: he scrambles back up the duct.
+    ductOut() { for (let i = 0; i < 4; i++) noise(0.06, { vol: 0.3 - i * 0.06, freq: 1500, type: 'highpass', delay: i * 0.12, pan: 0.3 }); },
+    // The audio lure: a cheerful "hello?" made of two bouncy notes.
+    lure() { tone(660, 0.15, { type: 'triangle', vol: 0.15 }); tone(880, 0.2, { type: 'triangle', vol: 0.15, slide: 120, delay: 0.16 }); },
+
+    // ----- Fazcoins and the shop -----
+    coin() { tone(1319, 0.06, { type: 'square', vol: 0.08 }); tone(1976, 0.18, { type: 'square', vol: 0.08, delay: 0.06 }); },
+    buy() { [784, 988, 1319].forEach((f, i) => tone(f, 0.1, { type: 'triangle', vol: 0.15, delay: i * 0.07 })); },
+    // Rockstar Bonnie's guitar: a short power chord.
+    guitar() { [110, 165, 220].forEach(f => tone(f, 0.7, { type: 'sawtooth', vol: 0.1, slide: -8 })); },
+
+    // ----- White Tiger -----
+    // A roar: a deep growl rising and falling, with a burst of hiss.
+    tiger() {
+      noise(0.7, { vol: 0.55, freq: 500 });
+      tone(90, 0.7, { type: 'sawtooth', vol: 0.35, slide: 70 });
+      tone(180, 0.5, { type: 'square', vol: 0.1, slide: -90, delay: 0.2 });
+    },
+
+    // ----- Chica's Magic Rainbow -----
+    // A sparkly run of notes up when she appears, down when she gives up.
+    rainbowIn() { [523, 659, 784, 988, 1175, 1568].forEach((f, i) => tone(f, 0.12, { type: 'sine', vol: 0.15, delay: i * 0.06 })); },
+    rainbowOut() { [1568, 1175, 988, 784].forEach((f, i) => tone(f, 0.12, { type: 'sine', vol: 0.1, delay: i * 0.06 })); },
+
+    // ----- Toxic Springtrap -----
+    // A long hiss of gas and a low, sick groan.
+    toxicIn() { noise(1.4, { vol: 0.35, freq: 2500, type: 'highpass' }); tone(70, 1.2, { type: 'sawtooth', vol: 0.2, slide: -15 }); },
+    toxicOut() { noise(0.6, { vol: 0.2, freq: 1500, type: 'highpass' }); tone(300, 0.5, { type: 'sine', vol: 0.1, slide: 200 }); },
+
+    // ----- Shadow Bonnie -----
+    // The lights dying (a falling buzz) and coming back (a rising one).
+    shadowIn() { tone(240, 0.8, { type: 'sawtooth', vol: 0.15, slide: -200 }); noise(0.3, { vol: 0.2, freq: 400 }); },
+    shadowOut() { tone(60, 0.5, { type: 'sawtooth', vol: 0.12, slide: 180 }); },
+
+    // ----- Twisted Foxy -----
+    // Digging: gravelly crunches from the floor.
+    gravel() { for (let i = 0; i < 5; i++) noise(0.06, { vol: 0.25, freq: 350 + Math.random() * 300, delay: i * 0.09 + Math.random() * 0.04 }); },
+    // A tap on him: a dull thud.
+    thud() { tone(90, 0.12, { type: 'sine', vol: 0.4, slide: -30 }); noise(0.06, { vol: 0.25, freq: 500 }); },
 
     // ----- the office heat -----
     // Getting too hot: a heavy, tired breath (plays at 70% and 85% heat).

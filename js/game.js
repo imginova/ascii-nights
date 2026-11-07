@@ -84,12 +84,17 @@ let flashKey = false, flashMouse = false, flashButton = false;
 //   where  'L' or 'R' (over that doorway), 'office' (over the middle of the office) or null
 //   r, c   the row and column of the character under the pointer, in that picture
 //   x, y   the pointer's position in pixels inside the view (for drawing the light)
-const aim = { where: null, r: 0, c: 0, x: 0, y: 0 };
+//   vx, vy the pointer's position anywhere on the page, measured in widths of the view from its top left
+//          corner (Chica's Magic Rainbow chases this); vh is the view's height in view widths
+const aim = { where: null, r: 0, c: 0, x: 0, y: 0, vx: 0.5, vy: 0.3, vh: 0.6 };
 
 // Is there power to use things right now? Not after a power-out.
 const powered = () => !G.powerOut;
-// Is the flashlight on? It needs power, and you have to be looking at the office (monitor down).
-const flashOn = () => (flashKey || flashMouse || flashButton) && powered() && !G.cam;
+// Is the flashlight lit? It needs power and mustn't be broken (White Tiger). Normally it only works
+// with the monitor down, but while Shadow Bonnie makes it dark it lights the cameras too.
+const flashLit = () => (flashKey || flashMouse || flashButton) && powered() && !broken('flash') && (!G.cam || G.sbn.dark);
+// Is the flashlight shining on the office (lit, and the monitor down)?
+const flashOn = () => flashLit() && !G.cam;
 // Is the flashlight shining on the character at row r, column c of the office?
 // The lit patch is an oval around the pointer: BEAM_COLS across and BEAM_ROWS up and down.
 // (dx / BEAM_COLS)² + (dy / BEAM_ROWS)² <= 1 is the maths for "inside that oval".
@@ -110,13 +115,33 @@ const otherSide = side => side === 'L' ? 'R' : 'L';
 const hourOf = t => Math.min(NIGHT_HOURS, Math.floor(t / HOUR_SECONDS));
 const hourLabel = h => (h === 0 ? 12 : h) + ' AM';
 
+// Tonight's levels: the setup screen's, unless Dee Dee changed them at the start of the night
+// (see rollDeeDee). One per character, in SETUP order.
+let tonight = [];
 // How hard character c plays tonight (c is one of the descriptions in data.js, like BONNIE):
-// its level from the setup screen, eased by effLevel (config.js).
-const levelOf = c => effLevel(levels[SETUP.indexOf(c)]);
+// tonight's level, eased by effLevel (config.js).
+const levelOf = c => effLevel(tonight[SETUP.indexOf(c)]);
+
+// Dee Dee, at the start of the night: with a chance of her level / 20 she takes one random character
+// out (level 0 for the night) and gives every other one DEEDEE_BOOST more levels (on request: even past
+// 20). Returns who she took out, or null if she didn't show up.
+function rollDeeDee() {
+  tonight = levels.slice();
+  const d = SETUP.indexOf(DEEDEE);
+  if (tonight[d] === 0 || Math.random() >= moveChance(effLevel(tonight[d]))) return null;
+  const others = SETUP.filter((c, i) => c !== DEEDEE && tonight[i] > 0);
+  if (!others.length) return null;
+  const victim = pick(others);
+  tonight = tonight.map((lv, i) => SETUP[i] === victim ? 0 : SETUP[i] === DEEDEE || lv === 0 ? lv : lv + DEEDEE_BOOST);
+  return victim;
+}
 
 // Build a fresh night.
 function newGame() {
+  const deeDee = rollDeeDee();
   G = {
+    deeDee,                        // who Dee Dee took out tonight (null if she didn't show up)
+    tab: 'cams',                   // which tab the monitor shows: 'cams', 'ducts' or 'shop'
     t: 0,                          // seconds since 12 AM
     power: 100,                    // percent
     doors: { L: false, R: false }, // true = closed
@@ -149,9 +174,8 @@ function newGame() {
     // all 3 have been there, and Nightmare Freddy himself.
     nfr: { level: levelOf(NFREDDY), freddles: [false, false, false], shine: [0, 0, 0], timer: freddleWait(levelOf(NFREDDY)),
       fullT: 0, present: false, maskT: 0, deadline: 0 },
-    // Withered Foxy: where he is in his routine (see updateFoxy), his cove stage (0 curtain shut,
-    // 1 peeking, 2 half out) and his timers.
-    wfx: { level: levelOf(WFOXY), phase: 'cove', stage: 0, timer: FOXY_INTERVAL * rand(0.7, 1.3), runT: 0, waitT: 0,
+    // Withered Foxy: where he is in his routine (see updateFoxy) and his timers.
+    wfx: { level: levelOf(WFOXY), phase: 'away', timer: witheredFoxyWait(levelOf(WFOXY)), runT: 0, waitT: 0,
       stompT: 0, flashT: 0, deadline: 0 },
     // Sleepy Moon: which camera he's on (null while he's away), the sleep meter (0 wide awake,
     // 100 asleep), how many yawns have played, and the countdown to his next visit.
@@ -172,10 +196,58 @@ function newGame() {
     plu: { level: levelOf(PLUSH), spot: null, deadline: 0, timer: plushWait(levelOf(PLUSH)) },
     // Nightmare Chica: which camera her cupcake is hidden on (null when it isn't) and where on it.
     nch: { level: levelOf(NCHICA), room: null, spot: null, deadline: 0, timer: nchicaWait(levelOf(NCHICA)) },
+    // ----- the third batch -----
+    // The three duct crawlers: which duct room they're in, their move timer, and (at the front) when they
+    // get you. Toy Bonnie at the front also needs the mask.
+    tbo: ductCrawler(TBONNIE), tch: ductCrawler(TCHICA), ned: ductCrawler(NEDD),
+    // White Tiger: how long each thing has been on without a break, and until when each is broken.
+    wti: { level: levelOf(TIGER), use: {}, brokenUntil: {} },
+    // Chica's Magic Rainbow: where she is (x, y from 0 to 1 across and down the view) and how much
+    // longer you have to dodge her.
+    rbw: { level: levelOf(RAINBOW), active: false, x: 0, y: 0, left: 0, timer: rainbowWait(levelOf(RAINBOW)) },
+    // Rockstar Bonnie: just his level (his guitar is in the shop, see `shop`).
+    rsb: { level: levelOf(RSBONNIE), warned: 0 },
+    // Toxic Springtrap: whether his fumes are in the office and the toxin meter (percent).
+    tsp: { level: levelOf(TOXSPRING), active: false, toxin: 0, timer: toxicWait(levelOf(TOXSPRING)) },
+    dee: { level: levelOf(DEEDEE) },
+    // Funtime Foxy: the SHOWTIME countdown.
+    ffx: { level: levelOf(FUNFOXY), timer: funFoxyWait(levelOf(FUNFOXY)) },
+    // Foxy: his routine (cove -> run -> door), his cove stage (0 curtain shut, 1 peeking, 2 half out).
+    fox: { level: levelOf(FOXY), phase: 'cove', stage: 0, timer: FOXY_INTERVAL * rand(0.7, 1.3), runT: 0, deadline: 0 },
+    // Shadow Bonnie: whether it's dark, and for how much longer.
+    sbn: { level: levelOf(SHADOWB), dark: false, darkT: 0, timer: shadowWait(levelOf(SHADOWB)) },
+    // Twisted Foxy: whether he's digging up, where on CAM 7, how many taps are still needed.
+    twf: { level: levelOf(TFOXY), active: false, spot: null, taps: 0, deadline: 0, timer: twistWait(levelOf(TFOXY)) },
+    // The ducts: the audio lure (which room, until when) and the heater.
+    lureRoom: null, lureUntil: 0, lureReadyAt: 0,
+    heater: false, heaterT: 0,
+    // Fazcoins: how many you have, the ones lying on the cameras ({ room, r, c, until }), and the
+    // countdown to the next one. Dee Dee makes them turn up half as often.
+    coins: 0, camCoins: [], coinT: COIN_EVERY, coinEvery: COIN_EVERY * (deeDee ? 2 : 1),
+    // The shop: death coins and battery packs left to buy, whether Rockstar Bonnie's guitar is bought,
+    // and whether you're choosing who to use a death coin on.
+    shop: { deathLeft: DEATH_COINS, batteries: BATTERY_STOCK, guitar: false, picking: false },
+    removed: [],                   // ids of characters removed tonight by a death coin
+    note: '', noteUntil: 0,        // a short message shown over the office (Dee Dee, White Tiger...)
     shutAt: { L: -1, R: -1 },      // when each door was last shut (Funtime Freddy checks you looked first)
     heat: 0,                       // the office heat in percent (see updateHeat); 100 = you pass out
     hotWarns: 0,                   // how many of the HOT_WARN marks the heat is past (for the warning breaths)
   };
+  // How fast everyone acts tonight: slower on crowded nights (see crowdPace in config.js).
+  G.pace = crowdPace(tonight.filter(lv => lv > 0).length);
+  // Funtime Foxy's countdown shows real seconds, so his wait is stretched instead (see updateFunFoxy).
+  G.ffx.timer /= G.pace;
+  if (deeDee) say(`DEE DEE took ${deeDee.name} away! Everyone else +${DEEDEE_BOOST}.`, 5);
+}
+// A fresh duct crawler (Toy Bonnie, Toy Chica or Nedd Bear) for newGame.
+function ductCrawler(c) {
+  return { level: levelOf(c), room: DUCT_START, timer: c.interval * rand(0.7, 1.3), deadline: 0 };
+}
+// Show a short message over the office for `sec` seconds (in real time, so it works while paused too).
+function say(text, sec) {
+  G.note = text;
+  G.noteUntil = performance.now() + sec * 1000;
+  dirty = true;
 }
 
 // ---------- the main rule loop ----------
@@ -196,17 +268,21 @@ function update(dt) {
 
   updatePower(dt);
   // Each character in turn. `for...of` runs the function for each one; we stop as soon as one ends the night.
+  // (On crowded nights their waiting timers count down slower: `timer -= dt * G.pace`, see crowdPace in
+  // config.js. Anything about YOUR reactions, like how long the light has been on something, uses dt.)
   for (const step of [updateFreddy, updateBonnie, updateGolden, updateChica, updateBonnet, updateWithered,
     updateStaff, updateNightmare, updateFoxy, updateMoon, updateEndo, updateNightmareFoxy, updateFuntime,
-    updateChicaWalk, updatePlushtrap, updateNightmareChica, updateHeat]) {
+    updateChicaWalk, updatePlushtrap, updateNightmareChica,
+    updateDucts, updateTiger, updateRainbow, updateRockstar, updateToxic, updateFunFoxy, updateClassicFoxy,
+    updateShadow, updateTwisted, updateCoins, updateHeat]) {
     if (G.over || G.powerOut) return;
     step(dt);
   }
 }
 
-// How many things are using power right now (0 to 5): the monitor, each closed door, the flashlight, the fan.
-// true counts as 1 and false as 0 when you add them up.
-const powerUnits = () => G.cam + G.doors.L + G.doors.R + flashOn() + G.fan;
+// How many things are using power right now (0 to 6): the monitor, each closed door, the flashlight,
+// the fan and the heater. true counts as 1 and false as 0 when you add them up.
+const powerUnits = () => G.cam + G.doors.L + G.doors.R + flashLit() + G.fan + G.heater;
 
 function updatePower(dt) {
   G.power -= UNIT_DRAIN * powerUnits() * dt;
@@ -220,11 +296,11 @@ function updateFreddy(dt) {
   const F = G.fre;
   if (F.level === 0) return;
   if (F.step === FREDDY_LAUGHS) {
-    if (G.doors.R) { sfx.bonk('R'); F.step = 0; F.timer = FREDDY_INTERVAL * rand(0.7, 1.3); }
+    if (G.doors.R) { sfx.bonk('R'); earnCoin(); F.step = 0; F.timer = FREDDY_INTERVAL * rand(0.7, 1.3); }
     else if (G.t >= F.deadline) lose(FREDDY, 'R');
     return;
   }
-  F.timer -= dt;
+  F.timer -= dt * G.pace;
   if (F.timer > 0) return;
   F.timer = FREDDY_INTERVAL * rand(0.7, 1.3);
   if (Math.random() >= moveChance(F.level)) return;   // this time he stays put
@@ -245,7 +321,7 @@ function updateBonnie(dt) {
     else if (G.t >= B.deadline) lose(BONNIE, bonnieSide());
     return;
   }
-  B.timer -= dt;
+  B.timer -= dt * G.pace;
   if (B.timer > 0) return;
   B.timer = BONNIE_INTERVAL * rand(0.7, 1.3);
   if (Math.random() >= moveChance(B.level)) return;
@@ -264,6 +340,7 @@ function updateBonnie(dt) {
 function bonnieHome() {
   const B = G.bon;
   sfx.bonk(bonnieSide());
+  earnCoin();
   B.route = pick(BONNIE.routes);
   B.step = 0;
   B.timer = BONNIE_INTERVAL * rand(0.7, 1.3);
@@ -291,7 +368,7 @@ function lookedBack() {
 function updateGolden() {
   const Go = G.gol;
   if (!Go.present) return;
-  if (G.mask) { Go.present = false; sfx.goldenOut(); dirty = true; }
+  if (G.mask) { Go.present = false; sfx.goldenOut(); earnCoin(); dirty = true; }
   else if (G.t >= Go.deadline) lose(GOLDEN);
 }
 
@@ -315,7 +392,7 @@ function clickCupcake(i) {
   if (!C || G.over || G.paused || !C.active || G.cam) return;
   C.cups.splice(i, 1);   // splice(i, 1) removes the i-th item from the list
   sfx.pop();
-  if (C.cups.length === 0) { C.active = false; sfx.chicaOut(); }
+  if (C.cups.length === 0) { C.active = false; sfx.chicaOut(); earnCoin(); }
   dirty = true;
 }
 
@@ -328,7 +405,7 @@ function updateBonnet(dt) {
   const N = G.bnt;
   if (N.level === 0) return;
   if (!N.active) {
-    N.timer -= dt;
+    N.timer -= dt * G.pace;
     if (N.timer > 0) return;
     N.active = true;
     N.dir = Math.random() < 0.5 ? 1 : -1;
@@ -358,6 +435,7 @@ function boopBonnet() {
   N.active = false;
   N.timer = bonnetWait(N.level);
   sfx.boop();
+  earnCoin();
   dirty = true;
 }
 
@@ -368,7 +446,7 @@ function updateWithered(dt) {
   const W = G.wbn;
   if (W.level === 0) return;
   if (!W.present) {
-    W.timer -= dt;
+    W.timer -= dt * G.pace;
     if (W.timer <= 0 && !G.cam) {
       W.present = true;
       W.maskT = 0;
@@ -384,6 +462,7 @@ function updateWithered(dt) {
       W.present = false;
       W.timer = witheredWait(W.level);
       sfx.witheredOut();
+      earnCoin();
       dirty = true;
     }
     return;
@@ -402,7 +481,7 @@ function updatePuppet(dt) {
     if (P.outTimer <= 0) lose(PUPPET);
     return;
   }
-  P.wind -= boxDrain(P.level) * dt;
+  P.wind -= boxDrain(P.level) * dt * G.pace;
   if (P.wind < BOX_LOW) {
     P.warnT -= dt;
     if (P.warnT <= 0) { sfx.boxWarn(); P.warnT = 4; }
@@ -435,7 +514,7 @@ function updateStaff(dt) {
   const S = G.stf;
   if (S.level === 0) return;
   if (!S.active) {
-    S.timer -= dt;
+    S.timer -= dt * G.pace;
     if (S.timer > 0) return;
     S.active = true;
     S.side = pick(['L', 'R']);
@@ -452,6 +531,7 @@ function updateStaff(dt) {
   }
   if (G.doors[S.side]) {
     sfx.bonk(S.side);
+    earnCoin();
     S.active = false;
     S.timer = staffWait(S.level);
     dirty = true;
@@ -488,7 +568,7 @@ function updateNightmare(dt) {
   // A new Freddle every so often, on a free spot.
   const free = [0, 1, 2].filter(i => !N.freddles[i]);
   if (free.length) {
-    N.timer -= dt;
+    N.timer -= dt * G.pace;
     if (N.timer <= 0) {
       N.freddles[pick(free)] = true;
       N.timer = freddleWait(N.level);
@@ -514,15 +594,14 @@ function updateNightmare(dt) {
 
 // ---------- Withered Foxy ----------
 // His routine, one `phase` at a time:
-//   'cove'    getting ready in Pirate Cove (stage 0 curtain shut, 1 peeking, 2 half out); then he runs.
-//             While the monitor is up (on any camera) he's stalled: his countdown stops (on request,
-//             to give a reason to use the cameras)
-//   'run'     sprinting down the West Hall to the left door
+//   'away'    nowhere to be seen. Every witheredFoxyWait seconds he turns up in the West hall and runs
+//             (on request: Foxy took over Pirate Cove and the camera stall, see updateClassicFoxy)
+//   'run'     sprinting down the West Hall to the left door (you can see him on CAM 5)
 //   'door'    in the open doorway: shut the door in time!
 //   'wait'    shut out; waiting behind the door. Opening it now just brings him back to 'door'
 //   'ready'   he stomped: now open the door...
 //   'open'    ...and flash him with the light until he leaves (FOXY_FLASH seconds of light in all;
-//             it doesn't have to be in one go). Then he goes back to the cove. No second door shut
+//             it doesn't have to be in one go). Then he's away again. No second door shut
 //             (simplified on request: it used to be flash, then shut the door again).
 // Shutting the door in 'open' before he's had enough light just puts him back to 'wait'.
 const foxyInDoorway = () => ['door', 'open'].includes(G.wfx.phase);
@@ -531,16 +610,13 @@ function updateFoxy(dt) {
   if (X.level === 0) return;
   const shut = G.doors.L;
   switch (X.phase) {
-    case 'cove':
-      if (G.cam) return;   // being watched on the cameras: he can't get ready
-      X.timer -= dt;
+    case 'away':
+      X.timer -= dt * G.pace;
       if (X.timer > 0) return;
-      X.timer = FOXY_INTERVAL * rand(0.7, 1.3);
-      if (Math.random() >= moveChance(X.level)) return;
-      if (X.stage < 2) { X.stage++; if (onCam('cove')) camStatic(0.4); dirty = true; return; }
       X.phase = 'run';
       X.runT = FOXY_RUN;
-      sfx.run();
+      if (onCam('whall')) camStatic(0.3);
+      sfx.run(300);   // heavier steps than Foxy's
       dirty = true;
       return;
     case 'run':
@@ -569,12 +645,12 @@ function updateFoxy(dt) {
       if (beamOnDoor('L')) {
         X.flashT += dt;
         if (X.flashT >= FOXY_FLASH) {
-          // Enough light: he gives up and goes back to the cove. The zap ends in a ding-ding.
-          X.phase = 'cove';
-          X.stage = 0;
-          X.timer = FOXY_INTERVAL * rand(0.7, 1.3);
+          // Enough light: he gives up and goes away. The zap ends in a ding-ding.
+          X.phase = 'away';
+          X.timer = witheredFoxyWait(X.level);
           sfx.zap();
           sfx.retreat();
+          earnCoin();
           dirty = true;
           return;
         }
@@ -591,6 +667,56 @@ function foxyShutOut() {
   dirty = true;
 }
 
+// ---------- Foxy ----------
+// The FNAF 1 fox, with Pirate Cove and the camera stall (on request, taken over from Withered Foxy):
+//   'cove'  getting ready (stage 0 curtain shut, 1 peeking, 2 half out); while the monitor is up (on
+//           any camera) his countdown stops, so the cameras keep him in
+//   'run'   sprinting down the West hall
+//   'door'  in the open doorway: shut it in time, or he gets you
+// If the door is shut when he gets there he slams into it: a bang, FOXY_DOOR_COST % of your power gone
+// (on request), and he's back in the cove.
+const classicFoxyInDoorway = () => G.fox.level > 0 && G.fox.phase === 'door';
+function updateClassicFoxy(dt) {
+  const X = G.fox;
+  if (X.level === 0) return;
+  switch (X.phase) {
+    case 'cove':
+      if (G.cam) return;   // being watched on the cameras: he can't get ready
+      X.timer -= dt * G.pace;
+      if (X.timer > 0) return;
+      X.timer = FOXY_INTERVAL * rand(0.7, 1.3);
+      if (Math.random() >= moveChance(X.level)) return;
+      if (X.stage < 2) { X.stage++; if (onCam('cove')) camStatic(0.4); dirty = true; return; }
+      X.phase = 'run';
+      X.runT = FOXY_RUN;
+      sfx.run();
+      dirty = true;
+      return;
+    case 'run':
+      X.runT -= dt;
+      if (X.runT > 0) return;
+      if (G.doors.L) foxySlam();
+      else { X.phase = 'door'; X.deadline = G.t + reactWindow(X.level); sfx.arrive('L', 110); }
+      dirty = true;
+      return;
+    case 'door':
+      if (G.doors.L) foxySlam();
+      else if (G.t >= X.deadline) lose(FOXY, 'L');
+  }
+}
+// He slams into the shut left door: power lost, and back to the cove.
+function foxySlam() {
+  const X = G.fox;
+  X.phase = 'cove';
+  X.stage = 0;
+  X.timer = FOXY_INTERVAL * rand(0.7, 1.3);
+  sfx.bang();
+  earnCoin();
+  G.power -= FOXY_DOOR_COST;
+  if (G.power <= 0) powerOutStart();
+  dirty = true;
+}
+
 // ---------- Sleepy Moon ----------
 // Every so often he turns up on a random camera (M.room) with a lullaby. While he's out you drift
 // off: the sleep meter fills and the view darkens. Find him on the cameras and click him (clickMoon)
@@ -599,7 +725,7 @@ function updateMoon(dt) {
   const M = G.mon;
   if (M.level === 0) return;
   if (!M.room) {
-    M.timer -= dt;
+    M.timer -= dt * G.pace;
     if (M.timer > 0) return;
     M.room = pick(CAM_ORDER);
     if (onCam(M.room)) camStatic(0.5);   // static if he turns up on the camera you're watching
@@ -624,6 +750,7 @@ function clickMoon() {
   M.yawns = 0;
   M.timer = moonWait(M.level);
   sfx.pop();
+  earnCoin();
   sfx.wakeUp();
   dirty = true;
 }
@@ -639,20 +766,21 @@ function updateEndo(dt) {
     if (E.crackleT <= 0) { sfx.crackle(); E.crackleT = 0.6; }
     if (E.stayT <= 0) { E.present = false; E.timer = endoWait(E.level); sfx.flameOff(); dirty = true; }
   } else {
-    E.timer -= dt;
+    E.timer -= dt * G.pace;
     if (E.timer <= 0) { E.present = true; E.stayT = endoStay(E.level); sfx.flameOn(); dirty = true; }
   }
 }
 
 // ---------- the office heat ----------
 // Every night the office slowly heats up (AMBIENT_HEAT), and much faster while the endo is here.
-// The fan cools it down, except while the endo is here: then it only slows the heating.
+// The heater (for the ducts) heats it too. The fan cools it down, except while the endo is here or the
+// heater is on: then it only slows the heating.
 // At 100% you pass out (or, if the endo is in the room, he gets the blame).
 function updateHeat(dt) {
   const E = G.end;
-  const rise = AMBIENT_HEAT + (E.present ? endoHeat(E.level) : 0);
+  const rise = AMBIENT_HEAT + (E.present ? endoHeat(E.level) : 0) + (G.heater ? HEATER_HEAT : 0);
   if (!G.fan) G.heat += rise * dt;
-  else if (E.present) G.heat += rise * FAN_SLOW * dt;
+  else if (E.present || G.heater) G.heat += rise * FAN_SLOW * dt;
   else G.heat = Math.max(0, G.heat - FAN_COOL * dt);
   // A heavy breath each time it passes one of the HOT_WARN marks (filter counts how many it's past).
   const warns = HOT_WARN.filter(mark => G.heat >= mark).length;
@@ -681,7 +809,7 @@ function updateNightmareFoxy(dt) {
     } else {
       X.pushT = 0;
     }
-    X.creepT -= dt;
+    X.creepT -= dt * G.pace;
     if (X.creepT <= 0) {
       X.creepT = NFOXY_CREEP * rand(0.8, 1.2);
       if (Math.random() < moveChance(X.level)) {
@@ -695,12 +823,12 @@ function updateNightmareFoxy(dt) {
   }
   if (nfoxyInDoorway()) {
     const side = X.route[2];
-    if (G.doors[side]) { sfx.bonk(side); nfoxyHome(); dirty = true; }
+    if (G.doors[side]) { sfx.bonk(side); earnCoin(); nfoxyHome(); dirty = true; }
     else if (G.t >= X.deadline) { X.inside = true; X.stage = 1; X.creepT = NFOXY_CREEP; X.pushT = 0; sfx.slip(); dirty = true; }   // a soft thud: he's in
     return;
   }
   if (X.step === 1) X.hallT += dt;
-  X.timer -= dt;
+  X.timer -= dt * G.pace;
   if (X.timer > 0) return;
   X.timer = NFOXY_INTERVAL * rand(0.7, 1.3);
   if (X.step === 1 && X.hallT < NFOXY_HALL_MIN) return;   // always gives you a moment in the hall
@@ -709,7 +837,7 @@ function updateNightmareFoxy(dt) {
   X.step++;
   if (X.step === 1) { X.hallT = 0; if (onCam(X.route[1])) camStatic(0.4); }
   if (X.step === 2) {
-    if (G.doors[X.route[2]]) { sfx.bonk(X.route[2]); nfoxyHome(); }   // already shut: he gives up at once
+    if (G.doors[X.route[2]]) { sfx.bonk(X.route[2]); earnCoin(); nfoxyHome(); }   // already shut: he gives up at once
     else X.deadline = G.t + reactWindow(X.level);                     // in the doorway: shut it, quick!
   }
   dirty = true;
@@ -732,7 +860,7 @@ function updateFuntime(dt) {
   const F = G.fun;
   if (F.level === 0) return;
   if (!F.active) {
-    F.timer -= dt;
+    F.timer -= dt * G.pace;
     if (F.timer > 0) return;
     F.active = true;
     F.side = pick(['L', 'R']);
@@ -760,6 +888,7 @@ function funtimeDone(side) {
   F.active = false;
   F.timer = funWait(F.level);
   sfx.bonk(side);
+  earnCoin();
   dirty = true;
 }
 
@@ -773,7 +902,7 @@ function updateChicaWalk(dt) {
   const C = G.chi;
   if (C.level === 0) return;
   if (chicaLast()) C.hallT += dt;
-  C.timer -= dt;
+  C.timer -= dt * G.pace;
   if (C.timer > 0) return;
   C.timer = CHICA_INTERVAL * rand(0.7, 1.3);
   if (chicaLast() && C.hallT < CHICA_HALL_MIN) return;
@@ -802,7 +931,7 @@ function updatePlushtrap(dt) {
   const P = G.plu;
   if (P.level === 0) return;
   if (!P.spot) {
-    P.timer -= dt;
+    P.timer -= dt * G.pace;
     if (P.timer > 0) return;
     P.spot = pick(PLUSH_SPOTS);
     P.deadline = G.t + plushTime(P.level);
@@ -815,6 +944,7 @@ function updatePlushtrap(dt) {
     P.spot = null;
     P.timer = plushWait(P.level);
     sfx.pop();
+    earnCoin();
     dirty = true;
   } else if (G.t >= P.deadline) {
     lose(PLUSH);
@@ -828,7 +958,7 @@ function updateNightmareChica(dt) {
   const N = G.nch;
   if (N.level === 0) return;
   if (!N.room) {
-    N.timer -= dt;
+    N.timer -= dt * G.pace;
     if (N.timer > 0) return;
     N.room = pick(CAM_ORDER);
     N.spot = pick(NCHICA_SPOTS[N.room]);
@@ -846,6 +976,341 @@ function clickCupcakeCam() {
   N.room = null;
   N.timer = nchicaWait(N.level);
   sfx.pop();
+  earnCoin();
+  dirty = true;
+}
+
+// ======================= the third batch =======================
+
+// ---------- the ducts: Toy Bonnie, Toy Chica and Nedd Bear ----------
+// Each crawls one duct room at a time toward DUCT_FRONT (the vent into your office). On each move it
+// heads toward the audio lure instead with its own chance (`lure` in data.js), so the lure isn't sure
+// (on request). The heater pushes them all back a room every HEATER_STEP seconds while it's on.
+// At the front: Toy Bonnie needs the mask; Toy Chica and Nedd Bear get you after frontWindow, unless
+// the heater (or a fresh lure they decide to follow) pulls them back first.
+// How many moves apart two duct rooms are: rows apart plus columns apart.
+const ductSteps = (a, b) => Math.abs(DUCTS[a].r - DUCTS[b].r) + Math.abs(DUCTS[a].c - DUCTS[b].c);
+// One room from `from`, closer to `to` (a random one if two are just as good). Stays put if already there.
+function ductToward(from, to) {
+  if (from === to) return from;
+  return pick(DUCTS[from].next.filter(id => ductSteps(id, to) < ductSteps(from, to)));
+}
+const ductCrawlers = () => DUCT_CRAWLERS.filter(c => G[c.id].level > 0);
+function updateDucts(dt) {
+  if (G.lureRoom && G.t >= G.lureUntil) { G.lureRoom = null; dirty = true; }
+  // The heater: every HEATER_STEP seconds, everyone in the ducts goes one room back toward the start.
+  if (G.heater) {
+    G.heaterT += dt;
+    if (G.heaterT >= HEATER_STEP) {
+      G.heaterT = 0;
+      for (const c of ductCrawlers()) if (G[c.id].room !== DUCT_START) moveDuct(c, ductToward(G[c.id].room, DUCT_START));
+    }
+  }
+  for (const c of ductCrawlers()) {
+    const D = G[c.id];
+    if (D.room === DUCT_FRONT) {
+      if (c === TBONNIE && G.mask) { sfx.ductOut(); earnCoin(); moveDuct(c, DUCT_START); continue; }   // the mask fools him
+      if (G.t >= D.deadline) return lose(c);
+      continue;
+    }
+    D.timer -= dt * G.pace;
+    if (D.timer > 0) continue;
+    D.timer = c.interval * rand(0.7, 1.3);
+    if (Math.random() >= moveChance(D.level)) continue;
+    const goal = G.lureRoom && Math.random() < c.lure ? G.lureRoom : DUCT_FRONT;
+    moveDuct(c, ductToward(D.room, goal));
+  }
+}
+// Put duct crawler c in `room`, with the right sound, and start the countdown if it's the front.
+function moveDuct(c, room) {
+  const D = G[c.id];
+  if (room === D.room) return;
+  D.room = room;
+  if (room === DUCT_FRONT) {
+    D.deadline = G.t + (c === TBONNIE ? reactWindow(D.level) : frontWindow(D.level));
+    sfx.ductBang();   // a loud bang: someone is at the vent into your office
+  } else {
+    sfx.ductMove(DUCTS[room].dist);   // a clank, louder the closer they are
+  }
+  dirty = true;
+}
+// Clicking a duct room on the DUCTS tab plays the audio lure there. Anyone already at the front gets
+// one chance (their `lure`) to follow it out.
+function playLure(room) {
+  if (!ready() || !G.cam || G.tab !== 'ducts' || !powered()) return;
+  if (G.t < G.lureReadyAt) { sfx.deny(); return; }
+  G.lureRoom = room;
+  G.lureUntil = G.t + LURE_TIME;
+  G.lureReadyAt = G.t + LURE_COOLDOWN;
+  sfx.lure();
+  for (const c of ductCrawlers()) {
+    if (G[c.id].room === DUCT_FRONT && room !== DUCT_FRONT && Math.random() < c.lure) moveDuct(c, ductToward(DUCT_FRONT, room));
+  }
+  dirty = true;
+}
+function toggleHeater() {
+  if (!ready()) return;
+  if (!powered() || broken('heater')) { sfx.deny(); return; }
+  G.heater = !G.heater;
+  G.heaterT = 0;
+  sfx.fan(G.heater);
+  dirty = true;
+}
+
+// ---------- Fazcoins ----------
+// One turns up on a random camera every so often; click it there to pick it up. Fending someone off
+// also gives one (earnCoin).
+function updateCoins(dt) {
+  const before = G.camCoins.length;
+  G.camCoins = G.camCoins.filter(coin => G.t < coin.until);   // old coins vanish
+  if (G.camCoins.length !== before) dirty = true;
+  G.coinT -= dt;
+  if (G.coinT > 0) return;
+  G.coinT = G.coinEvery;
+  if (G.camCoins.length >= COINS_ON_CAMS) return;
+  const room = pick(CAM_ORDER.filter(r => !G.camCoins.some(coin => coin.room === r)));
+  const [r, c] = pick(COIN_SPOTS[room]);
+  G.camCoins.push({ room, r, c, until: G.t + COIN_STAY });
+  dirty = true;
+}
+// Clicking the coin lying on the camera you're watching (input.js).
+function collectCoin() {
+  if (!ready() || !G.cam) return;
+  const i = G.camCoins.findIndex(coin => coin.room === G.camRoom);
+  if (i < 0) return;
+  G.camCoins.splice(i, 1);
+  earnCoin();
+}
+function earnCoin() {
+  G.coins++;
+  sfx.coin();
+  dirty = true;
+}
+
+// ---------- the shop ----------
+// On the SHOP tab, run by a staff bot with a monocle. Each buy checks you have enough coins.
+function spend(cost) {
+  if (!ready() || !powered() || G.coins < cost) { sfx.deny(); return false; }
+  G.coins -= cost;
+  sfx.buy();
+  dirty = true;
+  return true;
+}
+function buyBattery() {
+  if (G.shop.batteries <= 0 || G.power >= 100) { sfx.deny(); return; }
+  if (!spend(BATTERY_COST)) return;
+  G.shop.batteries--;
+  G.power = Math.min(100, G.power + BATTERY_POWER);
+}
+const guitarPrice = () => guitarCost(tonight[SETUP.indexOf(RSBONNIE)]);
+function buyGuitar() {
+  if (G.rsb.level === 0 || G.shop.guitar) { sfx.deny(); return; }
+  if (!spend(guitarPrice())) return;
+  G.shop.guitar = true;
+  sfx.guitar();
+}
+// The death coin: first press "Death coin", then pick who goes (useDeathCoin). Pressing it again cancels.
+function pickDeathCoin() {
+  if (!ready()) return;
+  if (!G.shop.picking && (G.shop.deathLeft <= 0 || G.coins < DEATH_COIN_COST)) { sfx.deny(); return; }
+  G.shop.picking = !G.shop.picking;
+  dirty = true;
+}
+// Who a death coin can still be used on: anyone who's on tonight.
+const deathTargets = () => SETUP.filter(c => G[c.id].level > 0);
+function useDeathCoin(id) {
+  const c = SETUP.find(c => c.id === id);
+  if (!G.shop.picking || !c || G[id].level === 0 || G.shop.deathLeft <= 0) return;
+  if (!spend(DEATH_COIN_COST)) return;
+  G.shop.deathLeft--;
+  G.shop.picking = false;
+  removeCharacter(c);
+  say(`${c.name} is gone for the night.`, 3);
+}
+// Take character c out of tonight: put it back where it starts, and level 0 stops its rules.
+function removeCharacter(c) {
+  const X = G[c.id];
+  switch (c.id) {
+    case 'fre': case 'bon': X.step = 0; break;
+    case 'gol': case 'wbn': case 'nfr': case 'end': X.present = false; break;
+    case 'pch': X.active = false; X.cups = []; break;
+    case 'bnt': case 'stf': case 'fun': case 'rbw': case 'twf': X.active = false; break;
+    case 'pup': X.out = false; X.wind = 100; break;
+    case 'wfx': X.phase = 'away'; break;
+    case 'fox': X.phase = 'cove'; X.stage = 0; break;
+    case 'mon': X.room = null; X.sleep = 0; break;
+    case 'nfx': X.inside = false; X.step = 0; break;
+    case 'chi': X.step = 0; break;
+    case 'plu': X.spot = null; break;
+    case 'nch': X.room = null; break;
+    case 'tbo': case 'tch': case 'ned': X.room = DUCT_START; break;
+    case 'tsp': X.active = false; X.toxin = 0; break;
+    case 'sbn': X.dark = false; break;
+    case 'dee': G.coinEvery = COIN_EVERY; break;   // her slower coins go with her
+  }
+  if (c.id === 'nfr') X.freddles = [false, false, false];
+  X.level = 0;
+  dirty = true;
+}
+
+// ---------- White Tiger ----------
+// Watches how long each thing has been on without a break. Past tigerLimit he jumpscares you (it doesn't
+// end the night) and that thing is switched off and broken for TIGER_DISABLE seconds. He leaves alone
+// whatever has to stay on right now (see `needed`).
+const broken = thing => G.wti.brokenUntil[thing] > G.t;
+const TIGER_THINGS = {   // what each thing is called on screen, and whether it's on
+  L: ['left door', () => G.doors.L], R: ['right door', () => G.doors.R], cam: ['monitor', () => G.cam],
+  flash: ['flashlight', () => flashLit()], fan: ['fan', () => G.fan], mask: ['mask', () => G.mask],
+  heater: ['heater', () => G.heater],
+};
+function needed(thing) {
+  if (thing === 'fan') return G.end.present || G.tsp.active;
+  if (thing === 'L') return ['wait', 'ready'].includes(G.wfx.phase);
+  if (thing === 'mask') return G.nfr.present;
+  return false;
+}
+function updateTiger(dt) {
+  const T = G.wti;
+  if (T.level === 0) return;
+  for (const [thing, [label, isOn]] of Object.entries(TIGER_THINGS)) {
+    if (!isOn() || needed(thing)) { T.use[thing] = 0; continue; }
+    T.use[thing] = (T.use[thing] || 0) + dt;
+    if (T.use[thing] < tigerLimit(T.level)) continue;
+    T.use[thing] = 0;
+    T.brokenUntil[thing] = G.t + TIGER_DISABLE;
+    if (thing === 'L' || thing === 'R') G.doors[thing] = false;
+    if (thing === 'cam') { G.cam = false; lookedBack(); }
+    if (thing === 'fan') G.fan = false;
+    if (thing === 'mask') G.mask = false;
+    if (thing === 'heater') G.heater = false;
+    G.tigerUntil = performance.now() + 700;   // render.js shows his face until then
+    sfx.tiger();
+    say(`WHITE TIGER broke the ${label}! ${TIGER_DISABLE} s to fix it.`, TIGER_DISABLE);
+    return;
+  }
+}
+
+// ---------- Chica's Magic Rainbow ----------
+// She appears in the corner farthest from your pointer and chases it, a bit slower than a hand can
+// move. Positions are in "view widths" from the top left of the view (aim.vx, aim.vy, see input.js).
+function updateRainbow(dt) {
+  const R = G.rbw;
+  if (R.level === 0) return;
+  if (!R.active) {
+    R.timer -= dt * G.pace;
+    if (R.timer > 0) return;
+    R.active = true;
+    R.left = RAINBOW_TIME;
+    R.x = aim.vx < 0.5 ? 1 : 0;
+    R.y = aim.vy < aim.vh / 2 ? aim.vh : 0;
+    sfx.rainbowIn();
+    dirty = true;
+    return;
+  }
+  const dx = aim.vx - R.x, dy = aim.vy - R.y, dist = Math.hypot(dx, dy);
+  if (dist < RAINBOW_CATCH) return lose(RAINBOW);
+  const step = Math.min(dist, rainbowSpeed(R.level) * dt);
+  R.x += dx / dist * step;
+  R.y += dy / dist * step;
+  R.left -= dt;
+  if (R.left <= 0) { R.active = false; R.timer = rainbowWait(R.level); sfx.rainbowOut(); earnCoin(); }
+}
+
+// ---------- Rockstar Bonnie ----------
+// Buy his guitar in the shop before 5:59, or he comes for it. A reminder at 3 AM and at 5 AM.
+function updateRockstar() {
+  const R = G.rsb;
+  if (R.level === 0 || G.shop.guitar) return;
+  const hour = hourOf(G.t);
+  if ((hour === 3 || hour === 5) && R.warned !== hour) {
+    R.warned = hour;
+    sfx.guitar();
+    say(`ROCKSTAR BONNIE wants his guitar back! (SHOP, ${guitarPrice()} coins)`, 4);
+  }
+  if (G.t >= HOUR_SECONDS * NIGHT_HOURS - 1) lose(RSBONNIE);   // 5:59 AM
+}
+
+// ---------- Toxic Springtrap ----------
+// His fumes fill the office and the toxin meter rises. The fan on with BOTH doors open clears the air;
+// back to 0 and he gives up. At 100 you're done.
+const airClearing = () => G.fan && !G.doors.L && !G.doors.R;
+function updateToxic(dt) {
+  const S = G.tsp;
+  if (S.level === 0) return;
+  if (!S.active) {
+    S.timer -= dt * G.pace;
+    if (S.timer > 0) return;
+    S.active = true;
+    S.toxin = 10;   // starts a little way up, so even perfect timing takes a moment to clear
+    sfx.toxicIn();
+    dirty = true;
+    return;
+  }
+  S.toxin += (airClearing() ? -TOXIN_CLEAR : toxinRate(S.level)) * dt;
+  if (S.toxin >= 100) return lose(TOXSPRING);
+  if (S.toxin <= 0) { S.active = false; S.toxin = 0; S.timer = toxicWait(S.level); sfx.toxicOut(); earnCoin(); }
+}
+
+// ---------- Funtime Foxy ----------
+// The SHOWTIME countdown in your office. At 0 the left door must be shut. No other cue (on request).
+function updateFunFoxy(dt) {
+  const F = G.ffx;
+  if (F.level === 0) return;
+  F.timer -= dt;
+  if (F.timer > 0) return;
+  if (!G.doors.L) return lose(FUNFOXY, 'L');
+  sfx.bonk('L');
+  earnCoin();
+  F.timer = funFoxyWait(F.level) / G.pace;   // stretched on crowded nights (its countdown is in real seconds)
+  dirty = true;
+}
+
+// ---------- Shadow Bonnie ----------
+// Darkness over the office and the cameras for a while. Only the flashlight shows what's there, and in
+// the dark it works on the cameras too (see flashLit).
+function updateShadow(dt) {
+  const S = G.sbn;
+  if (S.level === 0) return;
+  if (S.dark) {
+    S.darkT -= dt;
+    if (S.darkT <= 0) { S.dark = false; S.timer = shadowWait(S.level); sfx.shadowOut(); dirty = true; }
+    return;
+  }
+  S.timer -= dt * G.pace;
+  if (S.timer > 0) return;
+  S.dark = true;
+  S.darkT = shadowTime(S.level);
+  sfx.shadowIn();
+  dirty = true;
+}
+
+// ---------- Twisted Foxy ----------
+// Gravelly noises: he's digging up out of the floor on CAM 7. Click him there twistTaps times in time.
+function updateTwisted(dt) {
+  const T = G.twf;
+  if (T.level === 0) return;
+  if (!T.active) {
+    T.timer -= dt * G.pace;
+    if (T.timer > 0) return;
+    T.active = true;
+    T.spot = pick(TWIST_SPOTS);
+    T.taps = twistTaps(T.level);
+    T.deadline = G.t + twistTime(T.level);
+    T.growlT = 0;
+    if (onCam('prize')) camStatic(0.3);
+    dirty = true;
+  }
+  T.growlT -= dt;
+  if (T.growlT <= 0) { sfx.gravel(); T.growlT = 1.5; }
+  if (G.t >= T.deadline) lose(TFOXY);
+}
+// Clicking him on CAM 7 (input.js): one tap pushes him back down a bit.
+function tapTwisted() {
+  const T = G.twf;
+  if (!ready() || !T.active || !onCam('prize')) return;
+  T.taps--;
+  sfx.thud();
+  if (T.taps <= 0) { T.active = false; T.timer = twistWait(T.level); earnCoin(); }
   dirty = true;
 }
 
@@ -872,6 +1337,15 @@ function powerOutStart() {
   G.fun.active = false;
   G.plu.spot = null;
   G.nch.room = null;
+  // The third batch: the heater dies, the duct crawlers back off, and the rest give up too.
+  G.heater = false;
+  for (const c of DUCT_CRAWLERS) G[c.id].room = DUCT_START;
+  G.rbw.active = false;
+  G.tsp.active = false;
+  G.twf.active = false;
+  G.sbn.dark = false;
+  if (G.fox.phase !== 'cove') { G.fox.phase = 'cove'; G.fox.stage = 0; }
+  if (G.wfx.phase !== 'away') { G.wfx.phase = 'away'; G.wfx.timer = witheredFoxyWait(G.wfx.level); }
   sfx.humOff();
   sfx.powerDown();
   dirty = true;
@@ -890,7 +1364,7 @@ const ready = () => G && !G.over && !G.paused;
 
 function toggleDoor(side) {
   if (!ready()) return;
-  if (!powered()) { sfx.deny(); return; }
+  if (!powered() || (!G.doors[side] && broken(side))) { sfx.deny(); return; }
   G.doors[side] = !G.doors[side];   // flip: open becomes closed, closed becomes open
   if (G.doors[side]) G.shutAt[side] = G.t;   // remember when it was shut (see updateFuntime)
   sfx.door(side);
@@ -900,7 +1374,7 @@ function toggleDoor(side) {
 // Raise or lower the monitor. Lowering it is when Golden Freddy and Phantom Chica can be waiting.
 function toggleCam() {
   if (!ready()) return;
-  if (!powered() || G.mask) { sfx.deny(); return; }   // no monitor without power, or with the mask on
+  if (!powered() || G.mask || (!G.cam && broken('cam'))) { sfx.deny(); return; }   // no monitor without power, with the mask on, or broken
   G.cam = !G.cam;
   sfx.cam();
   if (G.cam) camStatic(0.2);
@@ -911,8 +1385,9 @@ function toggleCam() {
 // Jump to a camera (raising the monitor first if needed).
 function setCam(room) {
   if (!ready()) return;
-  if (!powered() || G.mask) { sfx.deny(); return; }
+  if (!powered() || G.mask || broken('cam')) { sfx.deny(); return; }
   G.cam = true;
+  G.tab = 'cams';
   G.camRoom = room;
   sfx.cam();
   camStatic(0.22);
@@ -923,7 +1398,7 @@ function setCam(room) {
 // monitor can't be raised. It needs no power.
 function toggleMask() {
   if (!ready()) return;
-  if (G.cam) { sfx.deny(); return; }
+  if (G.cam || (!G.mask && broken('mask'))) { sfx.deny(); return; }
   G.mask = !G.mask;
   sfx.mask(G.mask);
   dirty = true;
@@ -931,9 +1406,20 @@ function toggleMask() {
 
 function toggleFan() {
   if (!ready()) return;
-  if (!powered()) { sfx.deny(); return; }
+  if (!powered() || (!G.fan && broken('fan'))) { sfx.deny(); return; }
   G.fan = !G.fan;
   sfx.fan(G.fan);
+  dirty = true;
+}
+
+// Pick a monitor tab: 'cams', 'ducts' (only with a duct crawler on) or 'shop'. Raises the monitor.
+const tabsOn = () => ['cams', ...(DUCT_CRAWLERS.some(c => G[c.id].level > 0) ? ['ducts'] : []), 'shop'];
+function setTab(tab) {
+  if (!ready() || !tabsOn().includes(tab)) return;
+  if (!G.cam) { toggleCam(); if (!G.cam) return; }
+  G.tab = tab;
+  if (tab !== 'shop') G.shop.picking = false;
+  sfx.cam();
   dirty = true;
 }
 
@@ -994,6 +1480,7 @@ function lose(c, side = null, dark = false) {
     ? `The power ran out and you drifted off. ${who} got you at ${when}.`
     : `The power ran out. ${who} found you in the dark at ${when}.`;
   else if (c === PUPPET) message = `The music box ran down. ${who} got out at ${when}.`;
+  else if (c === RSBONNIE) message = `You never bought it back. ${who} came for his guitar at 5:59 AM.`;
   else if (side) message = `${who} came through the ${side === 'L' ? 'LEFT' : 'RIGHT'} door at ${when}.`;
   else message = `${who} ${c.how} at ${when}.`;
   message += countKill(c.id, c.name);   // a power-out death counts for whoever came in the dark

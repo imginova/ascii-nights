@@ -27,27 +27,53 @@ function renderGame(now) {
   pw.textContent = G.powerOut ? 'OUT' : p + '%';
   pw.classList.toggle('low', p <= 20);          // classList.toggle(name, yes/no) adds or removes a CSS class
   $('pwbar').textContent = bar(Math.ceil(p / 10), 10);
-  const units = powerUnits();                   // 0 to 5 things using power
-  $('usage').textContent = '▮'.repeat(units) + '▯'.repeat(5 - units);
+  const units = powerUnits();                   // 0 to 6 things using power
+  const most = 5 + (G.tbo.level > 0 || G.tch.level > 0 || G.ned.level > 0);   // the heater only counts on duct nights
+  $('usage').textContent = '▮'.repeat(units) + '▯'.repeat(Math.max(0, most - units));
   $('usage').classList.toggle('low', units >= 3);
   // The office heat (it rises every night; the fan cools it down).
   const heat = Math.floor(G.heat);
   $('heat').textContent = heat + '%';
   $('heat').classList.toggle('low', heat >= 60);
+  $('coins').textContent = G.coins;
+  // Toxic Springtrap's toxin meter, only while his fumes are in.
+  $('toxinMeter').hidden = !G.tsp.active;
+  $('toxin').textContent = Math.floor(G.tsp.toxin) + '%';
 
   // ----- the view: office or monitor -----
   const office = $('office'), cams = $('cams');
   office.hidden = G.cam;
   cams.hidden = !G.cam;
   $('maskView').hidden = !G.mask || G.cam;   // the mask covers the office view, leaving two eye holes
-  if (G.cam) renderFeed(now);
+  if (G.cam) renderMonitor(now);
   else renderOffice(now);
 
   // The flashlight: a soft circle of light around the pointer (its position comes from input.js).
+  // On the cameras it only works in Shadow Bonnie's darkness.
   const beam = $('beam');
-  beam.hidden = !flashOn();
+  beam.hidden = !flashLit();
   beam.style.setProperty('--x', aim.x + 'px');
   beam.style.setProperty('--y', aim.y + 'px');
+  // Shadow Bonnie's darkness, with a hole where the flashlight shines.
+  const dark = $('darkShade');
+  dark.hidden = !G.sbn.dark || G.powerOut;
+  dark.style.setProperty('--x', aim.x + 'px');
+  dark.style.setProperty('--y', aim.y + 'px');
+  dark.style.setProperty('--r', flashLit() ? '110px' : '0px');
+  // Toxic Springtrap's purple fumes: thicker as the meter fills (but never quite hiding everything).
+  $('toxicShade').style.opacity = G.tsp.active ? (0.15 + G.tsp.toxin / 100 * 0.55).toFixed(3) : '0';
+  // A short message (Dee Dee, White Tiger, the death coin...), while it lasts.
+  $('note').hidden = now >= G.noteUntil;
+  $('note').textContent = G.note;
+  // Chica's Magic Rainbow, chasing the pointer. Her position is in view widths from the view's top left.
+  const rb = $('rainbow');
+  rb.hidden = !G.rbw.active;
+  if (G.rbw.active) {
+    const box = $('viewport').getBoundingClientRect();
+    rb.style.left = (box.left + G.rbw.x * box.width) + 'px';
+    rb.style.top = (box.top + G.rbw.y * box.width) + 'px';
+    setHtml(rb, SPRITES.rbw.chase.map(escText).join('\n'));
+  }
   // Sleepy Moon: the view gets darker as the sleep meter fills (opacity 0 is see-through, 1 is black).
   // It darkens the monitor too, but never all the way (0.85 at most), so you can still find him.
   $('sleepShade').style.opacity = (G.mon.sleep / 100 * 0.85).toFixed(3);
@@ -57,12 +83,13 @@ function renderGame(now) {
   const GLOW_FULL = 90;
   const glow = Math.min(1, Math.max(0, (G.heat - HOT_WARN[0]) / (GLOW_FULL - HOT_WARN[0])));
   $('heatGlow').style.opacity = (glow * 0.6).toFixed(3);
-  // Phantom Chica's jumpscare (when you didn't find her cupcakes in time). It's over in a second.
-  const chicaScare = now < G.pch.scareUntil;
-  $('miniScare').hidden = !chicaScare;
-  if (chicaScare) {
-    const big = SPRITES.pch.scare, g = blank(20, big.length);
-    sprite(g, 0, 0, big, 'c-pch');
+  // Phantom Chica's jumpscare (when you didn't find her cupcakes in time) or White Tiger's (when he
+  // breaks something). Each is over in a second.
+  const mini = now < G.pch.scareUntil ? 'pch' : now < (G.tigerUntil || 0) ? 'wti' : null;
+  $('miniScare').hidden = !mini;
+  if (mini) {
+    const big = SPRITES[mini].scare, g = blank(Math.max(...big.map(l => l.length)), big.length);
+    sprite(g, 0, 0, big, 'c-' + mini);
     setHtml($('miniScareArt'), toHtml(g));
   }
 
@@ -77,27 +104,39 @@ function renderGame(now) {
     const foxyCue = side !== 'L' || off || G.wfx.level === 0 ? ''
       : G.wfx.phase === 'ready' && G.doors.L ? 'OPEN IT'
       : G.wfx.phase === 'open' && !G.doors.L ? 'FLASH HIM!' : '';
-    $(label).textContent = off ? 'NO POWER' : foxyCue || (G.doors[side] ? 'CLOSED' : 'OPEN');
+    $(label).textContent = off ? 'NO POWER' : broken(side) ? 'BROKEN' : foxyCue || (G.doors[side] ? 'CLOSED' : 'OPEN');
     $(label).classList.toggle('alert', !!foxyCue);
+    $(btn).classList.toggle('broken', broken(side));
   }
   $('btnCam').classList.toggle('on', G.cam);
   $('btnCam').setAttribute('aria-pressed', String(G.cam));
   $('btnCam').disabled = off;
+  $('btnCam').classList.toggle('broken', broken('cam'));
   // When the music box runs low, a ♪! warning shows on the Camera button (and on CAM 7's map button).
   const boxLow = G.pup.level > 0 && !G.pup.out && G.pup.wind < BOX_LOW;
-  $('stCam').textContent = off ? 'NO POWER' : G.mask ? 'MASK ON' : G.cam ? 'UP' : 'DOWN';
+  $('stCam').textContent = off ? 'NO POWER' : broken('cam') ? 'BROKEN' : G.mask ? 'MASK ON' : G.cam ? 'UP' : 'DOWN';
   $('camWarn').hidden = !boxLow || off;
   $('camWarnMap').hidden = !boxLow || off;
-  $('btnFlash').classList.toggle('on', flashOn());
+  $('btnFlash').classList.toggle('on', flashLit());
   $('btnFlash').disabled = off;
-  $('stFlash').textContent = off ? 'NO POWER' : G.cam ? 'CAM UP' : flashOn() ? 'ON' : 'HOLD';
+  $('btnFlash').classList.toggle('broken', broken('flash'));
+  $('stFlash').textContent = off ? 'NO POWER' : broken('flash') ? 'BROKEN' : flashLit() ? 'ON' : G.cam && !G.sbn.dark ? 'CAM UP' : 'HOLD';
   $('btnMask').classList.toggle('on', G.mask);
   $('btnMask').setAttribute('aria-pressed', String(G.mask));
-  $('stMask').textContent = G.mask ? 'ON' : G.cam ? 'CAM UP' : 'OFF';
+  $('btnMask').classList.toggle('broken', broken('mask'));
+  $('stMask').textContent = broken('mask') ? 'BROKEN' : G.mask ? 'ON' : G.cam ? 'CAM UP' : 'OFF';
   $('btnFan').classList.toggle('on', G.fan);
   $('btnFan').setAttribute('aria-pressed', String(G.fan));
   $('btnFan').disabled = off;
-  $('stFan').textContent = off ? 'NO POWER' : G.fan ? 'ON' : 'OFF';
+  $('btnFan').classList.toggle('broken', broken('fan'));
+  $('stFan').textContent = off ? 'NO POWER' : broken('fan') ? 'BROKEN' : G.fan ? 'ON' : 'OFF';
+  // The heater only shows on nights with duct crawlers.
+  $('btnHeater').hidden = !tabsOn().includes('ducts');
+  $('btnHeater').classList.toggle('on', G.heater);
+  $('btnHeater').setAttribute('aria-pressed', String(G.heater));
+  $('btnHeater').disabled = off;
+  $('btnHeater').classList.toggle('broken', broken('heater'));
+  $('stHeater').textContent = off ? 'NO POWER' : broken('heater') ? 'BROKEN' : G.heater ? 'ON' : 'OFF';
 }
 
 // ---------- the office ----------
@@ -160,6 +199,14 @@ function drawVisitors(g, now) {
   if (G.pch.active) G.pch.cups.forEach(([r, c], i) => write(g, r, c, '{^}', `cup cup-${i}`));
   // Sleepy Moon: once you're getting drowsy, Zs float near the top.
   if (G.mon.sleep >= 50) write(g, 0, 30, Math.floor(now / 600) % 2 ? 'z Z z' : 'Z z Z', 'c-mon');
+  // Whoever has reached the front of the ducts peeks out of the vent (their face from ICONS).
+  const atVent = DUCT_CRAWLERS.find(c => G[c.id].level > 0 && G[c.id].room === DUCT_FRONT);
+  if (atVent) write(g, VENT_SPOT[0], VENT_SPOT[1], ICONS[atVent.id][1].padEnd(6).slice(0, 6), `c-${atVent.id} blink`);
+  // Funtime Foxy's SHOWTIME countdown (on request: no other warning). Red for the last 5 seconds.
+  if (G.ffx.level > 0) {
+    const s = Math.max(0, Math.ceil(G.ffx.timer));
+    write(g, ...SHOWTIME_SPOT, `SHOWTIME ${String(s).padStart(2)}`, s <= 5 ? 'c-ffx alert' : 'c-ffx');
+  }
 }
 
 // One door of the office as a grid: 12 wide (10 inside the frame) and 16 tall.
@@ -179,6 +226,8 @@ function doorGrid(side, now) {
   const g = grid(lines, W + 2);
   for (let r = 1; r <= H; r++) for (let c = 1; c <= W; c++) g[r][c].cls = shut ? 'door' : 'dim';
   if (shut || G.powerOut) return g;
+  // Foxy in the left doorway, about to get you.
+  if (side === 'L' && classicFoxyInDoorway()) sprite(g, 4, 1, SPRITES.fox.door, 'c-fox');
   // Bonnie in this doorway.
   if (G.bon.level > 0 && bonnieAtDoor() && bonnieSide() === side) sprite(g, 4, 1, SPRITES.bon.door, 'c-bon');
   // Withered Foxy in the left doorway. While the light is working on him (after his stomp) he goes
@@ -194,6 +243,51 @@ function doorGrid(side, now) {
 }
 
 // ---------- the monitor ----------
+// The tab bar (DUCTS only on duct nights), then whichever tab is picked.
+function renderMonitor(now) {
+  const tabs = tabsOn();
+  for (const b of document.querySelectorAll('#tabs button')) {
+    b.hidden = !tabs.includes(b.dataset.tab);
+    b.setAttribute('aria-current', String(b.dataset.tab === G.tab));
+  }
+  $('camPane').hidden = G.tab !== 'cams';
+  $('ductPane').hidden = G.tab !== 'ducts';
+  $('shopPane').hidden = G.tab !== 'shop';
+  if (G.tab === 'ducts') renderDucts();
+  else if (G.tab === 'shop') renderShop();
+  else renderFeed(now);
+}
+
+// The DUCTS tab: the map (ductGrid in art.js) and whether the lure is ready.
+function renderDucts() {
+  setHtml($('ductMap'), toHtml(ductGrid()));
+  const wait = G.lureReadyAt - G.t;
+  $('lureState').textContent = wait > 0 ? `LURE IN ${Math.ceil(wait)}s` : 'LURE READY';
+}
+
+// The SHOP tab: the shopkeeper and what's for sale. Each button carries data-buy="..." (input.js).
+// While a death coin is being used, a list of everyone on tonight to pick from (data-kill="id").
+function renderShop() {
+  setHtml($('shopkeeper'), SHOPKEEPER.map(escText).join('\n'));
+  const S = G.shop, c = G.coins;
+  const item = (buy, label, price, ok) =>
+    `<button type="button" data-buy="${buy}"${ok ? '' : ' disabled'}><span>${label}</span><span class="price">${price}</span></button>`;
+  let html = `<p class="coins">YOU HAVE <b class="coin">${c}</b> FAZCOIN${c === 1 ? '' : 'S'}</p>`;
+  html += item('battery', `Battery pack: +${BATTERY_POWER}% power (${S.batteries} left)`, `${BATTERY_COST} $`,
+    S.batteries > 0 && c >= BATTERY_COST && G.power < 100);
+  if (G.rsb.level > 0) {
+    html += S.guitar ? `<p class="coins c-rsb">Rockstar Bonnie has his guitar back.</p>`
+      : item('guitar', `Rockstar Bonnie's guitar`, `${guitarPrice()} $`, c >= guitarPrice());
+  }
+  html += item('death', S.picking ? 'Death coin: pick who goes (click again to cancel)' : `Death coin: remove anyone tonight (${S.deathLeft} left)`,
+    `${DEATH_COIN_COST} $`, S.picking || (S.deathLeft > 0 && c >= DEATH_COIN_COST));
+  if (S.picking) {
+    html += '<div class="who-list">' + deathTargets().map(t =>
+      `<button type="button" data-kill="${t.id}" class="c-${t.id}">${escText(t.name)}</button>`).join('') + '</div>';
+  }
+  setHtml($('shopItems'), html);
+}
+
 // The camera screen: the room picture (or static), whoever is in it, the music box and its wind
 // bar (on CAM 7), and which map button is highlighted.
 function renderFeed(now) {
@@ -210,14 +304,22 @@ function renderFeed(now) {
     // Bonnie, if he's in this room (Freddy never shows on the cameras).
     const B = G.bon;
     if (B.level > 0 && !bonnieAtDoor() && B.route[B.step] === room) sprite(g, ...BONNIE_SLOTS[room], SPRITES.bon.cam, 'c-bon');
-    // Withered Foxy: peeking out of Pirate Cove, half out, gone, or running down the West Hall.
-    const X = G.wfx;
-    if (room === 'cove' && X.level > 0) {
-      if (X.phase !== 'cove') write(g, 6, 13, '    (empty)     ', 'dim');
-      else if (X.stage === 1) sprite(g, 5, 18, SPRITES.wfx.peek, 'c-wfx');
-      else if (X.stage === 2) sprite(g, 4, 16, SPRITES.wfx.half, 'c-wfx');
+    // Foxy: peeking out of Pirate Cove, half out, gone, or running down the West Hall.
+    const FX = G.fox;
+    if (room === 'cove' && FX.level > 0) {
+      if (FX.phase !== 'cove') write(g, 6, 13, '    (empty)     ', 'dim');
+      else if (FX.stage === 1) sprite(g, 5, 18, SPRITES.fox.peek, 'c-fox');
+      else if (FX.stage === 2) sprite(g, 4, 16, SPRITES.fox.half, 'c-fox');
     }
-    if (room === 'whall' && X.phase === 'run') sprite(g, 5, 8 + Math.floor((FOXY_RUN - X.runT) * 6), SPRITES.wfx.run, 'c-wfx');
+    if (room === 'whall' && FX.phase === 'run') sprite(g, 5, 8 + Math.floor((FOXY_RUN - FX.runT) * 6), SPRITES.fox.run, 'c-fox');
+    // Withered Foxy running down the West Hall (he turns up there now, see updateFoxy).
+    const X = G.wfx;
+    if (room === 'whall' && X.phase === 'run') sprite(g, 2, 8 + Math.floor((FOXY_RUN - X.runT) * 6), SPRITES.wfx.run, 'c-wfx');
+    // Twisted Foxy digging up out of the floor on CAM 7 ("twf-hit": click him).
+    if (room === 'prize' && G.twf.active) sprite(g, ...G.twf.spot, SPRITES.twf.cam, 'c-twf twf-hit');
+    // A Fazcoin lying here ("coin-hit": click it to pick it up).
+    const coin = G.camCoins.find(c => c.room === room);
+    if (coin) write(g, coin.r, coin.c, '($)', 'coin coin-hit');
     // The Puppet's box on CAM 7: closed, or open with the Puppet looking out.
     if (room === 'prize' && G.pup.level > 0) {
       if (G.pup.out) write(g, 7, 17, SPRITES.pup.peek[0], 'c-pup');
