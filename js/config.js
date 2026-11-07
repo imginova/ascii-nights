@@ -215,14 +215,18 @@ const nchicaTime = level => byLevel(level, 24, 16);
 // ---------- the ducts ----------
 // Toy Bonnie, Toy Chica and Nedd Bear crawl through the ducts (a 3 x 3 map on the DUCTS tab) toward the
 // front, the vent into your office. Each moves a room a chance every few seconds (its `interval` in
-// data.js). The AUDIO LURE (click a duct room) isn't instant or sure (on request): on each move, a duct
-// character heads toward the lure instead of the front with its own chance (its `lure` in data.js), and
-// the lure only lasts LURE_TIME seconds. LURE_COOLDOWN: seconds before the next lure.
+// data.js). The AUDIO LURE (click a duct room) isn't instant or sure (on request): while it plays, every
+// LURE_TICK seconds each duct character gets a small chance to be pulled one room toward it (on request:
+// "a chance to lure every quarter second, but a bit lower overall"). That chance is its `lure` in data.js
+// times LURE_PULL, so Toy Chica 8.5%, Nedd Bear 5.5% and Toy Bonnie 2% each quarter second. The lure
+// only lasts LURE_TIME seconds. LURE_COOLDOWN: seconds before the next lure.
 // The HEATER (Q): while it's on, every HEATER_STEP seconds each duct character is pushed one room back
 // toward the start (on request: "sent back not immediately but quickly"). It uses power like everything
 // else and heats the office HEATER_HEAT % per second on top of the normal heat.
 const LURE_TIME = 8;
 const LURE_COOLDOWN = 3;
+const LURE_TICK = 0.25;
+const LURE_PULL = 0.1;
 const HEATER_STEP = 0.8;
 const HEATER_HEAT = 2.5;
 // At the front: Toy Bonnie needs the mask on within reactWindow (then he's sent back to the start).

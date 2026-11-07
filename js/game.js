@@ -218,8 +218,8 @@ function newGame() {
     sbn: { level: levelOf(SHADOWB), dark: false, darkT: 0, timer: shadowWait(levelOf(SHADOWB)) },
     // Twisted Foxy: whether he's digging up, where on CAM 7, how many taps are still needed.
     twf: { level: levelOf(TFOXY), active: false, spot: null, taps: 0, deadline: 0, timer: twistWait(levelOf(TFOXY)) },
-    // The ducts: the audio lure (which room, until when) and the heater.
-    lureRoom: null, lureUntil: 0, lureReadyAt: 0,
+    // The ducts: the audio lure (which room, until when, time since its last pull roll) and the heater.
+    lureRoom: null, lureUntil: 0, lureReadyAt: 0, lureT: 0,
     heater: false, heaterT: 0,
     // Fazcoins: how many you have, the ones lying on the cameras ({ room, r, c, until }), and the
     // countdown to the next one. Dee Dee makes them turn up half as often.
@@ -1006,6 +1006,19 @@ function updateDucts(dt) {
       for (const c of ductCrawlers()) if (G[c.id].room !== DUCT_START) moveDuct(c, ductToward(G[c.id].room, DUCT_START));
     }
   }
+  // The audio lure: every LURE_TICK seconds while it plays, each duct character has a small chance
+  // (its `lure` times LURE_PULL) to be pulled one room toward it, even out of the vent at the front.
+  // `while` instead of `if` so a slow frame (dt bigger than a tick) still gets all its rolls.
+  // A lure played at the vent itself pulls nobody (it would only drag them toward you).
+  if (G.lureRoom && G.lureRoom !== DUCT_FRONT) {
+    G.lureT += dt;
+    while (G.lureT >= LURE_TICK) {
+      G.lureT -= LURE_TICK;
+      for (const c of ductCrawlers()) {
+        if (Math.random() < c.lure * LURE_PULL) moveDuct(c, ductToward(G[c.id].room, G.lureRoom));
+      }
+    }
+  }
   for (const c of ductCrawlers()) {
     const D = G[c.id];
     if (D.room === DUCT_FRONT) {
@@ -1017,8 +1030,7 @@ function updateDucts(dt) {
     if (D.timer > 0) continue;
     D.timer = c.interval * rand(0.7, 1.3);
     if (Math.random() >= moveChance(D.level)) continue;
-    const goal = G.lureRoom && Math.random() < c.lure ? G.lureRoom : DUCT_FRONT;
-    moveDuct(c, ductToward(D.room, goal));
+    moveDuct(c, ductToward(D.room, DUCT_FRONT));   // their own moves always head for the vent
   }
 }
 // Put duct crawler c in `room`, with the right sound, and start the countdown if it's the front.
@@ -1034,18 +1046,15 @@ function moveDuct(c, room) {
   }
   dirty = true;
 }
-// Clicking a duct room on the DUCTS tab plays the audio lure there. Anyone already at the front gets
-// one chance (their `lure`) to follow it out.
+// Clicking a duct room on the DUCTS tab plays the audio lure there (updateDucts does the pulling).
 function playLure(room) {
   if (!ready() || !G.cam || G.tab !== 'ducts' || !powered()) return;
   if (G.t < G.lureReadyAt) { sfx.deny(); return; }
   G.lureRoom = room;
   G.lureUntil = G.t + LURE_TIME;
   G.lureReadyAt = G.t + LURE_COOLDOWN;
+  G.lureT = LURE_TICK;   // so the first roll happens right away, on the next frame
   sfx.lure();
-  for (const c of ductCrawlers()) {
-    if (G[c.id].room === DUCT_FRONT && room !== DUCT_FRONT && Math.random() < c.lure) moveDuct(c, ductToward(DUCT_FRONT, room));
-  }
   dirty = true;
 }
 function toggleHeater() {
