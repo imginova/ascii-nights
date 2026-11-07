@@ -258,7 +258,8 @@ const guitarCost = level => Math.round(byLevel(level, 5, 15));
 // seconds. It doesn't end the night. He leaves things alone when they must stay on (the fan while the
 // endo is there, the left door while Withered Foxy waits, the mask with Nightmare Freddy in the room,
 // the fan and doors while Toxic Springtrap's fumes are clearing).
-const tigerLimit = level => byLevel(level, 20, 8);
+// 17 s at level 1, 12 s at level 20 (after the level easing). It was 20 and 14 until shortened on request.
+const tigerLimit = level => byLevel(level, 17, 7);
 const TIGER_DISABLE = 5;
 
 // ---------- Chica's Magic Rainbow ----------

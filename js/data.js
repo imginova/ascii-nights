@@ -256,6 +256,8 @@ const these = (level, ids) => lv(Object.fromEntries(ids.map(id => [id, level])))
 // Every challenge must stay humanly possible like this (the top ones are for experienced players).
 // The third batch (2026-11-07) reworked Withered Foxy (he now turns up in the West hall on a timer; Foxy
 // took over Pirate Cove), so every challenge with him went up a version.
+// White Tiger then got quicker to break things (tigerLimit, on request), so the 8 challenges with him went
+// up a version too: Big cat, Behind the curtain, the ladder and All 20.
 const PRESETS = [
   // Warm-up: Withered Foxy (2) swapped for Foxy (2), who now has the Pirate Cove routine Withered Foxy had
   // here, so it plays the same as before (not harder: it stays v2 and keeps its ✓).
@@ -282,7 +284,7 @@ const PRESETS = [
   { name: 'Snack time', v: 3, levels: lv({ pch: 16, bnt: 12, pup: 10, nch: 12 }) },       // v3: + Nightmare Chica
   // v3: the Puppet (5) added and Golden Freddy raised from 15 to 20 (on request).
   { name: 'Mask on', v: 3, levels: lv({ wbn: 15, gol: 20, nfr: 12, pup: 5 }) },
-  { name: 'Big cat', v: 1, levels: lv({ wti: 16, stf: 12, fre: 12, end: 12 }) },           // new with the third batch
+  { name: 'Big cat', v: 2, levels: lv({ wti: 16, stf: 12, fre: 12, end: 12 }) },           // new with the third batch
   { name: 'Bunny trouble', v: 3, levels: lv({ bon: 14, bnt: 14, wbn: 14, plu: 12 }) },    // v3: + Plushtrap
   // Plushtrap was added briefly (v2) and taken out again on request. Taking him out made it easier, so it
   // stays v2: a ✓ earned with him still counts.
@@ -301,7 +303,9 @@ const PRESETS = [
   { name: 'Toxic shock', v: 2, levels: lv({ tsp: 16, end: 12, stf: 10, bon: 10, fre: 10, fox: 10, nfx: 10 }) },
   // v2: Phantom Chica added (on request: she takes power, so she belongs here).
   // v3: the office heat (like every challenge). v4: Sleepy Moon's rework (like every challenge he's in).
-  { name: 'Power hungry', v: 5, levels: lv({ end: 14, mon: 14, stf: 14, wfx: 14, pch: 14 }) },
+  // v5: Withered Foxy's rework. v6: + Foxy, Funtime Foxy and White Tiger at 12 (on request): Foxy's slam
+  // costs power, Funtime Foxy needs a door at the right moment, and White Tiger punishes leaving things on.
+  { name: 'Power hungry', v: 6, levels: lv({ end: 14, mon: 14, stf: 14, wfx: 14, pch: 14, fox: 12, ffx: 12, wti: 12 }) },
   // v3: the Puppet and Sleepy Moon added (on request): they make you use the monitor, and every time you
   // look away from it the other three can be waiting.
   // v4: + Nightmare Chica (another reason you need the monitor).
@@ -324,7 +328,7 @@ const PRESETS = [
   { name: 'Party crashers', v: 1, levels: lv({ dee: 20, fre: 10, bon: 10, chi: 10, fox: 10, tbo: 10, tch: 10 }) },
   { name: 'Hare raising', v: 1, levels: lv({ bon: 12, tbo: 12, wbn: 12, sbn: 12, rsb: 12, bnt: 12, plu: 10 }) },
   { name: 'Old school', v: 1, levels: these(10, ['fre', 'bon', 'chi', 'fox', 'gol', 'tbo', 'tch', 'wbn', 'wfx', 'pup', 'sbn']) },
-  { name: 'Behind the curtain', v: 1, levels: these(12, ['fun', 'ffx', 'bnt', 'rsb', 'twf', 'dee', 'end', 'tsp', 'stf', 'wti', 'mon']) },
+  { name: 'Behind the curtain', v: 2, levels: these(12, ['fun', 'ffx', 'bnt', 'rsb', 'twf', 'dee', 'end', 'tsp', 'stf', 'wti', 'mon']) },
   { name: 'Half the gang', v: 1, levels: these(10, ['fre', 'bon', 'chi', 'fox', 'gol', 'tbo', 'tch', 'wbn', 'wfx', 'pup', 'sbn', 'pch', 'nfr', 'nfx']) },
   // Last of the bridge: the bot (as a beginner) lost it 3 times in 10, all to Plushtrap.
   { name: 'Bad dreams', v: 1, levels: these(12, ['pch', 'nfr', 'nfx', 'nch', 'plu', 'ned', 'rbw', 'twf', 'sbn', 'pup']) },
@@ -333,12 +337,12 @@ const PRESETS = [
   // The "everyone" ones include every character, so each new batch makes them harder (v4: the second
   // batch, v5: the third). Everyone at 10, 15 and 18 were removed on request (2026-11-07, before the third
   // batch). Their saved ✓s stay in the browser (never deleted), they just aren't shown.
-  { name: 'Everyone at 5', v: 5, levels: everyone(5) },
-  { name: 'Graveyard shift', v: 1, levels: everyoneBut(7, { fre: 10, bon: 10, chi: 10, fox: 10, gol: 10 }) },
-  { name: 'Double shift', v: 1, levels: everyoneBut(11, { nfr: 14, nfx: 14, nch: 14, plu: 14 }) },
-  { name: 'Sunrise is a lie', v: 1, levels: everyoneBut(15, { fox: 18, wfx: 18, nfx: 18, ffx: 18, twf: 18 }) },
-  { name: 'Last stand', v: 1, levels: everyoneBut(20, { dee: 0, wti: 10 }) },
-  { name: 'All 20', v: 5, levels: everyone(20) },
+  { name: 'Everyone at 5', v: 6, levels: everyone(5) },
+  { name: 'Graveyard shift', v: 2, levels: everyoneBut(7, { fre: 10, bon: 10, chi: 10, fox: 10, gol: 10 }) },
+  { name: 'Double shift', v: 2, levels: everyoneBut(11, { nfr: 14, nfx: 14, nch: 14, plu: 14 }) },
+  { name: 'Sunrise is a lie', v: 2, levels: everyoneBut(15, { fox: 18, wfx: 18, nfx: 18, ffx: 18, twf: 18 }) },
+  { name: 'Last stand', v: 2, levels: everyoneBut(20, { dee: 0, wti: 10 }) },
+  { name: 'All 20', v: 6, levels: everyone(20) },
 ];
 
 // One line of flavour text per challenge, shown under the list when it's picked.

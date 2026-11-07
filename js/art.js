@@ -39,14 +39,18 @@ function toHtml(g) {
 // Draw a drawing (a list of text lines) into grid g with its top-left corner at row r, column c,
 // in the CSS class `cls`. Spaces INSIDE a line (between its first and last real character) are
 // drawn too, so the drawing hides what's behind it; the spaces around it are left see-through.
+// If the drawing has an accent mask (lines.accent, see "accent colors" below), the cells it marks get
+// a second color on top of `cls`.
 function sprite(g, r, c, lines, cls) {
   lines.forEach((line, i) => {
     const row = g[r + i];
     if (!row) return;
     const first = line.search(/\S/), last = line.length - 1 - line.split('').reverse().join('').search(/\S/);
     if (first < 0) return;   // an empty line: nothing to draw
+    const mask = (lines.accent && lines.accent[i]) || '';
     for (let k = first; k <= last; k++) {
-      if (row[c + k]) row[c + k] = { ch: line[k], cls };
+      const extra = ACCENT[mask[k]];
+      if (row[c + k]) row[c + k] = { ch: line[k], cls: extra ? `${cls} ${extra}` : cls };
     }
   });
 }
@@ -102,11 +106,25 @@ const ICONS = {
 const FACE_ROW = { end: 0 };
 // A text with every character escaped for HTML (see esc above).
 const escText = s => Array.from(s).map(esc).join('');
+// Accent masks for a few icons (on request: a second color, used sparingly). Each line lines up with the
+// icon's line above it; a letter from ACCENT (see "accent colors" below) colors the character above it,
+// a space leaves it in the main color.
+const ICON_ACCENTS = {
+  fun: ['ppp  BB', '     BBB', ' ppp'],   // magenta hat and bow tie, BonBon in her blue
+  wti: ['', ' b k'],                      // heterochromia: one blue eye, one gold
+  rbw: ['roygb', '', 'roygb'],            // rainbow stripes
+  pup: ['', '', ' r r'],                  // red cheeks
+  rsb: ['', ' k k'],                      // gold star eyes
+};
+// One line of text as HTML, with the characters its accent mask marks wrapped in their color.
+const accentText = (line, mask = '') => Array.from(line).map((ch, k) =>
+  ACCENT[mask[k]] ? `<span class="${ACCENT[mask[k]]}">${esc(ch)}</span>` : esc(ch)).join('');
+const iconLines = id => ICONS[id].map((line, i) => accentText(line, (ICON_ACCENTS[id] || [])[i]));
 // The 3-line icon as HTML, in the character's color.
-const iconHtml = (c, extra = '') => `<span class="icon c-${c.id}${extra}" title="${c.name}">${ICONS[c.id].map(escText).join('\n')}</span>`;
+const iconHtml = (c, extra = '') => `<span class="icon c-${c.id}${extra}" title="${c.name}">${iconLines(c.id).join('\n')}</span>`;
 // Just the face line, for places with room for only one line, like the "Best:" line.
 // `??` means "use the right side if the left side is missing", so most characters get line 1.
-const faceHtml = c => `<span class="face-mini c-${c.id}" title="${c.name}">${escText(ICONS[c.id][FACE_ROW[c.id] ?? 1])}</span>`;
+const faceHtml = c => `<span class="face-mini c-${c.id}" title="${c.name}">${iconLines(c.id)[FACE_ROW[c.id] ?? 1]}</span>`;
 
 // ---------- camera rooms ----------
 // The inside of each camera's room: 9 lines of 38 characters (frame() adds the border).
@@ -703,6 +721,61 @@ const NFOXY_STAGES = {
 // Golden Freddy's jumpscare: Freddy's, with his O eyes swapped for dots. (.map makes a new list with
 // every line changed; .replace(/O/g, '.') swaps every capital O on the line for a dot.)
 SPRITES.gol.scare = SPRITES.fre.scare.map(line => line.replace(/O/g, '.'));
+
+// ---------- accent colors ----------
+// A few characters get a second color on parts of their drawings (on request: Funtime Freddy, White
+// Tiger's heterochromia (two different eye colors), the Magic Rainbow, "and any more you see fit, but
+// use sparingly": the Puppet's cheeks and tears, Rockstar Bonnie's star eyes).
+// A MASK is a copy of a drawing's shape, attached as drawing.accent. Each letter in it colors the
+// character in the same place in the drawing (the colors are the acc-... classes in style.css); a space
+// leaves it in the character's main color. sprite() reads the mask, so the color shows wherever the
+// drawing is used.
+const ACCENT = {
+  r: 'acc-red', o: 'acc-orange', y: 'acc-yellow', g: 'acc-green', b: 'acc-blue', v: 'acc-violet',
+  p: 'acc-pink', k: 'acc-gold', B: 'acc-bonbon',
+};
+SPRITES.fun.cam.accent = art(String.raw`
+ ppp
+
+  p`);
+SPRITES.fun.scare.accent = art(String.raw`
+       ppppp
+      ppppppp
+
+
+
+
+
+                   BBBB
+        ppp        BBBB`);
+SPRITES.wti.scare.accent = art(String.raw`
+
+
+
+       bbb     kkk`);
+// The rainbow's bands: red outside, then yellow, then green around her face, with all six colors on the
+// bits of cloud at the bottom.
+SPRITES.rbw.scare.accent = art(String.raw`
+       rrrrrrrrrrrrr
+     rr  yyyyyyyyy  rr
+    r  yy  ggggg  yy  r
+   r  y   g     g   y  r
+   r y   g       g   y r
+   r y    ggggggg    y r
+   roygbv         vbgyor`);
+SPRITES.pup.scare.accent = art(String.raw`
+
+
+
+         v     v
+        rrr   rrr`);
+SPRITES.rsb.scare.accent = art(String.raw`
+
+
+
+
+
+        k     k`);
 
 // Passing out from the heat: a woozy face in heat waves (shown instead of a jumpscare).
 const PASSED_OUT = art(String.raw`
