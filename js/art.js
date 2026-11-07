@@ -321,17 +321,17 @@ const SPRITES = {
        '---------'
         | | | | |`),
   },
-  // The Nightmare staff bot (from Security Breach): a staff robot gone bad, with glaring eyes and a
-  // jagged mouth (on request: it used to be drawn as a caution cone).
+  // The Nightmare staff bot (from Security Breach). Its jumpscare and menu face are a staff robot gone
+  // bad, with glaring eyes and a jagged mouth; in the office it's still shown as the caution cone that
+  // warns you (both on request).
   stf: {
-    // Drawn in the office by drawVisitors in render.js: while it blinks its eyes flash (line 1) and
-    // its arm points at the door to shut (line 4, see STAFF_POINT).
+    // The caution cone on the desk, drawn by drawVisitors in render.js (its eyes flash while it
+    // blinks, and an arrow above it points at the door to shut).
     office: art(String.raw`
-.---.
-|@ @|
-|VVV|
-'-+-'
-/|=|\ `),
+ /!\
+[o o]
+|___|
+/   \ `),
     scare: art(String.raw`
         .-------.
        /  _   _  \
@@ -578,10 +578,7 @@ ____________________________________
  . . . . . . . . . . . . . . . . . .`);
 
 // Where things go in the office, as [row, column] of their top-left corner.
-const STAFF_SPOT = [5, 3];        // the staff bot, standing on the left end of the desk
-// Its body line while it points at a door (it replaces line 4 of its drawing, starting one column
-// further left for the left arm): [column offset, text].
-const STAFF_POINT = { L: [-1, '<-|=|\\'], R: [0, '/|=|->'] };
+const STAFF_SPOT = [6, 2];        // the staff bot's caution cone, on the left end of the desk
 const FAN_SPOT = [7, 28];         // the desk fan, on the right
 const GOLDEN_SPOT = [3, 11];      // Golden Freddy, slumped in front of the monitor (covering it exactly)
 const WITHERED_SPOT = [3, 12];    // Withered Bonnie, leaning over the desk

@@ -121,6 +121,12 @@ p { margin: 0; }
    Every drawing lives in a <pre> ("preformatted") block, which keeps spaces and line breaks
    exactly as written. A monospace font makes every character the same width, so columns line up. */
 pre.art { font-family: var(--font-mono); font-size: var(--art); line-height: 1.18; margin: 0; white-space: pre; }
+/* Clicking (or double-clicking) the game shouldn't highlight the ASCII pictures as text (on request):
+   user-select: none switches text selection off for these. The words you read, like How to play and
+   the descriptions on the custom night screen, can still be selected on purpose. */
+pre.art, .viewport, .hud, .controls, .map, .feed-head, .wind, .icon, .trio, .lvrow .ctrl, #scare pre {
+  user-select: none; -webkit-user-select: none;
+}
 /* Each character's color. b.c-bon makes "Bonnie" in a sentence bold in his color too. */
 .c-fre { color: var(--c-fre); } .c-bon { color: var(--c-bon); } .c-gol { color: var(--c-gol); }
 .c-pch { color: var(--c-pch); } .c-bnt { color: var(--c-bnt); } .c-wbn { color: var(--c-wbn); }

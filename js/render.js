@@ -114,23 +114,15 @@ function renderOffice(now) {
 
 // Everyone who can be in the office, drawn on top of it (the later ones on top of the earlier ones).
 function drawVisitors(g, now) {
-  // The Nightmare staff bot stands on the desk. While it blinks, its eyes flash, its arm points at the
-  // door to shut, and an arrow next to its eyes points the same way.
+  // The Nightmare staff bot's caution cone sits on the desk. While it blinks, its eyes flash and an
+  // arrow above it points at the door to shut.
   const S = G.stf;
   if (S.level > 0) {
     const blinkOn = S.active && Math.floor(now / 250) % 2 === 0;
-    const lines = SPRITES.stf.office.slice(0, 4);   // head and neck (the body is drawn below)
-    if (blinkOn) lines[1] = '|* *|';
-    const cls = 'c-stf' + (blinkOn ? ' blink' : '');
-    sprite(g, ...STAFF_SPOT, lines, cls);
-    const [r, c] = STAFF_SPOT;
-    if (S.active) {
-      const [dc, body] = STAFF_POINT[S.side];
-      write(g, r + 4, c + dc, body, cls);
-      write(g, r + 1, S.side === 'L' ? 0 : c + 5, S.side === 'L' ? '<<<' : '>>>', 'c-stf blink');
-    } else {
-      write(g, r + 4, c, SPRITES.stf.office[4].trim(), cls);
-    }
+    const lines = SPRITES.stf.office.slice();
+    if (S.active) lines[1] = blinkOn ? '[* *]' : '[o o]';
+    sprite(g, ...STAFF_SPOT, lines, 'c-stf' + (blinkOn ? ' blink' : ''));
+    if (S.active) write(g, STAFF_SPOT[0] - 1, S.side === 'L' ? 0 : 5, S.side === 'L' ? '<<<' : '>>>', 'c-stf blink');
   }
   // Freddles on the desk. "frd" marks them so the light can be seen on them (style.css).
   G.nfr.freddles.forEach((here, i) => {

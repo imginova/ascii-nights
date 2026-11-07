@@ -211,10 +211,9 @@ const PRESETS = [
   { name: 'Click frenzy', v: 4, levels: lv({ pch: 18, bnt: 18, gol: 10, mon: 15, chi: 12 }) },
   { name: 'Classic 20', v: 3, levels: lv({ fre: 20, bon: 20, gol: 20, chi: 20 }) },       // v3: + Chica
   // The "everyone" ones include every character, so each new batch makes them harder (v4: the second batch).
+  // Everyone at 10, 15 and 18 were removed on request (2026-11-07, before more characters are added). Their
+  // saved ✓s stay in the browser (never deleted), they just aren't shown.
   { name: 'Everyone at 5', v: 4, levels: everyone(5) },
-  { name: 'Everyone at 10', v: 4, levels: everyone(10) },
-  { name: 'Everyone at 15', v: 4, levels: everyone(15) },
-  { name: 'Everyone at 18', v: 4, levels: everyone(18) },
   { name: 'All 20', v: 4, levels: everyone(20) },
 ];
 
@@ -229,9 +228,7 @@ const FLAVOR = {
   'Bedtime': 'Lights on, eyes open, Freddles off the desk.',
   'Heat wave': 'The fan is your best friend tonight.',
   'Mask on': 'You will be wearing this a lot.',
-  'Everyone at 10': 'The whole gang, taking it easy. Sort of.',
   'Classic 20': 'The old crew, as hard as they get.',
-  'Everyone at 15': 'Nobody is taking it easy now.',
   'All 20': 'Everyone, at their worst. Good luck.',
   'Quiet night': 'Just a music box, a nap and a warm room. What could go wrong?',
   'Everyone at 5': 'Meet the whole gang, on their best behaviour.',
@@ -247,7 +244,6 @@ const FLAVOR = {
   'Masquerade': 'The mask is barely off before you need it again.',
   'Power hungry': 'Doors, lights, the fan and a cupcake thief. Watch your battery.',
   'Click frenzy': 'Fast hands and sharp eyes win tonight.',
-  'Everyone at 18': 'Almost the worst. Almost.',
   'Fun time': 'Showtime! Watch the halls, the doors and the floor.',
   'Patrol': 'Keep your eyes on the cameras. They are not making a sound.',
   'Cupcake hunt': 'So many cupcakes. Only some of them are real.',
