@@ -111,7 +111,7 @@ const escText = s => Array.from(s).map(esc).join('');
 // a space leaves it in the main color.
 const ICON_ACCENTS = {
   fun: ['ppp  BB', '     BBB', ' ppp'],   // magenta hat and bow tie, BonBon in her blue
-  wti: ['', ' b k'],                      // heterochromia: one blue eye, one gold
+  wti: ['', ' c l'],                      // heterochromia: one light blue eye, one lime
   rbw: ['roygb', '', 'roygb'],            // rainbow stripes
   pup: ['', '', ' r r'],                  // red cheeks
   rsb: ['', ' k k'],                      // gold star eyes
@@ -732,7 +732,7 @@ SPRITES.gol.scare = SPRITES.fre.scare.map(line => line.replace(/O/g, '.'));
 // drawing is used.
 const ACCENT = {
   r: 'acc-red', o: 'acc-orange', y: 'acc-yellow', g: 'acc-green', b: 'acc-blue', v: 'acc-violet',
-  p: 'acc-pink', k: 'acc-gold', B: 'acc-bonbon',
+  p: 'acc-pink', k: 'acc-gold', c: 'acc-sky', l: 'acc-lime', B: 'acc-bonbon',
 };
 SPRITES.fun.cam.accent = art(String.raw`
  ppp
@@ -752,7 +752,7 @@ SPRITES.wti.scare.accent = art(String.raw`
 
 
 
-       bbb     kkk`);
+       ccc     lll`);
 // The rainbow's bands: red outside, then yellow, then green around her face, with all six colors on the
 // bits of cloud at the bottom.
 SPRITES.rbw.scare.accent = art(String.raw`

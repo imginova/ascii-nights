@@ -162,6 +162,7 @@ pre .c-ffx, pre .c-fox, pre .c-sbn, pre .c-twf { font-weight: 600; }
 .acc-red { color: #ff4a4a; } .acc-orange { color: #ffa21f; } .acc-yellow { color: #f2ee6b; }
 .acc-green { color: #8fe39a; } .acc-blue { color: #6fb7ff; } .acc-violet { color: #b04dff; }
 .acc-pink { color: #ff4fa3; } .acc-gold { color: #ffc94a; } .acc-bonbon { color: var(--c-bb); }
+.acc-sky { color: #9fe3ff; } .acc-lime { color: #b6ff3b; }   /* White Tiger's eyes */
 /* Chica and Nightmare Chica's cupcake on the cameras: clickable, with a bigger invisible box. */
 .chi-hit, .nch-hit, .coin-hit, .twf-hit, .duct { position: relative; cursor: pointer; }
 .chi-hit::after, .nch-hit::after, .coin-hit::after, .twf-hit::after { content: ""; position: absolute; inset: -4px -2px; }
