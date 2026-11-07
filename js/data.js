@@ -186,11 +186,10 @@ const SETUP = [
   TBONNIE, TCHICA, WBONNIE, WFOXY, PUPPET, SHADOWB,   // FNAF 2
   PCHICA,                                        // FNAF 3
   NFREDDY, NFOXY, NCHICA, PLUSH,                 // FNAF 4
-  NEDD, RAINBOW,                                 // FNAF World
+  RAINBOW, DEEDEE,                               // FNAF World
   FUNFRED, FUNFOXY, BONNET,                      // Sister Location
-  RSBONNIE,                                      // Freddy Fazbear's Pizzeria Simulator
   TFOXY,                                         // The Twisted Ones
-  DEEDEE,                                        // Ultimate Custom Night
+  RSBONNIE, NEDD,                                // Freddy Fazbear's Pizzeria Simulator
   ENDO, TOXSPRING,                               // Special Delivery
   STAFF,                                         // Security Breach
   TIGER, MOON,                                   // Secret of the Mimic (White Tiger's game is a guess)
