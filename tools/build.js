@@ -16,6 +16,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const root = path.join(__dirname, '..');
 const dist = path.join(root, 'dist');
@@ -31,16 +32,26 @@ fs.copyFileSync(path.join(root, 'style.css'), path.join(dist, 'style.css'));
 const scripts = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]);
 for (const file of scripts) fs.copyFileSync(path.join(root, file), path.join(dist, file));
 
+// "Cache busting": browsers keep a copy of each file for a while (GitHub Pages allows 10 minutes), so
+// right after an update a player could get the new page with an old art.js, say. Adding ?v=<code> to
+// each file's address fixes that: the code is made from the file's contents (a "hash", a short
+// fingerprint that changes whenever the file does), so a changed file has a new address and is fetched
+// fresh, and an unchanged one keeps its address and its saved copy.
+const version = file => crypto.createHash('md5').update(fs.readFileSync(path.join(root, file))).digest('hex').slice(0, 8);
+const busted = html
+  .replace(/<script src="([^"]+)"/g, (m, file) => `<script src="${file}?v=${version(file)}"`)
+  .replace('<link rel="stylesheet" href="style.css">', () => `<link rel="stylesheet" href="style.css?v=${version('style.css')}">`);
+
 // The fragment starts with <meta>, <title> and <link> tags (the page's "head" material) and then has
 // the visible page. Split it at the first <div: everything before goes in <head>, the rest in <body>.
-const split = html.indexOf('<div');
+const split = busted.indexOf('<div');
 const page = `<!doctype html>
 <html lang="en">
 <head>
-${html.slice(0, split)}
+${busted.slice(0, split)}
 </head>
 <body>
-${html.slice(split)}
+${busted.slice(split)}
 </body>
 </html>
 `;

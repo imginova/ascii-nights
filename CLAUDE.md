@@ -126,7 +126,7 @@ Same pattern as BBCN: `index.html` (a page **fragment**: no doctype/html/head/bo
 
 ## Hosting
 
-`.github/workflows/deploy.yml` (copied from BBCN): syntax check plus `node tools/build.js` on every PR; deploys `dist/` to GitHub Pages on push to `main`. `tools/build.js` wraps the fragment in a full page (no analytics). One-time setting: Settings → Pages → Source = GitHub Actions.
+`.github/workflows/deploy.yml` (copied from BBCN): syntax check plus `node tools/build.js` on every PR; deploys `dist/` to GitHub Pages on push to `main`. `tools/build.js` wraps the fragment in a full page (no analytics). It also adds `?v=<8-letter hash of the file>` to every script and `style.css` address (cache busting, added 2026-11-07 after a player saw White Tiger's old eye colors: GitHub Pages lets browsers keep files for 10 minutes, so an update could show up half new, half old). The files themselves keep their names. One-time setting: Settings → Pages → Source = GitHub Actions.
 
 ## Testing
 
