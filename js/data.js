@@ -134,7 +134,7 @@ const NEDD = {
   id: 'ned', name: 'Nedd Bear', where: 'DUCTS',
   desc: 'Crawls slowly through the ducts and only sometimes follows the audio lure. If he reaches the front, he gets you.',
   how: 'climbed out of the duct',
-  interval: 7, lure: 0.45,
+  interval: 8, lure: 0.55,   // was 7 and 0.45; slightly slower and easier to lure (on request)
 };
 const TIGER = {
   id: 'wti', name: 'White Tiger', where: 'ANYTHING',
