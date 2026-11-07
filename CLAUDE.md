@@ -68,7 +68,7 @@ Every level plays easier than its number: `effLevel(level)` in `config.js` is `1
 | Rockstar Bonnie | Buy his guitar in the shop (`guitarCost` by his real level, 5–15 coins) or `lose(RSBONNIE)` at 5:59. Reminders at 3 and 5 AM |
 | Toxic Springtrap | `updateToxic`: fumes (`#toxicShade`, TOXINS meter) with a meter rising `toxinRate`; the fan on with both doors open (`airClearing`) clears it at `TOXIN_CLEAR`. 100 = death (owner: "a toxin meter") |
 | Dee Dee | `rollDeeDee` at the start of the night: chance `moveChance(effLevel)`; takes one random character to 0 and gives the rest +`DEEDEE_BOOST` (even past 20) in `tonight` (the night's levels; `levels` is untouched), and coins come half as often |
-| Funtime Foxy | A SHOWTIME countdown (`SHOWTIME_SPOT`, real seconds); at 0 the left door must be shut (bonk + coin) or death. No other cue (on request) |
+| Funtime Foxy | A SHOWTIME countdown (`SHOWTIME_SPOT`, real seconds); at 0 the right door must be shut (bonk + coin) or death. No other cue (on request). It was the left door until 2026-11-07, moved on request with no version changes ("this changes so little") |
 | Shadow Bonnie | `updateShadow`: darkness (`#darkShade`, a hole where the flashlight is) for `shadowTime` s; the flashlight then works on the cameras too (`flashLit` vs `flashOn`). Doesn't kill |
 | Twisted Foxy | `updateTwisted`: gravel sounds, drawn at a `TWIST_SPOTS` spot on CAM 7 (`twf-hit`); `twistTaps` clicks within `twistTime` (eased after the bot test to 15–10 s, 3–6 taps) |
 

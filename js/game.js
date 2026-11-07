@@ -1261,14 +1261,14 @@ function updateToxic(dt) {
 }
 
 // ---------- Funtime Foxy ----------
-// The SHOWTIME countdown in your office. At 0 the left door must be shut. No other cue (on request).
+// The SHOWTIME countdown in your office. At 0 the right door must be shut (it was the left until moved on request). No other cue (on request).
 function updateFunFoxy(dt) {
   const F = G.ffx;
   if (F.level === 0) return;
   F.timer -= dt;
   if (F.timer > 0) return;
-  if (!G.doors.L) return lose(FUNFOXY, 'L');
-  sfx.bonk('L');
+  if (!G.doors.R) return lose(FUNFOXY, 'R');
+  sfx.bonk('R');
   earnCoin();
   F.timer = funFoxyWait(F.level) / G.pace;   // stretched on crowded nights (its countdown is in real seconds)
   dirty = true;

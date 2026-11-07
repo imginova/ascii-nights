@@ -160,8 +160,8 @@ const DEEDEE = {
   desc: 'May show up at the start of the night: she takes one random character out, but everyone else gets +5 levels and coins turn up less often.',
 };
 const FUNFOXY = {
-  id: 'ffx', name: 'Funtime Foxy', where: 'LEFT DOOR',
-  desc: 'A SHOWTIME countdown runs in your office. When it hits 0, the left door had better be shut. There is no other warning.',
+  id: 'ffx', name: 'Funtime Foxy', where: 'RIGHT DOOR',
+  desc: 'A SHOWTIME countdown runs in your office. When it hits 0, the right door had better be shut. There is no other warning.',
 };
 const FOXY = {
   id: 'fox', name: 'Foxy', where: 'LEFT DOOR',

@@ -108,8 +108,8 @@
           || (S.active && !S.stalled && S.side === side && ready('arrow'))
           || (side === 'L' && X.level > 0 && ['run', 'door'].includes(X.phase))
           || (side === 'L' && FX.level > 0 && ['run', 'door'].includes(FX.phase))
-          // Funtime Foxy: a player reads the SHOWTIME countdown and shuts the left door just before 0.
-          || (side === 'L' && FF.level > 0 && FF.timer < 1.2 + react * 1.5)
+          // Funtime Foxy: a player reads the SHOWTIME countdown and shuts the right door just before 0.
+          || (side === 'R' && FF.level > 0 && FF.timer < 1.2 + react * 1.5)
           || nfxSide === side
           || funShut(side);
         const keepShut = side => side === 'L' && X.level > 0 && X.phase === 'wait';
