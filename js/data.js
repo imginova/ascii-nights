@@ -276,7 +276,6 @@ const PRESETS = [
   { name: 'Patrol', v: 1, levels: lv({ chi: 15, nfx: 12, bon: 12 }) },
   { name: 'Cupcake hunt', v: 1, levels: lv({ nch: 15, pch: 15, chi: 10 }) },
   { name: 'Bedtime', v: 4, levels: lv({ mon: 12, nfr: 10, bnt: 10, plu: 10 }) },             // v4: + Plushtrap (FNAF 4's bedroom)
-  { name: 'Lights out', v: 1, levels: lv({ sbn: 15, nfr: 10, plu: 10, bnt: 8 }) },          // new with the third batch
   { name: 'Music lesson', v: 3, levels: lv({ pup: 18, wfx: 12, bon: 12 }) },
   { name: 'Pirate\'s dance', v: 4, levels: lv({ wfx: 15, bon: 10, fre: 10, nfx: 12 }) },   // v3: + Nightmare Foxy
   { name: 'Shopping spree', v: 1, levels: lv({ rsb: 18, fre: 10, bon: 10, chi: 10 }) },     // new with the third batch
@@ -291,6 +290,9 @@ const PRESETS = [
   { name: 'Nightmare hour', v: 2, levels: lv({ nfx: 15, nch: 15, nfr: 12, stf: 12 }) },
   { name: 'Freddy fever', v: 3, levels: lv({ fre: 14, gol: 14, nfr: 14, fun: 14 }) },     // v3: + Funtime Freddy
   { name: 'Masquerade', v: 2, levels: lv({ gol: 16, wbn: 16, nfr: 14, bnt: 10 }) },
+  // New with the third batch. v2: + Phantom Chica, Funtime Freddy and the Magic Rainbow (on request), and
+  // moved here from after Bedtime: the bot then won it 11/15 (average) and 10/15 (beginner).
+  { name: 'Lights out', v: 2, levels: lv({ sbn: 15, nfr: 10, plu: 10, bnt: 8, pch: 10, fun: 10, rbw: 8 }) },
   // v4: + Plushtrap. v5: + Nightmare Foxy (on request; the flashlight is what holds him back).
   // v6: + Shadow Bonnie (more need for the flashlight).
   { name: 'Night light', v: 6, levels: lv({ mon: 14, nfr: 12, wfx: 10, plu: 12, nfx: 12, sbn: 10 }) },
@@ -302,7 +304,8 @@ const PRESETS = [
   // v4: + Nightmare Chica (another reason you need the monitor).
   { name: 'Don\'t look away', v: 4, levels: lv({ gol: 12, pch: 12, wbn: 12, pup: 12, mon: 12, nch: 12 }) },
   // v3: + Nightmare Foxy at 12 (on request: his counter is a door too).
-  { name: 'Door duty', v: 4, levels: lv({ fre: 16, bon: 16, stf: 16, wfx: 12, nfx: 12 }) },
+  // v5: + the third batch's door characters, Foxy and Funtime Foxy (on request).
+  { name: 'Door duty', v: 5, levels: lv({ fre: 16, bon: 16, stf: 16, wfx: 12, nfx: 12, fox: 12, ffx: 12 }) },
   { name: 'Little terrors', v: 1, levels: lv({ plu: 18, bnt: 18, nfr: 10 }) },
   // v3: + both nightmares. v4: Phantom Chica (a phantom, not a nightmare) swapped for Plushtrap, on request.
   { name: 'Nightmare crew', v: 4, levels: lv({ stf: 15, nfr: 15, plu: 15, nfx: 12, nch: 12 }) },
