@@ -336,11 +336,18 @@ const PRESETS = [
   { name: 'Hare raising', v: 1, levels: lv({ bon: 12, tbo: 12, wbn: 12, sbn: 12, rsb: 12, bnt: 12, plu: 10 }) },
   { name: 'Old school', v: 1, levels: these(10, ['fre', 'bon', 'chi', 'fox', 'gol', 'tbo', 'tch', 'wbn', 'wfx', 'pup', 'sbn']) },
   { name: 'Half the gang', v: 1, levels: these(10, ['fre', 'bon', 'chi', 'fox', 'gol', 'tbo', 'tch', 'wbn', 'wfx', 'pup', 'sbn', 'pch', 'nfr', 'nfx']) },
+  // Every original character (on request, 2026-11-08): no Toy, Withered, Nightmare... variants. The owner
+  // counts Sleepy Moon as an original but not Golden Freddy, Plushtrap or the Flamethrower endo. The bot
+  // won it 19 / 18 of 20 (average / beginner).
+  { name: 'OC (don\'t steal)', v: 1, levels: these(12, ['fre', 'bon', 'chi', 'fox', 'pup', 'rbw', 'dee', 'bnt', 'ned', 'wti', 'mon']) },
   // v3: + Nedd Bear and the Magic Rainbow (on request: "everyone who came later" should include them).
   // The bot then won it 17 / 15 of 20 (average / beginner), mostly losing to Bonnet, so it moved here.
   { name: 'Behind the curtain', v: 4, levels: these(12, ['fun', 'ffx', 'bnt', 'rsb', 'ned', 'twf', 'rbw', 'dee', 'end', 'tsp', 'stf', 'wti', 'mon']) },
   // Last of the bridge: the bot (as a beginner) lost it 3 times in 10, all to Plushtrap.
   { name: 'Bad dreams', v: 1, levels: these(12, ['pch', 'nfr', 'nfx', 'nch', 'plu', 'ned', 'rbw', 'twf', 'sbn', 'pup']) },
+  // Everyone who isn't in Half the gang (on request, 2026-11-08). The bot won it 15 / 8 of 20 (average /
+  // beginner), mostly losing to Plushtrap and Nightmare Chica, so it ends the bridge.
+  { name: 'The other half', v: 1, levels: these(10, ['nch', 'plu', 'rbw', 'dee', 'fun', 'ffx', 'bnt', 'twf', 'rsb', 'ned', 'end', 'tsp', 'stf', 'wti', 'mon']) },
   // The ladder up to All 20 (on request: "a good amount scaling up to the max mode because right now it is
   // a big jump"). Everyone is in each one, with a group a bit higher.
   // The "everyone" ones include every character, so each new batch makes them harder (v4: the second
@@ -399,6 +406,8 @@ const FLAVOR = {
   'Bad dreams': 'Nightmares, phantoms and a rainbow. Sleep tight.',
   'Behind the curtain': 'Everyone who came later. They all have their own rules.',
   'Half the gang': 'Fourteen of them at once. Halfway to everyone.',
+  'The other half': 'Everyone Half the gang left out. They noticed.',
+  'OC (don\'t steal)': 'No Toys, no Withereds, no Nightmares. Just the originals.',
   'Graveyard shift': 'Everyone is in tonight. The old crew is restless.',
   'Double shift': 'Everyone, and the nightmares are worse.',
   'Sunrise is a lie': 'Everyone, and the foxes are hungry.',
