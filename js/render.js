@@ -154,15 +154,15 @@ function renderOffice(now) {
 // Everyone who can be in the office, drawn on top of it (the later ones on top of the earlier ones).
 function drawVisitors(g, now) {
   // The Nightmare staff bot's caution cone sits on the desk. While it blinks, its eyes flash and an
-  // arrow above it points at the door to shut.
+  // arrow above it points at the door to shut. The cone and arrow are caution orange (c-caution, on
+  // request), while the staff bot himself is black and white.
   const S = G.stf;
   if (S.level > 0) {
     const blinkOn = S.active && Math.floor(now / 250) % 2 === 0;
     const lines = SPRITES.stf.office.slice();
-    lines.accent = SPRITES.stf.office.accent;   // slice() copies the lines but not the color mask
     if (S.active) lines[1] = blinkOn ? '[* *]' : '[o o]';
-    sprite(g, ...STAFF_SPOT, lines, 'c-stf' + (blinkOn ? ' blink' : ''));
-    if (S.active) write(g, STAFF_SPOT[0] - 1, S.side === 'L' ? 0 : 5, S.side === 'L' ? '<<<' : '>>>', 'c-stf blink');
+    sprite(g, ...STAFF_SPOT, lines, 'c-caution' + (blinkOn ? ' blink' : ''));
+    if (S.active) write(g, STAFF_SPOT[0] - 1, S.side === 'L' ? 0 : 5, S.side === 'L' ? '<<<' : '>>>', 'c-caution blink');
   }
   // Freddles on the desk. "frd" marks them so the light can be seen on them (style.css).
   G.nfr.freddles.forEach((here, i) => {

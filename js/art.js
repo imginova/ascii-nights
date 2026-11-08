@@ -737,11 +737,7 @@ const ACCENT = {
   p: 'acc-pink', k: 'acc-gold', c: 'acc-sky', l: 'acc-lime', B: 'acc-bonbon', x: 'acc-black',
 };
 // The Nightmare staff bot, black and white (on request): a black body and head, his face in white.
-SPRITES.stf.office.accent = art(String.raw`
- x x
-x   x
-xxxxx
-x   x`);
+// (His caution cone on the desk stays caution orange: see c-caution in render.js.)
 SPRITES.stf.scare.accent = art(String.raw`
         xxxxxxxxx
        x         x

@@ -32,6 +32,7 @@
   --c-wbn: #7d93c9;   /* Withered Bonnie: faded blue */
   --c-pup: #f2f2f2;   /* the Puppet: white mask */
   --c-stf: #ffffff;   /* the Nightmare staff bot: black and white (the black parts are .acc-black) */
+  --c-caution: #ffa21f; /* the staff bot's caution cone on the desk, and its arrow: caution orange */
   --c-nfr: #b35c3a;   /* Nightmare Freddy: dark, rotten brown */
   --c-wfx: #e0603a;   /* Withered Foxy: rusty red */
   --c-mon: #c8d4ff;   /* Sleepy Moon: moonlight */
@@ -144,7 +145,7 @@ pre.art, .viewport, .hud, .controls, .map, .feed-head, .wind, .icon, .trio, .lvr
 /* Each character's color. b.c-bon makes "Bonnie" in a sentence bold in his color too. */
 .c-fre { color: var(--c-fre); } .c-bon { color: var(--c-bon); } .c-gol { color: var(--c-gol); }
 .c-pch { color: var(--c-pch); } .c-bnt { color: var(--c-bnt); } .c-wbn { color: var(--c-wbn); }
-.c-pup { color: var(--c-pup); } .c-stf { color: var(--c-stf); } .c-nfr { color: var(--c-nfr); }
+.c-pup { color: var(--c-pup); } .c-stf { color: var(--c-stf); } .c-caution { color: var(--c-caution); } .c-nfr { color: var(--c-nfr); }
 .c-wfx { color: var(--c-wfx); } .c-mon { color: var(--c-mon); } .c-end { color: var(--c-end); }
 .c-nfx { color: var(--c-nfx); } .c-fun { color: var(--c-fun); } .c-bb { color: var(--c-bb); }
 .c-chi { color: var(--c-chi); } .c-plu { color: var(--c-plu); } .c-nch { color: var(--c-nch); }
@@ -153,7 +154,7 @@ pre.art, .viewport, .hud, .controls, .map, .feed-head, .wind, .icon, .trio, .lvr
 .c-tsp { color: var(--c-tsp); } .c-dee { color: var(--c-dee); } .c-ffx { color: var(--c-ffx); }
 .c-fox { color: var(--c-fox); } .c-sbn { color: var(--c-sbn); } .c-twf { color: var(--c-twf); }
 pre .c-fre, pre .c-bon, pre .c-gol, pre .c-pch, pre .c-bnt, pre .c-wbn, pre .c-pup,
-pre .c-stf, pre .c-nfr, pre .c-wfx, pre .c-mon, pre .c-end,
+pre .c-caution, pre .c-stf, pre .c-nfr, pre .c-wfx, pre .c-mon, pre .c-end,
 pre .c-nfx, pre .c-fun, pre .c-bb, pre .c-chi, pre .c-plu, pre .c-nch,
 pre .c-tbo, pre .c-tch, pre .c-ned, pre .c-wti, pre .c-rbw, pre .c-rsb, pre .c-tsp, pre .c-dee,
 pre .c-ffx, pre .c-fox, pre .c-sbn, pre .c-twf { font-weight: 600; }
