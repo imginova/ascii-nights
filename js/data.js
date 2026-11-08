@@ -369,10 +369,20 @@ const PRESETS = [
   // the monitor. The bot won them 20 / 20 and 20 / 18 of 20 (average / beginner). Feeding time is further down.
   { name: 'Phantoms', v: 1, levels: lv({ pfx: 16, pch: 16, sbn: 14, gol: 14 }) },
   { name: 'Static', v: 1, levels: lv({ sec: 18, lol: 16, mon: 14, nch: 14 }) },
+  // Four more (on request, 2026-11-08: "make a few more challenges"), placed where the bot's results say
+  // (20 nights each, average / beginner). Wet floor and Screen time are further down.
+  // Listen closely: everyone you hear coming (laughs, footsteps, running, the squeak). 20 / 20.
+  { name: 'Listen closely', v: 1, levels: lv({ fre: 14, bon: 14, fox: 14, wfx: 12, pfx: 12, mop: 16 }) },
+  // Out of order: everyone who breaks things or messes with them. 20 / 20.
+  { name: 'Out of order', v: 1, levels: lv({ wti: 16, pch: 14, pfx: 14, sec: 14, stf: 12 }) },
   // The two the bot won least often outside the ladder (Over the rainbow was rbw 16, bnt 14, plu 12 before
   // testing; the rainbow keeps the mouse busy just when Bonnet and Plushtrap need it).
   { name: 'Fox hunt', v: 2, levels: lv({ fox: 14, wfx: 12, nfx: 12, ffx: 12, twf: 12 }) },
+  // Wet floor: the Mop bucket and everyone who walks the halls. 17 / 18.
+  { name: 'Wet floor', v: 1, levels: lv({ mop: 20, bon: 16, nfx: 16, chi: 12, fun: 12 }) },
   { name: 'Over the rainbow', v: 1, levels: lv({ rbw: 14, bnt: 10, plu: 8 }) },
+  // Screen time: everything that fights you for the mouse. 19 / 14, mostly Bonnet.
+  { name: 'Screen time', v: 1, levels: lv({ lol: 16, rbw: 14, bnt: 14, pch: 14 }) },
   // The bridge from the small challenges to the ladder (on request, 2026-11-07: "add some more in between
   // challenges from Fox hunt to Everyone at 5 to bridge the gap"): more characters at once, 80 to 140 points.
   { name: 'Party crashers', v: 3, levels: lv({ dee: 20, fre: 10, bon: 10, chi: 10, fox: 10, tbo: 10, tch: 10 }) },
@@ -473,6 +483,10 @@ const FLAVOR = {
   'Feeding time': 'A hungry fish, a pricey shop and a guitar to buy back. Count your coins.',
   'Static': 'Your cameras have a mind of their own tonight. LOL.',
   'Phantoms': 'Burnt, golden and shadowy. None of them are really there.',
+  'Wet floor': 'Someone forgot to mop the halls. Now everyone takes the shortcut.',
+  'Listen closely': 'Laughs, footsteps, running and a squeak. Keep the sound on.',
+  'Screen time': 'Your mouse hand is going to be busy. LOL.',
+  'Out of order': 'Doors, monitor, cameras: something is always broken tonight.',
   'Party crashers': 'Dee Dee is here. Somebody\'s leaving, and everybody else is angry.',
   'Hare raising': 'Seven rabbits. None of them friendly.',
   'Old school': 'The pizzeria\'s original crew and their toy replacements.',
