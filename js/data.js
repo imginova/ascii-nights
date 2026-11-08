@@ -220,8 +220,11 @@ const DUCT_ORDER = Object.keys(DUCTS);
 
 // ---------- spots in the office ----------
 // [row, column] places in the office picture (36 wide, 16 tall, see officeLines in art.js).
-// Phantom Chica's shadow cupcakes (3 characters wide) hide in some of these.
-const CUPCAKE_SPOTS = [[2, 12], [5, 20], [5, 30], [8, 15], [11, 29], [11, 3], [13, 14], [14, 6], [15, 25], [13, 22]];
+// Phantom Chica's shadow cupcakes (3 characters wide) hide in some of these. None may sit under
+// something drawn after them (Funtime Foxy's SHOWTIME countdown, the face at the vent or Moon's Zs):
+// [5, 20] and [5, 30] used to, so a cupcake could be invisible and her jumpscare seemed to come from
+// nowhere. They moved to [5, 4] and [6, 30].
+const CUPCAKE_SPOTS = [[2, 12], [5, 4], [6, 30], [8, 15], [11, 29], [11, 3], [13, 14], [14, 6], [15, 25], [13, 22]];
 // The three places on the desk where Freddles sit (the left end of each 4-wide Freddle).
 const FREDDLE_SPOTS = [[11, 11], [11, 17], [11, 23]];
 // Where Plushtrap hides in the office (4 wide, 2 tall).

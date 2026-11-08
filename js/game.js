@@ -160,7 +160,7 @@ function newGame() {
     // Golden Freddy: only there right after you flip the monitor down.
     gol: { level: levelOf(GOLDEN), present: false, deadline: 0 },
     // Phantom Chica: the cupcakes still to find ([row, column] each) and when she gives up waiting.
-    pch: { level: levelOf(PCHICA), active: false, cups: [], deadline: 0, scareUntil: 0 },
+    pch: { level: levelOf(PCHICA), active: false, cups: [], left: 0, scareUntil: 0 },
     // Bonnet: her position (x = column of her left edge, y = row of her top), and which way she runs.
     bnt: { level: levelOf(BONNET), active: false, x: 0, y: 13, dir: 1, speed: 0, timer: bonnetWait(levelOf(BONNET)) },
     // Withered Bonnie: his appearance timer, and how long the mask has been on while he's here.
@@ -359,7 +359,7 @@ function lookedBack() {
     // Pick different cupcake spots: shuffle a copy of the list and take the first few.
     C.cups = CUPCAKE_SPOTS.slice().sort(() => Math.random() - 0.5).slice(0, cupcakeCount(C.level));
     C.active = true;
-    C.deadline = G.t + chicaTime(C.level, C.cups.length);
+    C.left = chicaTime(C.level, C.cups.length);   // seconds left to find them (see updateChica)
     sfx.chicaIn();
   }
 }
@@ -374,9 +374,15 @@ function updateGolden() {
 
 // Phantom Chica: find every cupcake before time runs out, or she jumpscares you and takes power.
 // It doesn't end the night (unless that was the last of your power).
-function updateChica() {
+// Her clock only runs while you can see the cupcakes: not while the monitor is up, the mask covers
+// the view or White Tiger's face is in the way. (It used to run all the time, so flipping the monitor
+// down and straight back up could get you jumpscared by cupcakes you never saw.)
+function updateChica(dt) {
   const C = G.pch;
-  if (!C.active || G.t < C.deadline) return;
+  if (!C.active) return;
+  if (G.cam || G.mask || performance.now() < (G.tigerUntil || 0)) return;
+  C.left -= dt;
+  if (C.left > 0) return;
   C.active = false;
   C.cups = [];
   C.scareUntil = performance.now() + 900;   // render.js shows her face until then
