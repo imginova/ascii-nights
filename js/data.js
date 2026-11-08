@@ -331,8 +331,10 @@ const PRESETS = [
   { name: 'Party crashers', v: 1, levels: lv({ dee: 20, fre: 10, bon: 10, chi: 10, fox: 10, tbo: 10, tch: 10 }) },
   { name: 'Hare raising', v: 1, levels: lv({ bon: 12, tbo: 12, wbn: 12, sbn: 12, rsb: 12, bnt: 12, plu: 10 }) },
   { name: 'Old school', v: 1, levels: these(10, ['fre', 'bon', 'chi', 'fox', 'gol', 'tbo', 'tch', 'wbn', 'wfx', 'pup', 'sbn']) },
-  { name: 'Behind the curtain', v: 2, levels: these(12, ['fun', 'ffx', 'bnt', 'rsb', 'twf', 'dee', 'end', 'tsp', 'stf', 'wti', 'mon']) },
   { name: 'Half the gang', v: 1, levels: these(10, ['fre', 'bon', 'chi', 'fox', 'gol', 'tbo', 'tch', 'wbn', 'wfx', 'pup', 'sbn', 'pch', 'nfr', 'nfx']) },
+  // v3: + Nedd Bear and the Magic Rainbow (on request: "everyone who came later" should include them).
+  // The bot then won it 17 / 15 of 20 (average / beginner), mostly losing to Bonnet, so it moved here.
+  { name: 'Behind the curtain', v: 3, levels: these(12, ['fun', 'ffx', 'bnt', 'rsb', 'ned', 'twf', 'rbw', 'dee', 'end', 'tsp', 'stf', 'wti', 'mon']) },
   // Last of the bridge: the bot (as a beginner) lost it 3 times in 10, all to Plushtrap.
   { name: 'Bad dreams', v: 1, levels: these(12, ['pch', 'nfr', 'nfx', 'nch', 'plu', 'ned', 'rbw', 'twf', 'sbn', 'pup']) },
   // The ladder up to All 20 (on request: "a good amount scaling up to the max mode because right now it is
