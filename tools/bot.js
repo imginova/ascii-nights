@@ -29,6 +29,10 @@
 // running the mouse away from the Magic Rainbow (no mouse clicks while it does), the fan with both doors
 // open for Toxic Springtrap, Funtime Foxy's countdown, Foxy (shut the door when he runs), tapping
 // Twisted Foxy, and Shadow Bonnie's darkness (slower to spot things; the flashlight on the cameras).
+// The fourth batch taught it (2026-11-08): Phantom Foxy (monitor down, open his door if it can, light the
+// doorway), typing L O L for Lolbit (and no clicks while the LOL screen is up), feeding Piranha Plushtrap
+// when his meter gets low (keeping two coins back for it), Funtime Chica's prices, and hearing the Mop
+// bucket's squeak when Nightmare Foxy skips his hall.
 // Run in the page: botNight(levels, profile) -> { won, killer, power, coins }.
 (function () {
   const DT = 0.02;
@@ -71,8 +75,10 @@
       let busy = 0, fredIdx = -1, cupFoundAt = null, nfxSide = null, patrolNext = 8;
       // Who the bot spends death coins on first (the ones it finds hardest), and how it judges a duct
       // crawler's distance from the clanks (dist 1 = at the vent).
-      const DEATH_ORDER = ['rbw', 'nfr', 'wti', 'twf', 'nch', 'mon', 'tsp', 'ffx', 'pch', 'nfx', 'fun', 'bnt', 'plu',
-        'tbo', 'tch', 'ned', 'chi', 'stf', 'end', 'wfx', 'fox', 'wbn', 'gol', 'pup', 'sbn', 'bon', 'fre', 'rsb', 'dee'];
+      const DEATH_ORDER = ['rbw', 'nfr', 'wti', 'twf', 'nch', 'mon', 'tsp', 'ffx', 'pir', 'pch', 'nfx', 'fun', 'bnt', 'plu',
+        'lol', 'pfx', 'tbo', 'tch', 'ned', 'chi', 'stf', 'end', 'wfx', 'fox', 'wbn', 'gol', 'pup', 'sbn', 'bon', 'fre',
+        'sec', 'mop', 'fch', 'rsb', 'dee'];
+      let lastNfxStep = 0;   // to hear the Mop bucket's squeak when Nightmare Foxy skips his hall
       const ductDist = c => DUCTS[G[c.id].room].dist;
       // Cameras already checked during each kind of camera search (cleared when that search is over).
       const looked = { moon: new Set(), nch: new Set(), fun: new Set(), patrol: new Set(), coins: new Set() };
@@ -100,6 +106,12 @@
         if (NX.step === 0 || NX.inside) nfxSide = null;   // (kept while he's in the hall or the doorway)
         notice('nfxSeen', NX.level > 0 && !NX.inside && NX.step === 1 && onCam(NX.route[1]), react * 0.5);
         if (ready('nfxSeen')) nfxSide = NX.route[2];
+        // ...or when the Mop bucket squeaks: he skipped the hall (step 0 straight to 2), and the squeak
+        // says which side.
+        if (NX.step === 2 && lastNfxStep === 0 && seen.mopSqueak == null) seen.mopSqueak = G.t + react * jitter();
+        if (NX.step !== 2) delete seen.mopSqueak;
+        lastNfxStep = NX.step;
+        if (ready('mopSqueak')) nfxSide = NX.route[2];
         // Funtime Freddy: BonBon on his hand means shut his door, AFTER looking at him (a door shut
         // before that doesn't count, so it has to be opened and shut again).
         const funShut = side => F.active && F.seenAt != null && F.bonbon && F.side === side;
@@ -120,8 +132,20 @@
         // Something in the office that needs the monitor down right now (a sensible player finishes these
         // before going back to the cameras): the mask, cupcakes, Bonnet, Plushtrap, the staff bot's arrow,
         // Foxy's open-and-flash routine, BonBon at a door, or Nightmare Foxy creeping close.
+        const PF = G.pfx, LB = G.lol, PR = G.pir;
         const busyInOffice = () => G.mask || maskNeed || G.pch.active || Bn.active || !!P.spot || funFlash
-          || (S.active && !S.stalled) || ['ready', 'open'].includes(X.phase) || (NX.inside && NX.stage >= 2);
+          || (S.active && !S.stalled) || ['ready', 'open'].includes(X.phase) || (NX.inside && NX.stage >= 2)
+          || (PF.active && ready('pfoxy'));
+        // ----- the fourth batch -----
+        // Phantom Foxy: his running steps say which door; then monitor down, open that door if nothing else
+        // needs it shut, and shine the light into the doorway.
+        notice('pfoxy', PF.active, react);
+        // Lolbit: the LOL screen is seen anywhere; then type L, O, L. While it's up nothing can be clicked.
+        notice('lol', LB.active, react * 0.6, true);
+        const noClick = LB.active;
+        // Piranha Plushtrap: the bot keeps an eye on his food meter (like the music box) and goes to feed him.
+        const pirLow = PR.level > 0 && PR.food < PIR_LOW + 10 && G.coins >= PIR_COST;
+        notice('pir', pirLow, react);
 
         // Cues. Sounds can be heard anywhere; office sights need the monitor down.
         notice('mask', maskNeed);
@@ -191,7 +215,7 @@
 
         // Coin hunting: with Rockstar Bonnie on and not enough coins for his guitar yet, look through every
         // camera now and then (a sweep), picking up any coin it sees.
-        const needCoins = G.rsb.level > 0 && !G.shop.guitar && G.coins < guitarPrice();
+        const needCoins = (G.rsb.level > 0 && !G.shop.guitar && G.coins < guitarPrice()) || (PR.level > 0 && G.coins < 2 * PIR_COST);
         if (needCoins && G.t >= coinHuntNext && !nextCam(looked.coins) && (!G.cam || looked.coins.has(G.camRoom))) {
           looked.coins.clear();
           coinHuntNext = G.t + 12;
@@ -202,7 +226,7 @@
         const watching = (nchOut && onCam(NC.room)) || (moonOut && onCam(G.mon.room))
           || (C.level > 0 && C.step >= 1 && onCam(chicaRoom()))
           || (NX.level > 0 && !NX.inside && NX.step === 1 && onCam(NX.route[1]) && !nfxSide)
-          || (TW.active && onCam('prize')) || (coinHere && !dodging);
+          || (TW.active && onCam('prize')) || (coinHere && !dodging) || (pirLow && onCam('back'));
         // Which camera the bot wants to look at next: of all the camera jobs waiting, the one that runs
         // out soonest (a person does whatever is most urgent). Returns { room, set } or null.
         const searchIn = (set, list = CAM_ORDER) => nextCam(set, list) || (set.clear(), nextCam(set, list));
@@ -214,27 +238,30 @@
           if (ready('lullaby') && moonOut) jobs.push([(100 - G.mon.sleep) / moonRate(G.mon.level), searchIn(looked.moon), looked.moon]);
           if (ready('box') && boxLow) jobs.push([G.pup.wind / boxDrain(G.pup.level), 'prize', new Set()]);
           if (ready('gravel') && TW.active && !dodging) jobs.push([TW.deadline - G.t - 2, 'prize', new Set()]);
+          if (ready('pir') && pirLow) jobs.push([PR.food / (pirDrain(PR.level) * G.pace), 'back', new Set()]);
           if (coinHunt) jobs.push([60, nextCam(looked.coins), looked.coins]);
           if (patrolRooms.length && G.t >= patrolNext) jobs.push([30, nextCam(looked.patrol, patrolRooms), looked.patrol]);
           const best = jobs.filter(j => j[1]).sort((a, b) => a[0] - b[0])[0];
           return best ? { room: best[1], set: best[2] } : null;
         };
         const lookingSomewhere = ready('funNoise') || (nchOut && ready('nchNoise')) || (moonOut && ready('lullaby'))
-          || (boxLow && ready('box')) || (patrolRooms.length && G.t >= patrolNext) || (TW.active && ready('gravel')) || coinHunt;
+          || (boxLow && ready('box')) || (patrolRooms.length && G.t >= patrolNext) || (TW.active && ready('gravel')) || coinHunt
+          || (pirLow && ready('pir'));
         // The shop: what the bot wants to buy right now, if anything (the guitar first, then a death coin
         // on the hardest one on tonight, then a battery when the power is low and nothing else is wanted).
         const S2 = G.shop;
         const wantGuitar = G.rsb.level > 0 && !S2.guitar;
         const deathTarget = DEATH_ORDER.find(id => G[id] && G[id].level > 0);
-        const canBattery = S2.batteries > 0 && G.coins >= BATTERY_COST && G.power < 100 - BATTERY_POWER;
+        const canBattery = S2.batteries > 0 && G.coins >= batteryPrice() && G.power < 100 - BATTERY_POWER;
         // (Death coins come first early in the night: the guitar is only needed by 5:59, so from 3 AM on
         // the bot buys it as soon as it can, and only buys other things with coins it doesn't need for it.)
         const guitarTime = wantGuitar && G.t >= 3 * HOUR_SECONDS;
-        const spare = G.coins - (guitarTime ? guitarPrice() : 0);   // coins not set aside for the guitar
+        // Coins not set aside for the guitar (or for feeding Piranha Plushtrap: two kept back).
+        const spare = G.coins - (guitarTime ? guitarPrice() : 0) - (PR.level > 0 ? 2 * PIR_COST : 0);
         const want = guitarTime && G.coins >= guitarPrice() ? 'guitar'
-          : G.power < 25 && canBattery && (spare >= BATTERY_COST || G.power < 10) ? 'battery'   // about to run out
-          : S2.deathLeft > 0 && deathTarget && spare >= DEATH_COIN_COST ? 'death'
-          : G.power < 40 && canBattery && spare >= BATTERY_COST && !(S2.deathLeft > 0 && deathTarget && spare >= 10) ? 'battery'
+          : G.power < 25 && canBattery && (spare >= batteryPrice() || G.power < 10) ? 'battery'   // about to run out
+          : S2.deathLeft > 0 && deathTarget && spare >= deathPrice() ? 'death'
+          : G.power < 40 && canBattery && spare >= batteryPrice() && !(S2.deathLeft > 0 && deathTarget && spare >= 10) ? 'battery'
           : null;
 
         // ----- the mouse: Bonnet first, then the flashlight's target -----
@@ -271,6 +298,7 @@
         } else if (P.spot && ready('plush')) target = [P.spot[0] + 0.5, P.spot[1] + 1.5];
         else if (X.phase === 'open' && ready('foxyFlash')) target = [7, -7];
         else if (funFlash) target = [7, F.side === 'L' ? 41 : -7];   // the OTHER door
+        else if (PF.active && ready('pfoxy')) target = [7, PF.side === 'L' ? -7 : 41];   // Phantom Foxy's doorway
         else if (NX.inside && NX.stage >= 2) target = NFOXY_STAGES[NX.stage].aim;
         else if (fredIdx >= 0) { const [r, c] = FREDDLE_SPOTS[fredIdx]; target = [r, c + 1.5]; }
         if (target && !dodging) moveTo(...target);
@@ -284,9 +312,12 @@
           const nose = Bn.active && Math.abs(m.c - (Bn.x + 2)) <= 0.7 && Math.abs(m.r - (Bn.y + 1)) <= 0.7;
           const job = camJob();
           if (maskNeed && !G.mask && ready('mask')) act(G.cam ? toggleCam : toggleMask);
-          else if (ready('shutL') && shutNeed('L') && (!G.doors.L || funReshut('L'))) act(() => toggleDoor('L'));
-          else if (ready('shutR') && shutNeed('R') && (!G.doors.R || funReshut('R'))) act(() => toggleDoor('R'));
-          else if (chasing && nose) act(boopBonnet);
+          // (A broken door can't be shut, so a person gets on with something else instead of pressing it.)
+          else if (ready('shutL') && shutNeed('L') && !broken('L') && (!G.doors.L || funReshut('L'))) act(() => toggleDoor('L'));
+          else if (ready('shutR') && shutNeed('R') && !broken('R') && (!G.doors.R || funReshut('R'))) act(() => toggleDoor('R'));
+          // Lolbit: type L, O, L (quick key presses, not a full action each).
+          else if (ready('lol') && LB.active) act(() => typeLol(LOL_WORD[LB.typed]), 0.15 - gap);
+          else if (chasing && nose && !noClick) act(boopBonnet);
           else if (ready('fanOn') && fanNeed && !G.fan) act(toggleFan);   // one quick click: never put off
           else if (ready('heaterOn') && ductDanger && !G.heater) act(toggleHeater);
           // White Tiger: break up anything that's been on a long time (if it can be spared right now).
@@ -297,22 +328,26 @@
           else if (tigerSoon('R') && G.doors.R && !shutNeed('R')) act(() => toggleDoor('R'));
           else if (tigerSoon('mask') && G.mask && !maskNeed) act(toggleMask);
           // Twisted Foxy on CAM 7: click him again and again (quick clicks, not a full action each).
-          else if (ready('twfSeen') && TW.active && onCam('prize') && !dodging) act(tapTwisted, 0.18 - gap);
+          else if (ready('twfSeen') && TW.active && onCam('prize') && !dodging && !noClick) act(tapTwisted, 0.18 - gap);
           else if (ready('unmask') && G.mask && !maskNeed) act(toggleMask);
-          else if (ready('stall') && S.stalled && G.doors[S.side]) act(() => toggleDoor(S.side));
-          else if (ready('foxyOpen') && X.phase === 'ready' && G.doors.L) act(() => toggleDoor('L'));
+          else if (ready('stall') && S.stalled && G.doors[S.side] && !shutNeed(S.side)) act(() => toggleDoor(S.side));
+          else if (ready('foxyOpen') && X.phase === 'ready' && G.doors.L && !shutNeed('L')) act(() => toggleDoor('L'));
           // BonBon is at a door that's shut: open it (if nothing else needs it shut) so the light can reach her.
           else if (funFlash && G.doors[otherSide(F.side)] && !shutNeed(otherSide(F.side)) && !keepShut(otherSide(F.side)))
             act(() => toggleDoor(otherSide(F.side)));
+          // Phantom Foxy at a shut door: open it (if nothing else needs it shut) so the light can reach him.
+          else if (PF.active && ready('pfoxy') && G.doors[PF.side] && !shutNeed(PF.side) && !keepShut(PF.side))
+            act(() => toggleDoor(PF.side));
           else if (G.cam && busyInOffice()) act(toggleCam);   // something in the office needs me
-          else if (ready('moonSeen') && moonOut && onCam(G.mon.room) && !dodging) act(clickMoon);
-          else if (ready('nchSeen') && nchOut && onCam(NC.room) && !dodging) act(clickCupcakeCam);
-          else if (ready('chiSeen') && C.step >= 1 && onCam(chicaRoom()) && !dodging) act(pushChica);
+          else if (ready('moonSeen') && moonOut && onCam(G.mon.room) && !dodging && !noClick) act(clickMoon);
+          else if (ready('nchSeen') && nchOut && onCam(NC.room) && !dodging && !noClick) act(clickCupcakeCam);
+          else if (ready('chiSeen') && C.step >= 1 && onCam(chicaRoom()) && !dodging && !noClick) act(pushChica);
           else if (boxLow && ready('box') && onCam('prize')) act(windBox);
+          else if (ready('pir') && pirLow && onCam('back') && !dodging && !noClick) act(feedPiranha);
           else if (ready('heaterOff') && G.heater) act(toggleHeater);
-          else if (ready('coinSeen') && coinHere && !dodging) act(collectCoin);
+          else if (ready('coinSeen') && coinHere && !dodging && !noClick) act(collectCoin);
           // Shopping: switch to the SHOP tab (one action), then buy (another). A death coin is two clicks.
-          else if (want && !G.mask && !busyInOffice() && !dodging) {
+          else if (want && !G.mask && !busyInOffice() && !dodging && !noClick) {
             if (!G.cam || G.tab !== 'shop') act(() => setTab('shop'));
             else if (want === 'guitar') act(buyGuitar);
             else if (want === 'battery') act(buyBattery);
@@ -325,7 +360,7 @@
             act(() => setCam(job.room), react * 0.3);
           }
           else if (G.cam && !lookingSomewhere && !watching) act(toggleCam);   // nothing to watch: back to the office
-          else if (ready('chica') && G.pch.active && down && !G.mask && !dodging) {
+          else if (ready('chica') && G.pch.active && down && !G.mask && !dodging && !noClick) {
             // Searching for the next cupcake takes a while; then click it.
             if (cupFoundAt == null) cupFoundAt = G.t + find * (0.7 + Math.random() * 0.7);
             if (G.t >= cupFoundAt) { act(() => clickCupcake(0)); cupFoundAt = null; }

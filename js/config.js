@@ -81,7 +81,8 @@ const goldenWindow = level => byLevel(level, 2.3, 1.6);
 // ---------- Phantom Chica ----------
 // The chance she shows up when you flip the monitor down (every flip at level 20, on request),
 // how many shadow cupcakes you must click (1, 2 or 3 by level), how long you have, and what
-// failing costs you: a jumpscare and 10% of your power (not the night).
+// failing costs you: a jumpscare, and both doors fly open and are broken for CHICA_BREAK seconds (not
+// the night). (It cost 10% of your power until changed on request.)
 const chicaChance = level => level / 20;
 // (Written with effLevel so it's still 1 cupcake for levels 1-7, 2 for 8-13 and 3 for 14-20.)
 const cupcakeCount = level => level < effLevel(8) ? 1 : level < effLevel(14) ? 2 : 3;
@@ -89,7 +90,7 @@ const cupcakeCount = level => level < effLevel(8) ? 1 : level < effLevel(14) ? 2
 // to 1.6 per cupcake at level 20. (It used to be one time for any number of cupcakes, 3.5 s at level
 // 20, which the bot test showed was too short for a person to find 3.)
 const chicaTime = (level, cups) => 2 + cups * byLevel(level, 2.5, 1.6);
-const CHICA_COST = 10;
+const CHICA_BREAK = 5;   // as long as White Tiger's breakages (TIGER_DISABLE)
 
 // ---------- Bonnet ----------
 // Seconds between her runs (a random time in this range), how long a run across the office takes,
@@ -306,3 +307,57 @@ const shadowTime = level => byLevel(level, 10, 20);
 const twistWait = level => rand(byLevel(level, 55, 20), byLevel(level, 80, 32));
 const twistTaps = level => Math.round(byLevel(level, 3, 6));
 const twistTime = level => byLevel(level, 15, 10);
+
+// ======================= the fourth batch (2026-11-08, the owner's designs) =======================
+
+// ---------- Foxy and Withered Foxy's run ----------
+// (Reworked on request: "have them get you when the running sound stops".) A run now lasts
+// foxyRunTime seconds: the FOXY_RUN it takes to get down the hall plus the reaction time you used to get
+// in the doorway, so the time you have is the same as before. You hear running steps the whole way
+// (one every RUN_STEP seconds) and see him rushing in the left doorway; when the steps stop, the door had
+// better be shut.
+const foxyRunTime = level => FOXY_RUN + reactWindow(level);
+const RUN_STEP = 0.17;
+
+// ---------- Phantom Foxy ----------
+// Every so often he rushes at a random door (running steps from that side, and he's seen in that
+// doorway). A shut door doesn't stop him (he runs right through it): shine the flashlight into that
+// doorway for PFOXY_FLASH seconds (in all) before the steps stop. The light can't get through a shut
+// door, so open it first. Too slow and he jumpscares you and breaks the monitor for PFOXY_BREAK seconds
+// (it doesn't end the night, like Phantom Chica).
+const pfoxyWait = level => rand(byLevel(level, 50, 16), byLevel(level, 75, 28));
+const PFOXY_FLASH = 0.8;
+const PFOXY_BREAK = 5;
+
+// ---------- Security ----------
+// While you're watching the cameras, every so often (secWait seconds of camera watching) he switches you
+// to a different camera, with a beep and static. He never kills.
+const secWait = level => byLevel(level, 16, 4) * rand(0.7, 1.3);
+
+// ---------- Lolbit ----------
+// Every so often a big LOL screen covers your view and blocks clicks on anything under it until you
+// type L, O, L (or tap the three letters on it). He never kills.
+const lolWait = level => rand(byLevel(level, 50, 15), byLevel(level, 75, 28));
+
+// ---------- Funtime Chica ----------
+// She raises the prices of the battery pack and the death coin (not Rockstar Bonnie's guitar, which is his
+// own): times 1 + level / 20, so up to double at level 20. Uses the real level, like the guitar's price.
+const priceRise = level => 1 + level / 20;
+
+// ---------- Piranha Plushtrap ----------
+// Sits in a fish tank on CAM 3 and gets hungry: his food meter drops pirDrain % per second. Click the sea
+// bonnie in his tank to feed him: PIR_FEED % for 1 Fazcoin (only while the meter is below PIR_FULL, so a
+// coin isn't wasted). Below PIR_LOW a warning plays; at 0 he gets you PIR_DELAY seconds later.
+const pirDrain = level => byLevel(level, 0.5, 2);
+const PIR_FEED = 50;
+const PIR_FULL = 90;
+const PIR_LOW = 35;
+const PIR_DELAY = 3;
+const PIR_COST = 1;
+
+// ---------- the Mop bucket ----------
+// Sits in one of the halls all night (shown on that hall's camera). Each time Bonnie or Nightmare Foxy
+// would walk into that hall, there's a mopChance that they skip it and go straight to the door, with a
+// squeak from that side. (Chica, Withered Foxy and Funtime Freddy wait in a hall as their warning, so
+// they don't skip it.)
+const mopChance = level => byLevel(level, 0.1, 0.8);

@@ -241,9 +241,7 @@ const sfx = (() => {
     },
 
     // ----- Foxy and Withered Foxy -----
-    // Running toward the left door: fast steps getting louder. Foxy's are lighter (freq 600); Withered
-    // Foxy's are deeper and heavier (freq 300), so you can tell who's coming.
-    run(freq = 600) { for (let i = 0; i < 8; i++) noise(0.07, { vol: 0.15 + i * 0.06, freq, delay: i * 0.17, pan: -0.3 - i * 0.07 }); },
+    // (Their running steps are runStep, further down: game.js plays them one by one for the whole run.)
     // Slamming into the shut left door.
     bang() {
       noise(0.4, { vol: 0.9, freq: 300, pan: -0.8 });
@@ -379,6 +377,50 @@ const sfx = (() => {
     // While he's there: a crackle every so often.
     crackle() { for (let i = 0; i < 4; i++) noise(0.03, { vol: 0.2, freq: 3000, type: 'highpass', delay: Math.random() * 0.4 }); },
     flameOff() { noise(0.6, { vol: 0.3, freq: 700 }); tone(140, 0.5, { type: 'sine', vol: 0.1, slide: -100 }); },
+
+    // ===== the fourth batch =====
+    // ----- running (Foxy, Withered Foxy, Phantom Foxy) -----
+    // One running footstep, from the door's side. game.js plays one every RUN_STEP seconds for as long as
+    // the run lasts, so the steps stopping is the moment he arrives. `progress` (0 to 1) makes them louder
+    // as he gets closer; `freq` is how heavy they sound (Foxy 600, Withered Foxy 300, Phantom Foxy 450).
+    runStep(side, progress, freq = 600) {
+      noise(0.07, { vol: 0.15 + 0.45 * progress, freq, pan: panOf(side) * (0.3 + 0.6 * progress) });
+    },
+
+    // ----- Phantom Foxy -----
+    // Flashed away: he fades with a hollow, falling whoosh.
+    pfoxyOut(side) {
+      noise(0.5, { vol: 0.25, freq: 900, pan: panOf(side) });
+      tone(500, 0.5, { type: 'sine', vol: 0.15, slide: -380, pan: panOf(side) });
+    },
+
+    // ----- Security -----
+    // Switching your camera: a robotic two-tone beep ("bee-boop").
+    secBeep() { tone(1046, 0.08, { type: 'square', vol: 0.12 }); tone(698, 0.12, { type: 'square', vol: 0.12, delay: 0.09 }); },
+
+    // ----- Lolbit -----
+    // The LOL screen popping up: a silly, glitchy "lo-ol" laugh.
+    lolIn() {
+      [523, 784, 523].forEach((f, i) => tone(f, 0.1, { type: 'square', vol: 0.14, delay: i * 0.11 }));
+      noise(0.25, { vol: 0.15, freq: 3000, type: 'highpass', delay: 0.35 });
+    },
+    // Each right letter typed: a tick, higher for each one (n = 1, 2 or 3).
+    lolKey(n) { tone(600 + n * 200, 0.05, { type: 'square', vol: 0.1 }); },
+    // Gone: a quick fizzle down.
+    lolOut() { tone(900, 0.2, { type: 'triangle', vol: 0.12, slide: -700 }); },
+
+    // ----- Piranha Plushtrap -----
+    // Getting hungry: bubbles (quick rising blips) and a snap of teeth.
+    pirWarn() {
+      for (let i = 0; i < 4; i++) tone(300 + i * 120, 0.06, { type: 'sine', vol: 0.15, slide: 200, delay: i * 0.08 });
+      noise(0.05, { vol: 0.35, freq: 3500, type: 'highpass', delay: 0.4 });
+    },
+    // Fed: a splash and a happy gulp.
+    feed() { noise(0.2, { vol: 0.25, freq: 1500 }); tone(220, 0.15, { type: 'sine', vol: 0.25, slide: -120, delay: 0.12 }); },
+
+    // ----- the Mop bucket -----
+    // Someone skipped the hall: a wet, rubbery squeak from that side.
+    squeak(side) { tone(1400, 0.12, { type: 'sine', vol: 0.18, slide: 600, pan: panOf(side) }); tone(1900, 0.08, { type: 'sine', vol: 0.12, slide: -500, delay: 0.1, pan: panOf(side) }); },
 
     // ----- big moments -----
     powerDown() { tone(440, 1.8, { type: 'sawtooth', vol: 0.14, slide: -400 }); },

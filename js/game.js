@@ -203,7 +203,7 @@ function newGame() {
     // get you. Toy Bonnie at the front also needs the mask.
     tbo: ductCrawler(TBONNIE), tch: ductCrawler(TCHICA), ned: ductCrawler(NEDD),
     // White Tiger: how long each thing has been on without a break, and until when each is broken.
-    wti: { level: levelOf(TIGER), use: {}, brokenUntil: {} },
+    wti: { level: levelOf(TIGER), use: {} },
     // Chica's Magic Rainbow: where she is (x, y from 0 to 1 across and down the view) and how much
     // longer you have to dodge her.
     rbw: { level: levelOf(RAINBOW), active: false, x: 0, y: 0, left: 0, timer: rainbowWait(levelOf(RAINBOW)) },
@@ -220,6 +220,20 @@ function newGame() {
     sbn: { level: levelOf(SHADOWB), dark: false, darkT: 0, timer: shadowWait(levelOf(SHADOWB)) },
     // Twisted Foxy: whether he's digging up, where on CAM 7, how many taps are still needed.
     twf: { level: levelOf(TFOXY), active: false, spot: null, taps: 0, deadline: 0, timer: twistWait(levelOf(TFOXY)) },
+    // ----- the fourth batch -----
+    // Phantom Foxy: whether he's rushing, at which door, how long until the running stops, the light so far.
+    pfx: { level: levelOf(PFOXY), active: false, side: 'L', runT: 0, runTotal: 1, stepT: 0, flashT: 0,
+      timer: pfoxyWait(levelOf(PFOXY)) },
+    // Security: seconds of camera watching until he switches your camera, and until when his face shows.
+    sec: { level: levelOf(SECURITY), timer: secWait(levelOf(SECURITY)), faceUntil: 0 },
+    // Lolbit: whether the LOL screen is up, and how many of its letters (L, O, L) you've typed so far.
+    lol: { level: levelOf(LOLBIT), active: false, typed: 0, timer: lolWait(levelOf(LOLBIT)) },
+    // Funtime Chica: just her level (she raises the shop prices, see batteryPrice / deathPrice).
+    fch: { level: levelOf(FUNCHICA) },
+    // Piranha Plushtrap: his food meter (100 = full), the countdown once it's empty, and the warning.
+    pir: { level: levelOf(PIRANHA), food: 100, outT: 0, warned: false },
+    // The Mop bucket: which hall it's in tonight.
+    mop: { level: levelOf(MOPBUCKET), room: pick(Object.keys(MOP_ROOMS)) },
     // The ducts: the audio lure (which room, until when, time since its last pull roll) and the heater.
     lureRoom: null, lureUntil: 0, lureReadyAt: 0, lureT: 0,
     heater: false, heaterT: 0,
@@ -230,6 +244,7 @@ function newGame() {
     // and whether you're choosing who to use a death coin on.
     shop: { deathLeft: DEATH_COINS, batteries: BATTERY_STOCK, guitar: false, picking: false },
     removed: [],                   // ids of characters removed tonight by a death coin
+    brokenUntil: {},               // until when each thing is broken (White Tiger, Phantom Chica), see broken()
     note: '', noteUntil: 0,        // a short message shown over the office (Dee Dee, White Tiger...)
     shutAt: { L: -1, R: -1 },      // when each door was last shut (Funtime Freddy checks you looked first)
     heat: 0,                       // the office heat in percent (see updateHeat); 100 = you pass out
@@ -276,7 +291,8 @@ function update(dt) {
     updateStaff, updateNightmare, updateFoxy, updateMoon, updateEndo, updateNightmareFoxy, updateFuntime,
     updateChicaWalk, updatePlushtrap, updateNightmareChica,
     updateDucts, updateTiger, updateRainbow, updateRockstar, updateToxic, updateFunFoxy, updateClassicFoxy,
-    updateShadow, updateTwisted, updateCoins, updateHeat]) {
+    updateShadow, updateTwisted, updatePhantomFoxy, updateSecurity, updateLolbit, updatePiranha,
+    updateCoins, updateHeat]) {
     if (G.over || G.powerOut) return;
     step(dt);
   }
@@ -328,6 +344,7 @@ function updateBonnie(dt) {
   B.timer = BONNIE_INTERVAL * rand(0.7, 1.3);
   if (Math.random() >= moveChance(B.level)) return;
   B.step++;
+  if (mopSkips(B.route[B.step])) B.step++;   // the Mop bucket's hall: straight on to the door
   if (onCam(B.route[B.step - 1]) || onCam(B.route[B.step])) camStatic(0.5);   // static when he leaves or enters the room you're watching
   if (bonnieAtDoor()) {
     sfx.arrive(bonnieSide(), 140);
@@ -337,6 +354,15 @@ function updateBonnie(dt) {
     sfx.step(B.step / (B.route.length - 1), bonnieSide(), 120);
   }
   dirty = true;
+}
+// The Mop bucket: someone (Bonnie or Nightmare Foxy) is about to walk into `room`. If the bucket is in
+// that hall, there's a mopChance they skip it and go straight to its door, with a squeak from that side.
+// Returns true when they skip it.
+function mopSkips(room) {
+  const M = G.mop;
+  if (M.level === 0 || room !== M.room || Math.random() >= mopChance(M.level)) return false;
+  sfx.squeak(MOP_ROOMS[room]);
+  return true;
 }
 // Shut out: a bonk, and he's back on the stage, picking a new way to come next time.
 function bonnieHome() {
@@ -374,8 +400,9 @@ function updateGolden() {
   else if (G.t >= Go.deadline) lose(GOLDEN);
 }
 
-// Phantom Chica: find every cupcake before time runs out, or she jumpscares you and takes power.
-// It doesn't end the night (unless that was the last of your power).
+// Phantom Chica: find every cupcake before time runs out, or she jumpscares you and both doors fly
+// open, broken for CHICA_BREAK seconds (on request; she used to take 10% power). It doesn't end the
+// night, but whoever is at a door gets a free way in.
 // Her clock only runs while you can see the cupcakes: not while the monitor is up, the mask covers
 // the view or White Tiger's face is in the way. (It used to run all the time, so flipping the monitor
 // down and straight back up could get you jumpscared by cupcakes you never saw.)
@@ -389,8 +416,13 @@ function updateChica(dt) {
   C.cups = [];
   C.scareUntil = performance.now() + 900;   // render.js shows her face until then
   sfx.miniScream();
-  G.power -= CHICA_COST;
-  if (G.power <= 0) powerOutStart();
+  for (const side of ['L', 'R']) {
+    if (G.doors[side]) sfx.door(side);
+    G.doors[side] = false;
+    // Math.max keeps a longer breakage White Tiger may already have caused.
+    G.brokenUntil[side] = Math.max(G.brokenUntil[side] || 0, G.t + CHICA_BREAK);
+  }
+  say(`PHANTOM CHICA broke the doors! ${CHICA_BREAK} s to fix them.`, CHICA_BREAK);
   dirty = true;
 }
 
@@ -604,15 +636,32 @@ function updateNightmare(dt) {
 // His routine, one `phase` at a time:
 //   'away'    nowhere to be seen. Every witheredFoxyWait seconds he turns up in the West hall and runs
 //             (on request: Foxy took over Pirate Cove and the camera stall, see updateClassicFoxy)
-//   'run'     sprinting down the West Hall to the left door (you can see him on CAM 5)
-//   'door'    in the open doorway: shut the door in time!
+//   'run'     sprinting at the left door: running steps, and he's seen on CAM 5 and rushing in the
+//             doorway. When the steps stop (foxyRunTime) the door must be shut, or he gets you (on request)
+//   'door'    back in the open doorway after you opened up too early: shut the door in time!
 //   'wait'    shut out; waiting behind the door. Opening it now just brings him back to 'door'
 //   'ready'   he stomped: now open the door...
 //   'open'    ...and flash him with the light until he leaves (FOXY_FLASH seconds of light in all;
 //             it doesn't have to be in one go). Then he's away again. No second door shut
 //             (simplified on request: it used to be flash, then shut the door again).
 // Shutting the door in 'open' before he's had enough light just puts him back to 'wait'.
-const foxyInDoorway = () => ['door', 'open'].includes(G.wfx.phase);
+const foxyInDoorway = () => ['run', 'door', 'open'].includes(G.wfx.phase);
+// Starting a run (Foxy, Withered Foxy, Phantom Foxy): runT counts down to the moment he arrives.
+function startRun(X, total) {
+  X.runT = X.runTotal = total;
+  X.stepT = 0;
+}
+// While running: one footstep every RUN_STEP seconds, louder as he gets closer. Returns true once the
+// steps have stopped, which is the moment he arrives.
+function running(X, dt, side, freq) {
+  X.runT -= dt;
+  X.stepT -= dt;
+  if (X.runT > 0 && X.stepT <= 0) {
+    X.stepT = RUN_STEP;
+    sfx.runStep(side, 1 - X.runT / X.runTotal, freq);
+  }
+  return X.runT <= 0;
+}
 function updateFoxy(dt) {
   const X = G.wfx;
   if (X.level === 0) return;
@@ -622,16 +671,14 @@ function updateFoxy(dt) {
       X.timer -= dt * G.pace;
       if (X.timer > 0) return;
       X.phase = 'run';
-      X.runT = FOXY_RUN;
+      startRun(X, foxyRunTime(X.level));
       if (onCam('whall')) camStatic(0.3);
-      sfx.run(300);   // heavier steps than Foxy's
       dirty = true;
       return;
     case 'run':
-      X.runT -= dt;
-      if (X.runT > 0) return;
+      if (!running(X, dt, 'L', 300)) return;   // heavier steps than Foxy's
       if (shut) foxyShutOut();
-      else { X.phase = 'door'; X.deadline = G.t + reactWindow(X.level); sfx.arrive('L', 90); }
+      else lose(WFOXY, 'L');
       dirty = true;
       return;
     case 'door':
@@ -679,11 +726,11 @@ function foxyShutOut() {
 // The FNAF 1 fox, with Pirate Cove and the camera stall (on request, taken over from Withered Foxy):
 //   'cove'  getting ready (stage 0 curtain shut, 1 peeking, 2 half out); while the monitor is up (on
 //           any camera) his countdown stops, so the cameras keep him in
-//   'run'   sprinting down the West hall
-//   'door'  in the open doorway: shut it in time, or he gets you
+//   'run'   sprinting at the left door: running steps, and he's seen on CAM 5 and rushing in the
+//           doorway. When the steps stop (foxyRunTime) he arrives (on request: no separate doorway wait)
 // If the door is shut when he gets there he slams into it: a bang, FOXY_DOOR_COST % of your power gone
-// (on request), and he's back in the cove.
-const classicFoxyInDoorway = () => G.fox.level > 0 && G.fox.phase === 'door';
+// (on request), and he's back in the cove. If it's open, he gets you.
+const classicFoxyInDoorway = () => G.fox.level > 0 && G.fox.phase === 'run';
 function updateClassicFoxy(dt) {
   const X = G.fox;
   if (X.level === 0) return;
@@ -696,20 +743,14 @@ function updateClassicFoxy(dt) {
       if (Math.random() >= moveChance(X.level)) return;
       if (X.stage < 2) { X.stage++; if (onCam('cove')) camStatic(0.4); dirty = true; return; }
       X.phase = 'run';
-      X.runT = FOXY_RUN;
-      sfx.run();
+      startRun(X, foxyRunTime(X.level));
       dirty = true;
       return;
     case 'run':
-      X.runT -= dt;
-      if (X.runT > 0) return;
+      if (!running(X, dt, 'L', 600)) return;
       if (G.doors.L) foxySlam();
-      else { X.phase = 'door'; X.deadline = G.t + reactWindow(X.level); sfx.arrive('L', 110); }
+      else lose(FOXY, 'L');
       dirty = true;
-      return;
-    case 'door':
-      if (G.doors.L) foxySlam();
-      else if (G.t >= X.deadline) lose(FOXY, 'L');
   }
 }
 // He slams into the shut left door: power lost, and back to the cove.
@@ -843,6 +884,7 @@ function updateNightmareFoxy(dt) {
   if (Math.random() >= moveChance(X.level)) return;
   if (onCam(X.route[X.step])) camStatic(0.4);
   X.step++;
+  if (X.step === 1 && mopSkips(X.route[1])) X.step++;   // the Mop bucket's hall: straight on to the door
   if (X.step === 1) { X.hallT = 0; if (onCam(X.route[1])) camStatic(0.4); }
   if (X.step === 2) {
     if (G.doors[X.route[2]]) { sfx.bonk(X.route[2]); earnCoin(); nfoxyHome(); }   // already shut: he gives up at once
@@ -1117,7 +1159,7 @@ function spend(cost) {
 }
 function buyBattery() {
   if (G.shop.batteries <= 0 || G.power >= 100) { sfx.deny(); return; }
-  if (!spend(BATTERY_COST)) return;
+  if (!spend(batteryPrice())) return;
   G.shop.batteries--;
   G.power = Math.min(100, G.power + BATTERY_POWER);
 }
@@ -1131,7 +1173,7 @@ function buyGuitar() {
 // The death coin: first press "Death coin", then pick who goes (useDeathCoin). Pressing it again cancels.
 function pickDeathCoin() {
   if (!ready()) return;
-  if (!G.shop.picking && (G.shop.deathLeft <= 0 || G.coins < DEATH_COIN_COST)) { sfx.deny(); return; }
+  if (!G.shop.picking && (G.shop.deathLeft <= 0 || G.coins < deathPrice())) { sfx.deny(); return; }
   G.shop.picking = !G.shop.picking;
   dirty = true;
 }
@@ -1140,7 +1182,7 @@ const deathTargets = () => SETUP.filter(c => G[c.id].level > 0);
 function useDeathCoin(id) {
   const c = SETUP.find(c => c.id === id);
   if (!G.shop.picking || !c || G[id].level === 0 || G.shop.deathLeft <= 0) return;
-  if (!spend(DEATH_COIN_COST)) return;
+  if (!spend(deathPrice())) return;
   G.shop.deathLeft--;
   G.shop.picking = false;
   removeCharacter(c);
@@ -1166,6 +1208,8 @@ function removeCharacter(c) {
     case 'tsp': X.active = false; X.toxin = 0; break;
     case 'sbn': X.dark = false; break;
     case 'dee': G.coinEvery = COIN_EVERY; break;   // her slower coins go with her
+    case 'pfx': case 'lol': X.active = false; break;
+    case 'pir': X.food = 100; break;
   }
   if (c.id === 'nfr') X.freddles = [false, false, false];
   X.level = 0;
@@ -1183,7 +1227,7 @@ function removeCharacter(c) {
 // Watches how long each thing has been on without a break. Past tigerLimit he jumpscares you (it doesn't
 // end the night) and that thing is switched off and broken for TIGER_DISABLE seconds. He leaves alone
 // whatever has to stay on right now (see `needed`).
-const broken = thing => G.wti.brokenUntil[thing] > G.t;
+const broken = thing => G.brokenUntil[thing] > G.t;
 const TIGER_THINGS = {   // what each thing is called on screen, and whether it's on
   L: ['left door', () => G.doors.L], R: ['right door', () => G.doors.R], cam: ['monitor', () => G.cam],
   flash: ['flashlight', () => flashLit()], fan: ['fan', () => G.fan], mask: ['mask', () => G.mask],
@@ -1191,7 +1235,9 @@ const TIGER_THINGS = {   // what each thing is called on screen, and whether it'
 };
 function needed(thing) {
   if (thing === 'fan') return G.end.present || G.tsp.active;
-  if (thing === 'L') return ['wait', 'ready'].includes(G.wfx.phase);
+  // The left door while Withered Foxy waits behind it, and while Foxy or Withered Foxy is running at it
+  // (since the run rework their runs are long, and a door broken just before the steps stop meant death).
+  if (thing === 'L') return ['run', 'wait', 'ready'].includes(G.wfx.phase) || G.fox.phase === 'run';
   if (thing === 'mask') return G.nfr.present;
   return false;
 }
@@ -1203,7 +1249,7 @@ function updateTiger(dt) {
     T.use[thing] = (T.use[thing] || 0) + dt;
     if (T.use[thing] < tigerLimit(T.level)) continue;
     T.use[thing] = 0;
-    T.brokenUntil[thing] = G.t + TIGER_DISABLE;
+    G.brokenUntil[thing] = G.t + TIGER_DISABLE;
     if (thing === 'L' || thing === 'R') G.doors[thing] = false;
     if (thing === 'cam') { G.cam = false; lookedBack(); }
     if (thing === 'fan') G.fan = false;
@@ -1340,6 +1386,126 @@ function tapTwisted() {
   dirty = true;
 }
 
+// ======================= the fourth batch =======================
+
+// ---------- Phantom Foxy ----------
+// Every so often he rushes at a random door: running steps from that side, and he's seen rushing in that
+// doorway (not through a shut door). A shut door doesn't stop him: shine the flashlight into the doorway
+// for PFOXY_FLASH seconds in all (with the door open, since a shut door blocks the light) before the steps
+// stop, and he fades away. Too slow and he jumpscares you and breaks the monitor for PFOXY_BREAK seconds.
+// He's a phantom, like Phantom Chica: it doesn't end the night.
+function updatePhantomFoxy(dt) {
+  const P = G.pfx;
+  if (P.level === 0) return;
+  if (!P.active) {
+    P.timer -= dt * G.pace;
+    if (P.timer > 0) return;
+    P.active = true;
+    P.side = pick(['L', 'R']);
+    P.flashT = 0;
+    startRun(P, foxyRunTime(P.level));
+    dirty = true;
+    return;
+  }
+  if (beamOnDoor(P.side)) {
+    P.flashT += dt;
+    if (P.flashT >= PFOXY_FLASH) {
+      P.active = false;
+      P.timer = pfoxyWait(P.level);
+      sfx.pfoxyOut(P.side);
+      earnCoin();
+      dirty = true;
+      return;
+    }
+  }
+  if (!running(P, dt, P.side, 450)) return;
+  // The steps stopped and he's still here: his jumpscare, and the monitor breaks.
+  P.active = false;
+  P.timer = pfoxyWait(P.level);
+  G.foxyUntil = performance.now() + 900;   // render.js shows his face until then
+  sfx.miniScream();
+  if (G.cam) { G.cam = false; lookedBack(); }
+  G.brokenUntil.cam = Math.max(G.brokenUntil.cam || 0, G.t + PFOXY_BREAK);
+  say(`PHANTOM FOXY broke the monitor! ${PFOXY_BREAK} s to fix it.`, PFOXY_BREAK);
+  dirty = true;
+}
+
+// ---------- Security ----------
+// While you watch the cameras, every secWait seconds (of watching) he switches you to a different
+// camera, with a beep and static, and his face flickers in its corner for a moment. He never kills.
+function updateSecurity(dt) {
+  const S = G.sec;
+  if (S.level === 0 || !G.cam || G.tab !== 'cams') return;
+  S.timer -= dt * G.pace;
+  if (S.timer > 0) return;
+  S.timer = secWait(S.level);
+  G.camRoom = pick(CAM_ORDER.filter(r => r !== G.camRoom));
+  S.faceUntil = performance.now() + 1200;
+  camStatic(0.4);
+  sfx.secBeep();
+  dirty = true;
+}
+
+// ---------- Lolbit ----------
+// Every so often the LOL screen covers the view and blocks clicks on everything under it (index.html,
+// #lolbit). Typing L, O, L (or tapping the letters on it) gets rid of it. He never kills.
+const LOL_WORD = 'lol';
+function updateLolbit(dt) {
+  const L = G.lol;
+  if (L.level === 0 || L.active) return;
+  L.timer -= dt * G.pace;
+  if (L.timer > 0) return;
+  L.active = true;
+  L.typed = 0;
+  sfx.lolIn();
+  dirty = true;
+}
+// A letter typed or tapped while the LOL screen is up (input.js). The right next letter moves on; a wrong
+// one starts the word again.
+function typeLol(letter) {
+  const L = G.lol;
+  if (!ready() || !L.active) return;
+  if (letter !== LOL_WORD[L.typed]) { L.typed = letter === LOL_WORD[0] ? 1 : 0; sfx.deny(); dirty = true; return; }
+  L.typed++;
+  sfx.lolKey(L.typed);
+  if (L.typed === LOL_WORD.length) { L.active = false; L.timer = lolWait(L.level); sfx.lolOut(); earnCoin(); }
+  dirty = true;
+}
+
+// ---------- Funtime Chica ----------
+// She raises the battery pack and the death coin's prices (priceRise, with her real level tonight).
+const priceWithChica = base => G.fch.level > 0 ? Math.round(base * priceRise(tonight[SETUP.indexOf(FUNCHICA)])) : base;
+const batteryPrice = () => priceWithChica(BATTERY_COST);
+const deathPrice = () => priceWithChica(DEATH_COIN_COST);
+
+// ---------- Piranha Plushtrap ----------
+// His food meter drops all night. Below PIR_LOW a warning (bubbles); at 0 he gets you PIR_DELAY seconds
+// later. Clicking the sea bonnie in his tank on CAM 3 feeds him PIR_FEED % for PIR_COST coin.
+function updatePiranha(dt) {
+  const P = G.pir;
+  if (P.level === 0) return;
+  if (P.food <= 0) {
+    P.outT -= dt;
+    if (P.outT <= 0) lose(PIRANHA);
+    return;
+  }
+  P.food = Math.max(0, P.food - pirDrain(P.level) * G.pace * dt);
+  if (P.food < PIR_LOW && !P.warned) { P.warned = true; sfx.pirWarn(); }
+  if (P.food <= 0) { P.outT = PIR_DELAY; sfx.pirWarn(); dirty = true; }
+}
+// Clicking the sea bonnie on CAM 3 (input.js). It still works in the last PIR_DELAY seconds after the
+// meter runs out, as a last-second save.
+function feedPiranha() {
+  const P = G.pir;
+  if (!ready() || P.level === 0 || !onCam('back')) return;
+  if (P.food >= PIR_FULL || G.coins < PIR_COST) { sfx.deny(); return; }
+  G.coins -= PIR_COST;
+  P.food = Math.min(100, P.food + PIR_FEED);
+  if (P.food >= PIR_LOW) P.warned = false;
+  sfx.feed();
+  dirty = true;
+}
+
 // ---------- power-out ----------
 // Power hit 0%: doors open, the monitor, the flashlight and the fan die, everyone else gives up,
 // and one character comes for you in the dark: Sleepy Moon if he's on tonight, otherwise Freddy.
@@ -1372,6 +1538,9 @@ function powerOutStart() {
   G.sbn.dark = false;
   if (G.fox.phase !== 'cove') { G.fox.phase = 'cove'; G.fox.stage = 0; }
   if (G.wfx.phase !== 'away') { G.wfx.phase = 'away'; G.wfx.timer = witheredFoxyWait(G.wfx.level); }
+  // The fourth batch: Phantom Foxy fades and the LOL screen goes dark with everything else.
+  G.pfx.active = false;
+  G.lol.active = false;
   sfx.humOff();
   sfx.powerDown();
   dirty = true;
@@ -1524,6 +1693,6 @@ function passOut() {
   sfx.humOff();
   sfx.faint();
   const g = blank(Math.max(...PASSED_OUT.map(l => l.length)), PASSED_OUT.length);
-  sprite(g, 0, 0, PASSED_OUT, 'c-end');
+  sprite(g, 0, 0, PASSED_OUT, 'c-fire');
   showScare(`It got too hot in the office. You passed out at ${hourLabel(hourOf(G.t))}.` + countKill('heat', 'The heat'), toHtml(g), false);
 }

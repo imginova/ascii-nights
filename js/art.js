@@ -70,53 +70,89 @@ const frame = (inner, w) => [
 // ---------- menu icons ----------
 // A tiny 3-line face of each character, used on the title, the custom night screen and the end
 // screens. Written as normal strings, so a backslash is typed \\ (two of them make one).
+// (Checked against the official designs on 2026-11-08, on request: the colors in ICON_ACCENTS below and
+// the details here follow the real characters. A hook or eyepatch on a character's RIGHT side is on
+// the LEFT as you look at them.)
 const ICONS = {
-  fre: [' [_] ', '(o^o)', ' >=< '],          // Freddy: top hat and bow tie
-  bon: ['|\\ /|', '(o o)', ' >w< '],         // Bonnie: long ears
-  gol: [' [_] ', '(.^.)', ' >=< '],          // Golden Freddy: Freddy, in gold, with dot eyes
-  pch: [' \\|/ ', '(x o)', ' {V} '],         // Phantom Chica: burnt eye, beak and bib
-  bnt: ['(\\_/)', '(o*o)', ' v v '],         // Bonnet: small, with her nose
-  wbn: [' |\\  ', '(  o#)', ' |vv| '],       // Withered Bonnie: no face, one ear
-  pup: ['.---.', '(o o)', '(@v@)'],          // the Puppet: mask with red cheeks
-  stf: ['.---.', '|@ @|', '|VVV|'],          // the Nightmare staff bot: robot head, glaring eyes, jagged mouth
-  nfr: ['@   @', '(0^0)', '|vVv|'],          // Nightmare Freddy: Freddles and sharp teeth
-  wfx: ['/\\ /\\', '(# o)', ' \\vv/J'],      // Withered Foxy: eyepatch and hook
-  mon: [' .-. z', '( -_-)', " '-'  "],       // Sleepy Moon: dozing
-  end: ['<O_O>', '|=+=|~~', '/   \\'],       // the endo and its flamethrower
-  nfx: ['/\\_/\\', '(O O)', ' VVV '],         // Nightmare Foxy: ears and a mouthful of teeth
-  fun: ['[_]  /\\', '(o^o)(o)', ' >=<    '],  // Funtime Freddy with BonBon on his hand
-  chi: [' \\|/ ', '(o>o)', '|EAT|'],          // Chica: beak and bib
-  plu: ['(\\/)', '(oo)', ' || '],             // Plushtrap: a little rabbit plush
-  nch: [' \\|/ ', '(@>@)', '{VVV}'],          // Nightmare Chica: teeth everywhere
+  fre: [' [_] ', '(o^o)', ' >=< '],          // Freddy: black top hat and bow tie, blue eyes
+  bon: ['|\\ /|', '(o o)', ' >=< '],         // Bonnie: long ears, magenta eyes, red bow tie
+  gol: [' [_] ', '(.^.)', ' >=< '],          // Golden Freddy: Freddy in gold, empty eyes with tiny pupils
+  pch: [' \\|/ ', '(.>.)', ' {V} '],         // Phantom Chica: burnt, white pinprick eyes, beak and bib
+  bnt: ['(\\_/)', '(o*o)', ' v v '],         // Bonnet: small and pink, green eyes, her nose
+  wbn: [' |\\  ', '(  o#)', ' |vv| '],       // Withered Bonnie: no face, one ear, a red pinprick eye
+  pup: ['.---.', '(o o)', '(@v@)'],          // the Puppet: white mask, red cheeks and lips
+  stf: ['.---.', '|@ @|', '|VVV|'],          // the Nightmare staff bot: glowing eyes, painted grin with sharp teeth
+  nfr: ['@   @', '(0^0)', '|vVv|'],          // Nightmare Freddy: Freddles, orange eyes, sharp teeth
+  wfx: ['/\\ /\\', '(# o)', 'J\\vv/'],       // Withered Foxy: eyepatch on his right eye, hook on his right hand
+  mon: [' .-. z', '(>U<)', " '-'  "],        // Sleepy Moon: cross eyes and a big red grin
+  end: [' .-. ', '[o o]', '/|=|\\~'],        // the Flamethrower endo: welding visor, blue eyes, flames
+  nfx: ['/\\_/\\', '(O O)', 'J VVV'],         // Nightmare Foxy: orange eyes, teeth, hook (no eyepatch)
+  fun: ['[_]  /\\', '(o^o)(o)', ' >=<    '],  // Funtime Freddy: black hat and bow tie, BonBon on his hand
+  chi: [' \\|/ ', '(o>o)', '|EAT|'],          // Chica: violet eyes, orange beak, LET'S EAT bib
+  plu: ['(\\/)', '(oo)', '{vv}'],             // Plushtrap: a little brown-green rabbit plush with sharp teeth
+  nch: [' \\|/ ', '(@>@)', '{VVV}'],          // Nightmare Chica: one red eye, teeth everywhere
   // the third batch
-  tbo: ['/\\ /\\', '(^o^)', ' >w< '],         // Toy Bonnie: shiny and smiling
-  tch: [' \\|/ ', '(^>^)', '|PTY|'],          // Toy Chica: "let's party" bib
-  ned: ['n   n', '(o.o)', ' (u) '],           // Nedd Bear: round ears and a snout
-  wti: ['/\\_/\\', '(o=o)', '|/|\\|'],        // White Tiger: whiskers and stripes
+  tbo: ['/\\ /\\', '(^o^)', ' >=< '],         // Toy Bonnie: shiny blue, green eyes, red bow tie
+  tch: [' \\|/ ', '(^>^)', '|PTY|'],          // Toy Chica: blue eyes, "let's party" bib
+  ned: ['n(=)n', '(o.o)', '  V  '],           // Nedd Bear: round ears, red hat, green eyes, red tie
+  wti: ['/\\_/\\', '(o=o)', '|/|\\|'],        // White Tiger: one lime eye, one sky blue, black stripes
   rbw: ['.~~~.', '(^v^)', '~~~~~'],           // Chica's Magic Rainbow: a smiling rainbow
-  rsb: ['/\\ /\\', '(* *)', ' >#< '],         // Rockstar Bonnie: star eyes
-  tsp: ['/\\ /\\', '(#.#)', ' ~~~ '],         // Toxic Springtrap: in a cloud of fumes
+  rsb: ['/\\ /\\', '(o o)', ' * * '],         // Rockstar Bonnie: green eyes, gold star buttons
+  tsp: ['/\\ /\\', '(@.@)', ' ~~~ '],         // Toxic Springtrap: spiral eyes, in a cloud of fumes
   dee: ['  __J', '(^u^)', ' /|\\ '],          // Dee Dee: with her fishing rod
-  ffx: ['/\\_/\\', '(* *)', '<SHO>'],         // Funtime Foxy: ready for the show
-  fox: ['/\\_/\\', '(o o)', ' \\vv/J'],       // Foxy: hook and sharp teeth
-  sbn: ['|\\ /|', '(. .)', ' ### '],          // Shadow Bonnie: dark, with tiny eyes
-  twf: ['/\\_/\\', '(x o)', '/vVv\\'],        // Twisted Foxy: twisted face, too many teeth
+  ffx: ['/\\_/\\', '(* *)', '<SHO>'],         // Funtime Foxy: white and pink, yellow eyes, ready for the show
+  fox: ['/\\_/\\', '(o o)', 'J\\vv/'],        // Foxy: red, yellow eyes, gold teeth, hook on his right hand
+  sbn: ['/\\ /\\', '(o o)', ' VVV '],         // Shadow Bonnie: a black Toy Bonnie with white eyes and teeth
+  twf: ['/\\_/\\', '(x o)', '/vVv\\'],        // Twisted Foxy: split face, red eyes, too many teeth
+  // the fourth batch
+  pfx: ['/\\_/\\', '(. O)', ' \\vv/'],        // Phantom Foxy: burnt crimson, white eyes, no hook
+  sec: ['  o  ', '[(@)]', ' /#\\ '],           // Security: a grey camera for a head (yellow lens), red body
+  lol: ['/\\_/\\', '(o o)', ' LOL '],          // Lolbit
+  fch: [' \\|/ ', '(o>o)', ' $ $ '],          // Funtime Chica: white, pink eyes, orange beak, after your coins
+  pir: ['(\\/)', '{oo}', ' VV '],             // Piranha Plushtrap: orange fin-ears, neon blue eyes, teeth
+  mop: ['.---.', '|o~o|', '%/|\\%'],          // the Mop bucket (Bucket Bob): a bucket head, broom body, blue mitts
 };
-// Which line of the icon is the face (the middle one, except for the endo, whose face is on top).
-const FACE_ROW = { end: 0 };
+// Which line of the icon is the face (the middle one for everyone; kept so a new drawing can change it).
+const FACE_ROW = {};
 // A text with every character escaped for HTML (see esc above).
 const escText = s => Array.from(s).map(esc).join('');
 // Accent masks for a few icons (on request: a second color, used sparingly). Each line lines up with the
 // icon's line above it; a letter from ACCENT (see "accent colors" below) colors the character above it,
 // a space leaves it in the main color.
 const ICON_ACCENTS = {
-  fun: ['ppp  BB', '     BBB', ' ppp'],   // magenta hat and bow tie, BonBon in her blue
-  wti: ['', ' c l'],                      // heterochromia: one light blue eye, one lime
+  fre: [' xxx', ' b b', ' xxx'],          // Freddy: black hat and bow tie, blue eyes
+  bon: ['', ' p p', ' rrr'],              // Bonnie: magenta eyes, red bow tie
+  gol: [' xxx', '', ' xxx'],              // Golden Freddy: black hat and bow tie
+  chi: ['', ' vov'],                      // Chica: violet eyes, orange beak
+  fox: ['', ' y y', '  kk'],              // Foxy: yellow eyes, gold teeth
+  wfx: ['', '   y'],                      // Withered Foxy: his one yellow eye
+  wbn: ['', '    r'],                     // Withered Bonnie: a red pinprick eye
+  pch: ['', ' w w'],                      // Phantom Chica: white pinprick eyes
+  pfx: ['', ' w w'],                      // Phantom Foxy: white eyes
+  sbn: ['', ' w w', ' www'],              // Shadow Bonnie: white eyes and teeth on black
+  nfr: ['', ' o o'],                      // Nightmare Freddy: orange eyes
+  nfx: ['', ' o o'],                      // Nightmare Foxy: orange eyes
+  nch: ['', ' ro'],                       // Nightmare Chica: a red eye, orange beak
+  tbo: ['', ' g g', ' rrr'],              // Toy Bonnie: green eyes, red bow tie
+  tch: ['', ' bob'],                      // Toy Chica: blue eyes, orange beak
+  bnt: ['', ' g g'],                      // Bonnet: green eyes
+  ffx: ['', ' k k'],                      // Funtime Foxy: yellow eyes
+  twf: ['', ' r r'],                      // Twisted Foxy: red eyes
+  fun: ['xxx  BB', ' b b BBB', ' xxx'],   // Funtime Freddy: black hat and bow tie, blue eyes, BonBon in her blue
+  wti: ['', ' c l', ' x x'],              // White Tiger: one sky blue eye, one lime (heterochromia), black stripes
   rbw: ['roygb', '', 'roygb'],            // rainbow stripes
-  pup: ['', '', ' r r'],                  // red cheeks
-  rsb: ['', ' k k'],                      // gold star eyes
+  pup: ['', '', ' rrr'],                  // the Puppet: red cheeks and lips
+  rsb: ['', ' g g', ' k k'],              // Rockstar Bonnie: green eyes, gold star buttons
   stf: ['xxxxx', 'x   x', 'x   x'],       // the staff bot: black head, white eyes and teeth
   dee: ['', 'pg gp', ' pvp'],             // Dee Dee: pink cheeks, green eyes, magenta stripes, purple button
+  ned: ['  r', ' g g', '  r'],            // Nedd Bear: red hat, green eyes, red tie
+  mon: ['', '  r'],                       // Sleepy Moon: red grin
+  end: ['', ' b b', '     o'],            // the endo: blue eyes behind the visor, an orange flame
+  sec: ['', 'GGyGG'],                     // Security: grey camera head with a yellow lens (body and antenna red)
+  lol: ['', '', ' vvv'],                  // Lolbit: a purple LOL
+  fch: ['', ' pop', ' k k'],              // Funtime Chica: pink eyes, orange beak, gold coins
+  pir: ['oooo', ' cc'],                   // Piranha Plushtrap: orange piranha ears, neon blue eyes
+  mop: ['', '', 'b   b'],                 // the Mop bucket: blue mitts
 };
 // One line of text as HTML, with the characters its accent mask marks wrapped in their color.
 const accentText = (line, mask = '') => Array.from(line).map((ch, k) =>
@@ -232,6 +268,12 @@ const COIN_SPOTS = {
 };
 // Where Twisted Foxy digs up out of the floor on CAM 7 (top-left of his drawing).
 const TWIST_SPOTS = [[7, 32], [3, 31]];
+// The fourth batch: Piranha Plushtrap's fish tank on CAM 3 (over the spare parts, top right), and where
+// the Mop bucket stands in each hall (low down by the wall, drawn first so anyone passing is in front).
+const TANK_SPOT = [1, 25];
+const MOP_SPOTS = { whall: [7, 4], ehall: [7, 30] };
+// Where Security's face flickers on the camera he just switched you to (top left corner).
+const SEC_SPOT = [1, 2];
 
 // ---------- the characters' drawings ----------
 // Each one is a list of lines. `cam` is the small camera version, `door` fits a doorway,
@@ -298,18 +340,19 @@ const SPRITES = {
 \_____________/
 /_____>=<_____\ `),
   },
+  // Phantom Chica: burnt, with white pinprick eyes and a bib burnt past reading.
   pch: {
     scare: art(String.raw`
        \ | /
      .-------.
-    /  X   o  \
+    /  .   .  \
    |     /\    |
    |    /  \   |
    |    \__/   |
     \  #####  /
      '-------'
-     | EAT!! |
-     '-------'`),
+     | #E##!# |
+     '--------'`),
   },
   bnt: {
     office: art(String.raw`
@@ -428,7 +471,8 @@ const SPRITES = {
 |  /\  |
 ||\/\/||
  \/\/\/
-  \__/ J`),
+J \__/`),
+    // (The eyepatch is over his RIGHT eye and the hook on his RIGHT hand: your left as you face him.)
     scare: art(String.raw`
    /\               /\
   /  \_____________/  \
@@ -438,13 +482,13 @@ const SPRITES = {
   |         /\        |
   |   |\/\/\/\/\/\|   |
    \  |/\/\/\/\/\/|  /
-    \_____________/ __J`),
+J__ \_____________/`),
   },
   mon: {
     // Small enough to hide in a corner of a camera picture: you have to look for him.
     cam: art(String.raw`
  .-. z
-( -_)
+(>U<)
  '-'`),
     scare: art(String.raw`
           _.---._
@@ -456,14 +500,16 @@ const SPRITES = {
        \  '.___.'  /
         '._______.'`),
   },
+  // The Flamethrower endo (a Special Delivery skin of an endoskeleton): a welding mask with a long glass
+  // visor and blue eyes behind it, two fuel tanks on its back, and the flamethrower.
   end: {
     scare: art(String.raw`
        .-------.
-      | O     O |
+      |[O_____O]|
       |  =====  |
        '-+-+-+-'
-    ____|     |____[######>~~~~~~
-        |_____|
+  [#]___|     |____[######>~~~~~~
+  [#]   |_____|
         /     \
        /       \ `),
   },
@@ -498,7 +544,7 @@ const SPRITES = {
  |         ^           |
  |  VVVVVVVVVVVVVVVVV  |
  |  ^^^^^^^^^^^^^^^^^  |
-  \___________________/  J`),
+J \___________________/`),
   },
   fun: {
     cam: art(String.raw`
@@ -529,6 +575,7 @@ const SPRITES = {
  \|/
 (o>o)
 |EAT|`),
+    // Her bib really says LET'S EAT!!! (three exclamation marks); "LET'S PARTY" is Toy Chica's.
     scare: art(String.raw`
        \ | /
      .-------.
@@ -537,8 +584,8 @@ const SPRITES = {
    |    \/     |
     \  _____  /
      '-------'
-     | EAT!! |
-     '-------'`),
+   |LET'S EAT!!!|
+   '------------'`),
   },
   plu: {
     office: art(String.raw`
@@ -550,7 +597,7 @@ const SPRITES = {
     .-'----'-.
    /  O    O  \
   |     /\     |
-  |   \____/   |
+  |   \VVVV/   |
    '----------'`),
   },
   nch: {
@@ -600,8 +647,12 @@ const SPRITES = {
       | PARTY!! |
       '---------'`),
   },
+  // Nedd Bear: his red hat on a spring, crossed green eyes, and a long red striped tie.
   ned: {
     scare: art(String.raw`
+          .---.
+          |___|
+            S
     .-.         .-.
    (   )_______(   )
     '-'         '-'
@@ -609,7 +660,9 @@ const SPRITES = {
    |      ___      |
    |     (___)     |
    |    \_____/    |
-    \_____________/`),
+    \_____________/
+          |\/|
+           \/`),
   },
   wti: {
     scare: art(String.raw`
@@ -644,10 +697,10 @@ const SPRITES = {
     |  |       |  |
      \  \_____/  /
      /           \
-    |   *     *   |      __
+    |   O     O   |      __
     |      w      |     /  )
     |  |\/\/\/\|  |____/__/
-     \___________/   ====#`),
+     \___*___*___/   ====#`),
   },
   tsp: {
     scare: art(String.raw`
@@ -655,7 +708,7 @@ const SPRITES = {
     |  |       |  |
   ~  \  \_____/  /  ~
      /           \
-    |   #     #   |  ~
+    |   @     @   |  ~
   ~ |      .      |
     |  |\/\/\/\|  |  ~
      \___________/
@@ -683,7 +736,7 @@ const SPRITES = {
   |         /\        |
   |   |\/\/\/\/\/\|   |
    \  |/\/\/\/\/\/|  /
-    \_____________/ __J`),
+J__ \_____________/`),
   },
   twf: {
     // Digging up out of the floor on CAM 7: his head and claws.
@@ -701,10 +754,77 @@ const SPRITES = {
    \_/ \  / \  / \_/
   ##################`),
   },
+  // ----- the fourth batch -----
+  // Phantom Foxy: Foxy, burnt crimson, with white eyes (one just a pinprick in an empty socket) and no
+  // hook: in FNAF 3 his right forearm is gone. He's only ever seen in a doorway.
+  pfx: {
+    door: art(String.raw`
+/\    /\
+| \__/ |
+|( ) O |
+|  /\  |
+||\/\/||
+ \/\/\/
+  \__/`),
+    scare: art(String.raw`
+   /\               /\
+  /  \_____________/  \
+  |  .   .  .   .  .  |
+  |   ( . )   ( O )   |
+  |         /\        |
+  |   |\/\/\/\/\/\|   |
+   \  |/\/\/\/\/\/|  /
+    \_____________/`),
+  },
+  // Security (FNaF World: Halloween Edition): a robot with a camera for a head. He flickers in the
+  // corner of the camera he just switched you to.
+  sec: {
+    cam: art(String.raw`
+  o
+[(@)]
+ /#\ `),
+  },
+  // Lolbit's face on the LOL screen (index.html shows it with the letters to type).
+  lol: {
+    face: art(String.raw`
+   /\         /\
+  /  \_______/  \
+ |   (o)   (o)   |
+ |       v       |
+  \  \_______/  /
+   '-----------'`),
+  },
+  // Piranha Plushtrap: in his tank on CAM 3 (render.js draws the tank around him), and his jumpscare.
+  pir: {
+    tank: art(String.raw`
+.~~~~~~~~~.
+|(\/)     |
+|{oo}   ~ |
+'---------'`),
+    scare: art(String.raw`
+     (\        /)
+      \\  __  //
+    .-'--'  '--'-.
+   /   O      O   \
+  |  /VVVVVVVVVV\  |
+  |  \^^^^^^^^^^/  |
+   '--------------'
+      ~  ~  ~  ~`),
+  },
+  // The Mop bucket in a hall. Officially Bucket Bob (Pizzeria Simulator): a silver bucket for a head with a
+  // scribbled face, a body of broomsticks, and blue checkered oven mitts (the %).
+  mop: {
+    cam: art(String.raw`
+.---.
+|o~o|
+%/|\%`),
+  },
 };
 // Foxy's camera and doorway drawings are Withered Foxy's with both eyes: every '#' (the eyepatch) swapped
 // for 'o'.
 for (const pose of ['peek', 'half', 'run', 'door']) SPRITES.fox[pose] = SPRITES.wfx[pose].map(line => line.replace(/#/g, 'o'));
+// (.map makes a new list, so the copies above don't have Withered Foxy's accent mask; the doorway ones
+// get their own masks in "accent colors" below.)
 
 // The shopkeeper on the SHOP tab: a staff bot with a monocle (on request).
 const SHOPKEEPER = art(String.raw`
@@ -725,9 +845,10 @@ const NFOXY_STAGES = {
 SPRITES.gol.scare = SPRITES.fre.scare.map(line => line.replace(/O/g, '.'));
 
 // ---------- accent colors ----------
-// A few characters get a second color on parts of their drawings (on request: Funtime Freddy, White
+// A few characters got a second color on parts of their drawings first (on request: Funtime Freddy, White
 // Tiger's heterochromia (two different eye colors), the Magic Rainbow, "and any more you see fit, but
-// use sparingly": the Puppet's cheeks and tears, Rockstar Bonnie's star eyes).
+// use sparingly"). On 2026-11-08 every character was checked against the official designs (on request),
+// and most got their real eye colors, hats, bow ties and so on this way.
 // A MASK is a copy of a drawing's shape, attached as drawing.accent. Each letter in it colors the
 // character in the same place in the drawing (the colors are the acc-... classes in style.css); a space
 // leaves it in the character's main color. sprite() reads the mask, so the color shows wherever the
@@ -735,6 +856,7 @@ SPRITES.gol.scare = SPRITES.fre.scare.map(line => line.replace(/O/g, '.'));
 const ACCENT = {
   r: 'acc-red', o: 'acc-orange', y: 'acc-yellow', g: 'acc-green', b: 'acc-blue', v: 'acc-violet',
   p: 'acc-pink', k: 'acc-gold', c: 'acc-sky', l: 'acc-lime', B: 'acc-bonbon', x: 'acc-black',
+  w: 'acc-white', G: 'acc-grey',
 };
 // The Nightmare staff bot, black and white (on request): a black body and head, his face in white.
 // (His caution cone on the desk stays caution orange: see c-caution in render.js.)
@@ -749,20 +871,172 @@ SPRITES.stf.scare.accent = art(String.raw`
           xxxxx
       xxxxxxxxxxxxx
      x    xxxxx    x`);
+// Funtime Freddy: a small BLACK top hat and bow tie (not pink), blue eyes, BonBon in her blue.
 SPRITES.fun.cam.accent = art(String.raw`
- ppp
-
-  p`);
+ xxx
+ b b
+  x`);
 SPRITES.fun.scare.accent = art(String.raw`
-       ppppp
-      ppppppp
+       xxxxx
+      xxxxxxx
 
-
+      b     b
 
 
 
                    BBBB
-        ppp        BBBB`);
+        xxx        BBBB`);
+// The rest were added when every drawing was checked against the official designs (2026-11-08, on
+// request). Freddy: black top hat and bow tie, blue eyes. Golden Freddy: the same hat and bow tie.
+SPRITES.fre.scare.accent = art(String.raw`
+        xxxxxxx
+       xxxxxxxxx
+     xxxxxxxxxxxxx
+
+
+
+         b   b
+
+
+
+
+
+          xxx`);
+SPRITES.gol.scare.accent = SPRITES.fre.scare.accent.map(line => line.replace(/b/g, ' '));
+// Bonnie: magenta eyes, red bow tie. Toy Bonnie: green eyes, rosy cheeks, red bow tie.
+SPRITES.bon.scare.accent = art(String.raw`
+
+
+
+
+
+
+        p     p
+
+
+
+
+          rrrr`);
+SPRITES.tbo.scare.accent = art(String.raw`
+
+
+
+
+        g     g
+      r         r
+
+
+
+         rrr`);
+// Chica: violet eyes, orange beak. Toy Chica: blue eyes, orange beak. Phantom Chica: white pinprick eyes.
+SPRITES.chi.scare.accent = art(String.raw`
+
+
+       v   v
+        oo
+        oo`);
+SPRITES.tch.scare.accent = art(String.raw`
+
+
+        b     b
+          oo
+          oo`);
+SPRITES.pch.scare.accent = art(String.raw`
+
+
+       w   w`);
+// The foxes' eyes: Foxy yellow (and gold teeth), Withered Foxy yellow, Nightmare Foxy orange, Funtime Foxy
+// yellow, Twisted Foxy red, Phantom Foxy white.
+SPRITES.fox.scare.accent = art(String.raw`
+
+
+
+        y       y
+
+       kkkkkkkkkkk
+       kkkkkkkkkkk`);
+SPRITES.wfx.scare.accent = art(String.raw`
+
+
+
+                 y`);
+SPRITES.nfx.scare.accent = art(String.raw`
+
+
+
+      o         o`);
+SPRITES.ffx.scare.accent = art(String.raw`
+
+
+
+       k         k`);
+SPRITES.twf.scare.accent = art(String.raw`
+
+
+       r       r`);
+SPRITES.pfx.door.accent = art(String.raw`
+
+
+     w`);
+SPRITES.pfx.scare.accent = art(String.raw`
+
+
+
+        w       w`);
+// Nightmare Freddy: orange eyes. Nightmare Chica: one red eye. Withered Bonnie: a red pinprick eye.
+// Bonnet: green eyes.
+SPRITES.nfr.scare.accent = art(String.raw`
+
+
+
+         o       o`);
+SPRITES.nch.scare.accent = art(String.raw`
+
+
+            r`);
+SPRITES.wbn.scare.accent = art(String.raw`
+
+
+
+
+
+
+         r`);
+SPRITES.bnt.scare.accent = art(String.raw`
+
+
+
+     g     g`);
+// Nedd Bear: red hat on a grey spring, green eyes, red tie. The endo: blue eyes behind the visor, grey
+// fuel tanks, orange flames. Sleepy Moon: a big red grin.
+SPRITES.ned.scare.accent = art(String.raw`
+          rrrrr
+          rrrrr
+            G
+
+
+
+        g     g
+
+
+
+
+          rrrr
+           rr`);
+SPRITES.end.scare.accent = art(String.raw`
+
+        b     b
+
+
+  GGG                      oooooo
+  GGG`);
+SPRITES.mon.scare.accent = art(String.raw`
+
+
+
+
+            rrr
+           rrrrr`);
 SPRITES.wti.scare.accent = art(String.raw`
 
 
@@ -778,19 +1052,75 @@ SPRITES.rbw.scare.accent = art(String.raw`
    r y   g       g   y r
    r y    ggggggg    y r
    roygbv         vbgyor`);
+// The Puppet: purple tear stripes, red cheeks and red lips.
 SPRITES.pup.scare.accent = art(String.raw`
 
 
 
          v     v
-        rrr   rrr`);
+        rrr   rrr
+
+          rrrrr
+          rrrrr`);
+// Security: a grey camera head with a yellow lens (his antenna and body are his main red).
+// Piranha Plushtrap: orange piranha fin-ears and neon blue eyes.
+SPRITES.sec.cam.accent = art(String.raw`
+
+GGyGG`);
+SPRITES.pir.tank.accent = art(String.raw`
+
+ oooo
+  cc`);
+SPRITES.pir.scare.accent = art(String.raw`
+     oo        oo
+
+
+       c      c`);
+// Rockstar Bonnie: green eyes, a red guitar, gold star buttons.
 SPRITES.rsb.scare.accent = art(String.raw`
 
 
 
 
 
-        k     k`);
+        g     g          rr
+                        r  r
+                       rrrr
+         k   k`);
+// The Mop bucket (Bucket Bob): blue mitts.
+SPRITES.mop.cam.accent = art(String.raw`
+
+
+b   b`);
+// The smaller drawings: Bonnie and the foxes in the doorway, faces on the cameras, Nightmare Freddy in
+// the office, Sleepy Moon's grin.
+SPRITES.bon.door.accent = art(String.raw`
+
+
+
+
+  p  p
+
+
+
+  rrrr`);
+SPRITES.bon.cam.accent = ['', ' p p'];
+SPRITES.fox.door.accent = art(String.raw`
+
+
+  y  y`);
+SPRITES.wfx.door.accent = art(String.raw`
+
+
+     y`);
+SPRITES.chi.cam.accent = ['', ' vov'];
+SPRITES.nfx.cam.accent = ['', ' o o'];
+SPRITES.twf.cam.accent = ['', ' r r'];
+SPRITES.mon.cam.accent = ['', '  r'];
+SPRITES.nfr.office.accent = art(String.raw`
+
+
+    o     o`);
 
 // Passing out from the heat: a woozy face in heat waves (shown instead of a jumpscare).
 const PASSED_OUT = art(String.raw`

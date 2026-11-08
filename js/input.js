@@ -149,20 +149,31 @@ $('officeArt').addEventListener('pointerdown', e => { if (e.pointerType !== 'mou
 // ("chi-hit") sends her back a room, and Nightmare Chica's cupcake ("nch-hit") gets rid of her.
 // The camera picture is redrawn often too, so this also reacts when the button goes down, the same
 // way as officePress.
-// A Fazcoin ("coin-hit") gets picked up, and Twisted Foxy ("twf-hit") gets a tap.
+// A Fazcoin ("coin-hit") gets picked up, Twisted Foxy ("twf-hit") gets a tap, and the sea bonnie in
+// Piranha Plushtrap's tank ("pir-hit") feeds him.
 function feedPress(e) {
-  const hit = e.target.closest('.mon-hit, .chi-hit, .nch-hit, .coin-hit, .twf-hit');
+  const hit = e.target.closest('.mon-hit, .chi-hit, .nch-hit, .coin-hit, .twf-hit, .pir-hit');
   if (!hit) return;
   sfx.init();
   if (hit.classList.contains('mon-hit')) clickMoon();
   else if (hit.classList.contains('chi-hit')) pushChica();
   else if (hit.classList.contains('coin-hit')) collectCoin();
   else if (hit.classList.contains('twf-hit')) tapTwisted();
+  else if (hit.classList.contains('pir-hit')) feedPiranha();
   else clickCupcakeCam();
   e.preventDefault();
 }
 $('feed').addEventListener('mousedown', e => { if (e.button === 0) feedPress(e); });
 $('feed').addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') feedPress(e); });
+
+// Lolbit's LOL screen: tapping its letters works like typing them (for phones and tablets).
+$('lolKeys').addEventListener('pointerdown', e => {
+  const b = e.target.closest('button[data-letter]');
+  if (!b) return;
+  sfx.init();
+  typeLol(b.dataset.letter);
+  e.preventDefault();
+});
 
 // The DUCTS tab: every cell of a duct room carries a class like "d-d5", which says the room.
 function ductPress(e) {
@@ -291,6 +302,8 @@ document.addEventListener('keydown', e => {
     // holding A doesn't slam the door open and shut over and over.
     if (k === 'f') { flashKey = true; return; }          // held: released in keyup below
     if (e.repeat) { if (k === ' ') e.preventDefault(); return; }
+    // L and O only do something while Lolbit's LOL screen is up: typing the word gets rid of it.
+    if (k === 'l' || k === 'o') { typeLol(k); return; }
     if (k === 'a') toggleDoor('L');
     else if (k === 'd') toggleDoor('R');
     else if (k === ' ' || k === 's') { e.preventDefault(); toggleCam(); }

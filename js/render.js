@@ -65,6 +65,14 @@ function renderGame(now) {
   // A short message (Dee Dee, White Tiger, the death coin...), while it lasts.
   $('note').hidden = now >= G.noteUntil;
   $('note').textContent = G.note;
+  // Lolbit's LOL screen: covers the view (and blocks clicks under it) until L, O, L is typed. Each letter
+  // already typed is lit up ("done").
+  const L = G.lol;
+  $('lolbit').hidden = !L.active;
+  if (L.active) {
+    setHtml($('lolFace'), SPRITES.lol.face.map(escText).join('\n'));
+    document.querySelectorAll('#lolKeys button').forEach((b, i) => b.classList.toggle('done', i < L.typed));
+  }
   // Chica's Magic Rainbow, chasing the pointer. Her position is in view widths from the view's top left.
   const rb = $('rainbow');
   rb.hidden = !G.rbw.active;
@@ -83,9 +91,9 @@ function renderGame(now) {
   const GLOW_FULL = 90;
   const glow = Math.min(1, Math.max(0, (G.heat - HOT_WARN[0]) / (GLOW_FULL - HOT_WARN[0])));
   $('heatGlow').style.opacity = (glow * 0.6).toFixed(3);
-  // Phantom Chica's jumpscare (when you didn't find her cupcakes in time) or White Tiger's (when he
-  // breaks something). Each is over in a second.
-  const mini = now < G.pch.scareUntil ? 'pch' : now < (G.tigerUntil || 0) ? 'wti' : null;
+  // Phantom Chica's jumpscare (when you didn't find her cupcakes in time), Phantom Foxy's (when he
+  // breaks the monitor) or White Tiger's (when he breaks something). Each is over in a second.
+  const mini = now < G.pch.scareUntil ? 'pch' : now < (G.foxyUntil || 0) ? 'pfx' : now < (G.tigerUntil || 0) ? 'wti' : null;
   $('miniScare').hidden = !mini;
   if (mini) {
     const big = SPRITES[mini].scare, g = blank(Math.max(...big.map(l => l.length)), big.length);
@@ -117,6 +125,8 @@ function renderGame(now) {
   $('stCam').textContent = off ? 'NO POWER' : broken('cam') ? 'BROKEN' : G.mask ? 'MASK ON' : G.cam ? 'UP' : 'DOWN';
   $('camWarn').hidden = !boxLow || off;
   $('camWarnMap').hidden = !boxLow || off;
+  // Piranha Plushtrap getting hungry: a warning on CAM 3's map button.
+  $('pirWarnMap').hidden = !(G.pir.level > 0 && G.pir.food < PIR_LOW) || off;
   $('btnFlash').classList.toggle('on', flashLit());
   $('btnFlash').disabled = off;
   $('btnFlash').classList.toggle('broken', broken('flash'));
@@ -180,7 +190,7 @@ function drawVisitors(g, now) {
   if (G.end.present) {
     const flames = '^)(^^ (^)^ ^(^) )^( ^^)(^ ^(^ )^^(^ )';
     const shift = Math.floor(now / 90) % 6;
-    write(g, 15, 0, (flames + flames).slice(shift, shift + 36), 'c-end');
+    write(g, 15, 0, (flames + flames).slice(shift, shift + 36), 'c-fire');
   }
   // Bonnet running along the floor. Her nose ("bnt-nose") is what you click (see input.js).
   const N = G.bnt;
@@ -227,15 +237,21 @@ function doorGrid(side, now) {
   const g = grid(lines, W + 2);
   for (let r = 1; r <= H; r++) for (let c = 1; c <= W; c++) g[r][c].cls = shut ? 'door' : 'dim';
   if (shut || G.powerOut) return g;
-  // Foxy in the left doorway, about to get you.
-  if (side === 'L' && classicFoxyInDoorway()) sprite(g, 4, 1, SPRITES.fox.door, 'c-fox');
+  // The running foxes are seen RUSHING in the doorway (on request): their drawing jumps a column left and
+  // right every 80 ms while the run lasts.
+  const rush = 1 + Math.floor(now / 80) % 2;
+  // Foxy running at the left door.
+  if (side === 'L' && classicFoxyInDoorway()) sprite(g, 4, rush, SPRITES.fox.door, 'c-fox');
+  // Phantom Foxy rushing at this door; he goes pale while the light works on him.
+  const P = G.pfx;
+  if (P.active && P.side === side) sprite(g, 4, rush, SPRITES.pfx.door, 'c-pfx' + (P.flashT > 0 ? ' stunned' : ''));
   // Bonnie in this doorway.
   if (G.bon.level > 0 && bonnieAtDoor() && bonnieSide() === side) sprite(g, 4, 1, SPRITES.bon.door, 'c-bon');
   // Withered Foxy in the left doorway. While the light is working on him (after his stomp) he goes
   // pale ("stunned"), so you can see the flashing is doing something.
   if (side === 'L' && G.wfx.level > 0 && foxyInDoorway()) {
     const fading = G.wfx.phase === 'open' && G.wfx.flashT > 0;
-    sprite(g, 4, 1, SPRITES.wfx.door, 'c-wfx' + (fading ? ' stunned' : ''));
+    sprite(g, 4, G.wfx.phase === 'run' ? rush : 1, SPRITES.wfx.door, 'c-wfx' + (fading ? ' stunned' : ''));
   }
   // BonBon, off Funtime Freddy's hand and waiting at the other door: only seen in the flashlight.
   const F = G.fun;
@@ -274,14 +290,15 @@ function renderShop() {
   const item = (buy, label, price, ok) =>
     `<button type="button" data-buy="${buy}"${ok ? '' : ' disabled'}><span>${label}</span><span class="price">${price}</span></button>`;
   let html = `<p class="coins">YOU HAVE <b class="coin">${c}</b> FAZCOIN${c === 1 ? '' : 'S'}</p>`;
-  html += item('battery', `Battery pack: +${BATTERY_POWER}% power (${S.batteries} left)`, `${BATTERY_COST} $`,
-    S.batteries > 0 && c >= BATTERY_COST && G.power < 100);
+  if (G.fch.level > 0) html += `<p class="coins c-fch">Funtime Chica raised the prices!</p>`;
+  html += item('battery', `Battery pack: +${BATTERY_POWER}% power (${S.batteries} left)`, `${batteryPrice()} $`,
+    S.batteries > 0 && c >= batteryPrice() && G.power < 100);
   if (G.rsb.level > 0) {
     html += S.guitar ? `<p class="coins c-rsb">Rockstar Bonnie has his guitar back.</p>`
       : item('guitar', `Rockstar Bonnie's guitar`, `${guitarPrice()} $`, c >= guitarPrice());
   }
   html += item('death', S.picking ? 'Death coin: pick who goes (click again to cancel)' : `Death coin: remove anyone tonight (${S.deathLeft} left)`,
-    `${DEATH_COIN_COST} $`, S.picking || (S.deathLeft > 0 && c >= DEATH_COIN_COST));
+    `${deathPrice()} $`, S.picking || (S.deathLeft > 0 && c >= deathPrice()));
   if (S.picking) {
     html += '<div class="who-list">' + deathTargets().map(t =>
       `<button type="button" data-kill="${t.id}" class="c-${t.id}">${escText(t.name)}</button>`).join('') + '</div>';
@@ -302,7 +319,17 @@ function renderFeed(now) {
       Array.from({ length: 40 }, () => ({ ch: chars[Math.floor(Math.random() * chars.length)], cls: 'dim' })));
   } else {
     g = grid(frame(ROOM_ART[room], 38), 40);
-    // Bonnie, if he's in this room (Freddy never shows on the cameras).
+    // The Mop bucket in its hall (drawn first, so anyone walking past is in front of it).
+    if (G.mop.level > 0 && G.mop.room === room) sprite(g, ...MOP_SPOTS[room], SPRITES.mop.cam, 'c-mop');
+    // Piranha Plushtrap's tank on CAM 3, with a sea bonnie to feed him ("pir-hit": click it). When he's
+    // hungry the tank says so, blinking.
+    const PR = G.pir;
+    if (room === 'back' && PR.level > 0) {
+      const [r, c] = TANK_SPOT;
+      sprite(g, r, c, SPRITES.pir.tank, 'c-pir');
+      if (PR.food < PIR_LOW) write(g, r + 3, c + 1, 'HUNGRY!', 'c-pir blink');
+      write(g, r + 1, c + 6, '}o)>', 'sea pir-hit');
+    }
     const B = G.bon;
     if (B.level > 0 && !bonnieAtDoor() && B.route[B.step] === room) sprite(g, ...BONNIE_SLOTS[room], SPRITES.bon.cam, 'c-bon');
     // Foxy: peeking out of Pirate Cove, half out, gone, or running down the West Hall.
@@ -312,10 +339,12 @@ function renderFeed(now) {
       else if (FX.stage === 1) sprite(g, 5, 18, SPRITES.fox.peek, 'c-fox');
       else if (FX.stage === 2) sprite(g, 4, 16, SPRITES.fox.half, 'c-fox');
     }
-    if (room === 'whall' && FX.phase === 'run') sprite(g, 5, 8 + Math.floor((FOXY_RUN - FX.runT) * 6), SPRITES.fox.run, 'c-fox');
+    // (Each fox is in the hall for the first FOXY_RUN seconds of his run; after that he's at your door.)
+    const inHall = X => X.phase === 'run' && X.runTotal - X.runT < FOXY_RUN;
+    if (room === 'whall' && inHall(FX)) sprite(g, 5, 8 + Math.floor((FX.runTotal - FX.runT) * 6), SPRITES.fox.run, 'c-fox');
     // Withered Foxy running down the West Hall (he turns up there now, see updateFoxy).
     const X = G.wfx;
-    if (room === 'whall' && X.phase === 'run') sprite(g, 2, 8 + Math.floor((FOXY_RUN - X.runT) * 6), SPRITES.wfx.run, 'c-wfx');
+    if (room === 'whall' && inHall(X)) sprite(g, 2, 8 + Math.floor((X.runTotal - X.runT) * 6), SPRITES.wfx.run, 'c-wfx');
     // Twisted Foxy digging up out of the floor on CAM 7 ("twf-hit": click him).
     if (room === 'prize' && G.twf.active) sprite(g, ...G.twf.spot, SPRITES.twf.cam, 'c-twf twf-hit');
     // A Fazcoin lying here ("coin-hit": click it to pick it up).
@@ -344,8 +373,18 @@ function renderFeed(now) {
     if (G.chi.level > 0 && chicaRoom() === room) sprite(g, ...CHICA_SLOTS[room], SPRITES.chi.cam, 'c-chi chi-hit');
     // Nightmare Chica's cupcake, hidden in the picture: small and dim ("nch-hit" for clicking).
     if (G.nch.room === room) write(g, ...G.nch.spot, SPRITES.nch.cupcake, 'nch-cup nch-hit');
+    // Security's face, flickering in the corner of the camera he just switched you to.
+    if (now < G.sec.faceUntil && Math.floor(now / 120) % 2 === 0) sprite(g, ...SEC_SPOT, SPRITES.sec.cam, 'c-sec');
   }
   setHtml($('feed'), toHtml(g));
+  // Piranha Plushtrap's food meter, under the picture on CAM 3.
+  const onTank = room === 'back' && G.pir.level > 0;
+  $('food').hidden = !onTank;
+  if (onTank) {
+    const f = Math.round(G.pir.food);
+    $('foodBar').textContent = 'FOOD ' + bar(Math.round(f / 5), 20) + ' ' + String(f).padStart(3) + '%';
+    $('foodBar').classList.toggle('low', f < PIR_LOW);
+  }
 
   // The wind bar and button only appear on CAM 7, on nights with the Puppet.
   const onBox = room === 'prize' && G.pup.level > 0;
