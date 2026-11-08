@@ -341,8 +341,9 @@ const PRESETS = [
   { name: 'Half the gang', v: 1, levels: these(10, ['fre', 'bon', 'chi', 'fox', 'gol', 'tbo', 'tch', 'wbn', 'wfx', 'pup', 'sbn', 'pch', 'nfr', 'nfx']) },
   // Every original character (on request, 2026-11-08): no Toy, Withered, Nightmare... variants. The owner
   // counts Sleepy Moon as an original but not Golden Freddy, Plushtrap or the Flamethrower endo. The bot
-  // won it 19 / 18 of 20 (average / beginner).
-  { name: 'OC (don\'t steal)', v: 1, levels: these(12, ['fre', 'bon', 'chi', 'fox', 'pup', 'rbw', 'dee', 'bnt', 'ned', 'wti', 'mon']) },
+  // won it 19 / 18 of 20 (average / beginner). Bonnet was then taken out on request; that only made it
+  // easier, so it kept v1.
+  { name: 'OC (don\'t steal)', v: 1, levels: these(12, ['fre', 'bon', 'chi', 'fox', 'pup', 'rbw', 'dee', 'ned', 'wti', 'mon']) },
   // Four more (on request, 2026-11-08: "a few more difficult fun challenges"), each built on a clash and put
   // where the bot's results say (20 nights each, average / beginner).
   // Sweatbox: the heater (for the ducts) and the endo's flames both heat the office; the fumes need the doors
