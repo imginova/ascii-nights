@@ -116,6 +116,7 @@ const ICON_ACCENTS = {
   pup: ['', '', ' r r'],                  // red cheeks
   rsb: ['', ' k k'],                      // gold star eyes
   stf: ['xxxxx', 'x   x', 'x   x'],       // the staff bot: black head, white eyes and teeth
+  dee: ['', 'pg gp', ' pvp'],             // Dee Dee: pink cheeks, green eyes, magenta stripes, purple button
 };
 // One line of text as HTML, with the characters its accent mask marks wrapped in their color.
 const accentText = (line, mask = '') => Array.from(line).map((ch, k) =>
