@@ -388,7 +388,6 @@ const PRESETS = [
   { name: 'Party crashers', v: 3, levels: lv({ dee: 20, fre: 10, bon: 10, chi: 10, fox: 10, tbo: 10, tch: 10 }) },
   { name: 'Hare raising', v: 1, levels: lv({ bon: 12, tbo: 12, wbn: 12, sbn: 12, rsb: 12, bnt: 12, plu: 10 }) },
   { name: 'Old school', v: 2, levels: these(10, ['fre', 'bon', 'chi', 'fox', 'gol', 'tbo', 'tch', 'wbn', 'wfx', 'pup', 'sbn']) },
-  { name: 'Half the gang', v: 3, levels: these(10, ['fre', 'bon', 'chi', 'fox', 'gol', 'tbo', 'tch', 'wbn', 'wfx', 'pup', 'sbn', 'pch', 'nfr', 'nfx']) },
   // Every original character (on request, 2026-11-08): no Toy, Withered, Nightmare... variants. The owner
   // counts Sleepy Moon as an original but not Golden Freddy, Plushtrap or the Flamethrower endo. The bot
   // won it 19 / 18 of 20 (average / beginner). Bonnet was then taken out on request; that only made it
@@ -399,9 +398,18 @@ const PRESETS = [
   // Sweatbox: the heater (for the ducts) and the endo's flames both heat the office; the fumes need the doors
   // open. 19 / 20, easier than planned: the bot handles heat well and spends its coins removing White Tiger.
   { name: 'Sweatbox', v: 1, levels: these(20, ['end', 'tsp', 'tbo', 'tch', 'ned', 'wti', 'fre', 'bon', 'stf', 'pup', 'ffx']) },
+  // The two halves of the roster (on request, 2026-11-08: "update Half the gang and The other half to be
+  // their halves of the roster"), all at 10. The other half: FNaF World onward (18 characters). It used to
+  // be everyone not in the old Half the gang (15 / 8 of 20, average / beginner, mostly Plushtrap and
+  // Nightmare Chica); now it lost those two and gained Security, Lolbit, Funtime Chica, the Mop bucket and
+  // Piranha Plushtrap, and the bot won it 19 / 16, so it got easier and kept v1 and its ✓.
+  { name: 'The other half', v: 1, levels: these(10, ['rbw', 'dee', 'sec', 'fun', 'ffx', 'bnt', 'lol', 'twf', 'rsb', 'ned', 'fch', 'mop', 'end', 'tsp', 'pir', 'stf', 'wti', 'mon']) },
   // v3: + Nedd Bear and the Magic Rainbow (on request: "everyone who came later" should include them).
   // The bot then won it 17 / 15 of 20 (average / beginner), mostly losing to Bonnet, so it moved here.
   { name: 'Behind the curtain', v: 4, levels: these(12, ['fun', 'ffx', 'bnt', 'rsb', 'ned', 'twf', 'rbw', 'dee', 'end', 'tsp', 'stf', 'wti', 'mon']) },
+  // Half the gang: FNAF 1 to FNAF 4 (17 characters). It gained Phantom Foxy, Nightmare Chica and Plushtrap,
+  // which made it harder: v4, 18 / 14 (it was the first 14 characters, at the bridge's start).
+  { name: 'Half the gang', v: 4, levels: these(10, ['fre', 'bon', 'chi', 'fox', 'gol', 'tbo', 'tch', 'wbn', 'wfx', 'pup', 'sbn', 'pch', 'pfx', 'nfr', 'nfx', 'nch', 'plu']) },
   // Stare down: the mask characters, White Tiger (who breaks the mask if it stays on too long), and three who
   // need the monitor, which the mask blocks. 20 / 14.
   { name: 'Stare down', v: 1, levels: lv({ gol: 20, wbn: 20, tbo: 20, nfr: 20, wti: 20, pup: 18, mon: 16, nch: 16 }) },
@@ -417,9 +425,6 @@ const PRESETS = [
   // 15 / 16 at first; v2 (Phantom Chica breaking the doors) 19 / 7, mostly Withered Foxy getting in through
   // a broken left door, so it moved here from after Behind the curtain.
   { name: 'Pitch black', v: 3, levels: lv({ sbn: 20, plu: 20, nfx: 20, fun: 20, wfx: 20, nfr: 18, pch: 16, bnt: 16 }) },
-  // Everyone who isn't in Half the gang (on request, 2026-11-08). The bot won it 15 / 8 of 20 (average /
-  // beginner), mostly losing to Plushtrap and Nightmare Chica, so it ends the bridge.
-  { name: 'The other half', v: 1, levels: these(10, ['nch', 'plu', 'rbw', 'dee', 'fun', 'ffx', 'bnt', 'twf', 'rsb', 'ned', 'end', 'tsp', 'stf', 'wti', 'mon']) },
   // The ladder up to All 20 (on request: "a good amount scaling up to the max mode because right now it is
   // a big jump"). Everyone is in each one; Graveyard shift, Double shift and Sunrise is a lie each have a
   // themed group at 20 over everyone else.
@@ -492,8 +497,8 @@ const FLAVOR = {
   'Old school': 'The pizzeria\'s original crew and their toy replacements.',
   'Bad dreams': 'Nightmares, phantoms and a rainbow. Sleep tight.',
   'Behind the curtain': 'Everyone who came later. They all have their own rules.',
-  'Half the gang': 'Fourteen of them at once. Halfway to everyone.',
-  'The other half': 'Everyone Half the gang left out. They noticed.',
+  'Half the gang': 'FNAF 1 to 4, all at once. Halfway to everyone.',
+  'The other half': 'FNaF World onward. Everyone Half the gang left out, and they noticed.',
   'OC (don\'t steal)': 'No Toys, no Withereds, no Nightmares. Just the originals.',
   'Graveyard shift': 'Ghosts, phantoms and leftovers. None of them stay buried.',
   'Double shift': 'Two of everyone, two of every job.',
