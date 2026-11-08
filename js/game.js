@@ -125,10 +125,12 @@ const levelOf = c => effLevel(tonight[SETUP.indexOf(c)]);
 // Dee Dee, at the start of the night: with a chance of her level / 20 she takes one random character
 // out (level 0 for the night) and gives every other one DEEDEE_BOOST more levels (on request: even past
 // 20). Returns who she took out, or null if she didn't show up.
+// Her chance uses the real level, not effLevel, so at 20 she always comes (on request: "guaranteed at
+// 20"; with effLevel she only came about half the time).
 function rollDeeDee() {
   tonight = levels.slice();
   const d = SETUP.indexOf(DEEDEE);
-  if (tonight[d] === 0 || Math.random() >= moveChance(effLevel(tonight[d]))) return null;
+  if (tonight[d] === 0 || Math.random() >= moveChance(tonight[d])) return null;
   const others = SETUP.filter((c, i) => c !== DEEDEE && tonight[i] > 0);
   if (!others.length) return null;
   const victim = pick(others);
@@ -1065,7 +1067,9 @@ function playLure(room) {
 }
 function toggleHeater() {
   if (!ready()) return;
-  if (!powered() || broken('heater')) { sfx.deny(); return; }
+  // No duct crawlers left (none tonight, or all removed): no heater. Without this check the Q key
+  // could switch on a hidden heater that cost power and heated the office.
+  if (!powered() || broken('heater') || !ductCrawlers().length) { sfx.deny(); return; }
   G.heater = !G.heater;
   G.heaterT = 0;
   sfx.fan(G.heater);
@@ -1165,6 +1169,13 @@ function removeCharacter(c) {
   }
   if (c.id === 'nfr') X.freddles = [false, false, false];
   X.level = 0;
+  // The last duct crawler gone: the ducts go too. Switch the heater off (its button disappears, so it
+  // couldn't be switched off any more), stop the lure, and leave the DUCTS tab (it disappears as well).
+  if (DUCT_CRAWLERS.includes(c) && !ductCrawlers().length) {
+    G.heater = false;
+    G.lureRoom = null;
+    if (G.tab === 'ducts') G.tab = 'cams';
+  }
   dirty = true;
 }
 

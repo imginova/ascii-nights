@@ -261,6 +261,9 @@ const these = (level, ids) => lv(Object.fromEntries(ids.map(id => [id, level])))
 // took over Pirate Cove), so every challenge with him went up a version.
 // White Tiger then got quicker to break things (tigerLimit, on request), so the 8 challenges with him went
 // up a version too: Big cat, Behind the curtain, the ladder and All 20.
+// Dee Dee's chance then started using her real level (on request: "guaranteed at 20"), so she shows up more
+// often at every level, and the 7 challenges with her went up a version: Party crashers, Behind the
+// curtain, Everyone at 5, Graveyard shift, Double shift, Sunrise is a lie and All 20.
 const PRESETS = [
   // Warm-up: Withered Foxy (2) swapped for Foxy (2), who now has the Pirate Cove routine Withered Foxy had
   // here, so it plays the same as before (not harder: it stays v2 and keeps its ✓).
@@ -329,13 +332,13 @@ const PRESETS = [
   { name: 'Over the rainbow', v: 1, levels: lv({ rbw: 14, bnt: 10, plu: 8 }) },
   // The bridge from the small challenges to the ladder (on request, 2026-11-07: "add some more in between
   // challenges from Fox hunt to Everyone at 5 to bridge the gap"): more characters at once, 80 to 140 points.
-  { name: 'Party crashers', v: 1, levels: lv({ dee: 20, fre: 10, bon: 10, chi: 10, fox: 10, tbo: 10, tch: 10 }) },
+  { name: 'Party crashers', v: 2, levels: lv({ dee: 20, fre: 10, bon: 10, chi: 10, fox: 10, tbo: 10, tch: 10 }) },
   { name: 'Hare raising', v: 1, levels: lv({ bon: 12, tbo: 12, wbn: 12, sbn: 12, rsb: 12, bnt: 12, plu: 10 }) },
   { name: 'Old school', v: 1, levels: these(10, ['fre', 'bon', 'chi', 'fox', 'gol', 'tbo', 'tch', 'wbn', 'wfx', 'pup', 'sbn']) },
   { name: 'Half the gang', v: 1, levels: these(10, ['fre', 'bon', 'chi', 'fox', 'gol', 'tbo', 'tch', 'wbn', 'wfx', 'pup', 'sbn', 'pch', 'nfr', 'nfx']) },
   // v3: + Nedd Bear and the Magic Rainbow (on request: "everyone who came later" should include them).
   // The bot then won it 17 / 15 of 20 (average / beginner), mostly losing to Bonnet, so it moved here.
-  { name: 'Behind the curtain', v: 3, levels: these(12, ['fun', 'ffx', 'bnt', 'rsb', 'ned', 'twf', 'rbw', 'dee', 'end', 'tsp', 'stf', 'wti', 'mon']) },
+  { name: 'Behind the curtain', v: 4, levels: these(12, ['fun', 'ffx', 'bnt', 'rsb', 'ned', 'twf', 'rbw', 'dee', 'end', 'tsp', 'stf', 'wti', 'mon']) },
   // Last of the bridge: the bot (as a beginner) lost it 3 times in 10, all to Plushtrap.
   { name: 'Bad dreams', v: 1, levels: these(12, ['pch', 'nfr', 'nfx', 'nch', 'plu', 'ned', 'rbw', 'twf', 'sbn', 'pup']) },
   // The ladder up to All 20 (on request: "a good amount scaling up to the max mode because right now it is
@@ -343,12 +346,12 @@ const PRESETS = [
   // The "everyone" ones include every character, so each new batch makes them harder (v4: the second
   // batch, v5: the third). Everyone at 10, 15 and 18 were removed on request (2026-11-07, before the third
   // batch). Their saved ✓s stay in the browser (never deleted), they just aren't shown.
-  { name: 'Everyone at 5', v: 6, levels: everyone(5) },
-  { name: 'Graveyard shift', v: 2, levels: everyoneBut(7, { fre: 10, bon: 10, chi: 10, fox: 10, gol: 10 }) },
-  { name: 'Double shift', v: 2, levels: everyoneBut(11, { nfr: 14, nfx: 14, nch: 14, plu: 14 }) },
-  { name: 'Sunrise is a lie', v: 2, levels: everyoneBut(15, { fox: 18, wfx: 18, nfx: 18, ffx: 18, twf: 18 }) },
+  { name: 'Everyone at 5', v: 7, levels: everyone(5) },
+  { name: 'Graveyard shift', v: 3, levels: everyoneBut(7, { fre: 10, bon: 10, chi: 10, fox: 10, gol: 10 }) },
+  { name: 'Double shift', v: 3, levels: everyoneBut(11, { nfr: 14, nfx: 14, nch: 14, plu: 14 }) },
+  { name: 'Sunrise is a lie', v: 3, levels: everyoneBut(15, { fox: 18, wfx: 18, nfx: 18, ffx: 18, twf: 18 }) },
   { name: 'Last stand', v: 2, levels: everyoneBut(20, { dee: 0, wti: 10 }) },
-  { name: 'All 20', v: 6, levels: everyone(20) },
+  { name: 'All 20', v: 7, levels: everyone(20) },
 ];
 
 // One line of flavour text per challenge, shown under the list when it's picked.
