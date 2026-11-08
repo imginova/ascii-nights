@@ -315,7 +315,8 @@ const PRESETS = [
   { name: 'Don\'t look away', v: 4, levels: lv({ gol: 12, pch: 12, wbn: 12, pup: 12, mon: 12, nch: 12 }) },
   // v3: + Nightmare Foxy at 12 (on request: his counter is a door too).
   // v5: + the third batch's door characters, Foxy and Funtime Foxy (on request).
-  { name: 'Door duty', v: 5, levels: lv({ fre: 16, bon: 16, stf: 16, wfx: 12, nfx: 12, fox: 12, ffx: 12 }) },
+  // v6: + Funtime Freddy at 12 (on request: one of his two counters is shutting a door).
+  { name: 'Door duty', v: 6, levels: lv({ fre: 16, bon: 16, stf: 16, wfx: 12, nfx: 12, fox: 12, ffx: 12, fun: 12 }) },
   { name: 'Little terrors', v: 1, levels: lv({ plu: 18, bnt: 18, nfr: 10 }) },
   // v3: + both nightmares. v4: Phantom Chica (a phantom, not a nightmare) swapped for Plushtrap, on request.
   { name: 'Nightmare crew', v: 4, levels: lv({ stf: 15, nfr: 15, plu: 15, nfx: 12, nch: 12 }) },
