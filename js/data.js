@@ -246,6 +246,9 @@ const everyone = level => lv(Object.fromEntries(SETUP.map(c => [c.id, level])));
 const everyoneBut = (level, byId) => lv({ ...Object.fromEntries(SETUP.map(c => [c.id, level])), ...byId });
 // Everyone in a list of ids at one level: these(10, ['fre', 'bon']) is Freddy and Bonnie at 10.
 const these = (level, ids) => lv(Object.fromEntries(ids.map(id => [id, level])));
+// A themed group at one level and everyone else at another: themeOver(5, 20, ['gol', 'pch']) is
+// Golden Freddy and Phantom Chica at 20, everyone else at 5.
+const themeOver = (rest, top, ids) => everyoneBut(rest, Object.fromEntries(ids.map(id => [id, top])));
 // The list is in order, easiest first. The order came from a test bot that plays with a person's
 // limits (tools/bot.js: it only reacts to what a player could see or hear, with human reaction times,
 // a mouse that moves at a person's speed, one action at a time). The ones it won less often come
@@ -340,23 +343,44 @@ const PRESETS = [
   // counts Sleepy Moon as an original but not Golden Freddy, Plushtrap or the Flamethrower endo. The bot
   // won it 19 / 18 of 20 (average / beginner).
   { name: 'OC (don\'t steal)', v: 1, levels: these(12, ['fre', 'bon', 'chi', 'fox', 'pup', 'rbw', 'dee', 'bnt', 'ned', 'wti', 'mon']) },
+  // Four more (on request, 2026-11-08: "a few more difficult fun challenges"), each built on a clash and put
+  // where the bot's results say (20 nights each, average / beginner).
+  // Sweatbox: the heater (for the ducts) and the endo's flames both heat the office; the fumes need the doors
+  // open. 19 / 20, easier than planned: the bot handles heat well and spends its coins removing White Tiger.
+  { name: 'Sweatbox', v: 1, levels: these(20, ['end', 'tsp', 'tbo', 'tch', 'ned', 'wti', 'fre', 'bon', 'stf', 'pup', 'ffx']) },
   // v3: + Nedd Bear and the Magic Rainbow (on request: "everyone who came later" should include them).
   // The bot then won it 17 / 15 of 20 (average / beginner), mostly losing to Bonnet, so it moved here.
   { name: 'Behind the curtain', v: 4, levels: these(12, ['fun', 'ffx', 'bnt', 'rsb', 'ned', 'twf', 'rbw', 'dee', 'end', 'tsp', 'stf', 'wti', 'mon']) },
+  // Pitch black: every flashlight character in Shadow Bonnie's darkness, plus two who are hard to find in it.
+  // 15 / 16.
+  { name: 'Pitch black', v: 1, levels: lv({ sbn: 20, plu: 20, nfx: 20, fun: 20, wfx: 20, nfr: 18, pch: 16, bnt: 16 }) },
+  // Stare down: the mask characters, White Tiger (who breaks the mask if it stays on too long), and three who
+  // need the monitor, which the mask blocks. 20 / 14.
+  { name: 'Stare down', v: 1, levels: lv({ gol: 20, wbn: 20, tbo: 20, nfr: 20, wti: 20, pup: 18, mon: 16, nch: 16 }) },
   // Last of the bridge: the bot (as a beginner) lost it 3 times in 10, all to Plushtrap.
   { name: 'Bad dreams', v: 1, levels: these(12, ['pch', 'nfr', 'nfx', 'nch', 'plu', 'ned', 'rbw', 'twf', 'sbn', 'pup']) },
+  // Sugar rush: all cupcakes and clicking. 16 / 9.
+  { name: 'Sugar rush', v: 1, levels: lv({ pch: 20, nch: 20, bnt: 20, chi: 20, rbw: 20, twf: 18 }) },
   // Everyone who isn't in Half the gang (on request, 2026-11-08). The bot won it 15 / 8 of 20 (average /
   // beginner), mostly losing to Plushtrap and Nightmare Chica, so it ends the bridge.
   { name: 'The other half', v: 1, levels: these(10, ['nch', 'plu', 'rbw', 'dee', 'fun', 'ffx', 'bnt', 'twf', 'rsb', 'ned', 'end', 'tsp', 'stf', 'wti', 'mon']) },
   // The ladder up to All 20 (on request: "a good amount scaling up to the max mode because right now it is
-  // a big jump"). Everyone is in each one, with a group a bit higher.
+  // a big jump"). Everyone is in each one; Graveyard shift, Double shift and Sunrise is a lie each have a
+  // themed group at 20 over everyone else.
   // The "everyone" ones include every character, so each new batch makes them harder (v4: the second
   // batch, v5: the third). Everyone at 10, 15 and 18 were removed on request (2026-11-07, before the third
   // batch). Their saved ✓s stay in the browser (never deleted), they just aren't shown.
   { name: 'Everyone at 5', v: 7, levels: everyone(5) },
-  { name: 'Graveyard shift', v: 3, levels: everyoneBut(7, { fre: 10, bon: 10, chi: 10, fox: 10, gol: 10 }) },
-  { name: 'Double shift', v: 3, levels: everyoneBut(11, { nfr: 14, nfx: 14, nch: 14, plu: 14 }) },
-  { name: 'Sunrise is a lie', v: 3, levels: everyoneBut(15, { fox: 18, wfx: 18, nfx: 18, ffx: 18, twf: 18 }) },
+  // v4 (on request, 2026-11-08: "more unique instead of just names for everyone at modes"): each has its
+  // own theme: a group at 20, everyone else lower (the owner's choice: a themed group alone was easier than
+  // Everyone at 5, so it couldn't be a step of the ladder). Bot, 20 nights each, average / beginner:
+  // Graveyard shift 12 / 3, Double shift 7 / 1, Sunrise is a lie 8 / 1 (Last stand 6 / 0, All 20 3 / 0).
+  // Graveyard shift: ghosts and leftovers (the endo is the bones).
+  { name: 'Graveyard shift', v: 4, levels: themeOver(5, 20, ['gol', 'pch', 'sbn', 'pup', 'wbn', 'wfx', 'twf', 'tsp', 'nfr', 'nch', 'end']) },
+  // Double shift: two characters for every job (mask, flashlight, right door, cameras, clicking, ducts, heat).
+  { name: 'Double shift', v: 4, levels: themeOver(7, 20, ['gol', 'wbn', 'plu', 'sbn', 'fre', 'ffx', 'mon', 'nch', 'pch', 'bnt', 'tbo', 'tch', 'end', 'tsp']) },
+  // Sunrise is a lie: everyone who gets worse the longer the night goes.
+  { name: 'Sunrise is a lie', v: 4, levels: themeOver(11, 20, ['pup', 'mon', 'end', 'tsp', 'wti', 'ffx', 'twf', 'nfr', 'nfx', 'rsb']) },
   { name: 'Last stand', v: 2, levels: everyoneBut(20, { dee: 0, wti: 10 }) },
   { name: 'All 20', v: 7, levels: everyone(20) },
 ];
@@ -408,9 +432,13 @@ const FLAVOR = {
   'Half the gang': 'Fourteen of them at once. Halfway to everyone.',
   'The other half': 'Everyone Half the gang left out. They noticed.',
   'OC (don\'t steal)': 'No Toys, no Withereds, no Nightmares. Just the originals.',
-  'Graveyard shift': 'Everyone is in tonight. The old crew is restless.',
-  'Double shift': 'Everyone, and the nightmares are worse.',
-  'Sunrise is a lie': 'Everyone, and the foxes are hungry.',
+  'Graveyard shift': 'Ghosts, phantoms and leftovers. None of them stay buried.',
+  'Double shift': 'Two of everyone, two of every job.',
+  'Sunrise is a lie': 'Everything builds up. Just one more hour.',
+  'Stare down': 'Mask on, mask off. Don\'t wear it too long, he\'s watching.',
+  'Pitch black': 'Shadow Bonnie took the lights. Everyone else needs the flashlight.',
+  'Sweatbox': 'The heater, the flames and the fumes. It\'s getting hot in here.',
+  'Sugar rush': 'Cupcakes, a running rabbit and a rainbow. Your mouse hand will hurt.',
   'Last stand': 'All 20, minus a little mercy.',
 };
 
