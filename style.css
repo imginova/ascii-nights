@@ -31,7 +31,7 @@
   --c-bnt: #ff8fd0;   /* Bonnet: pink */
   --c-wbn: #7d93c9;   /* Withered Bonnie: faded blue */
   --c-pup: #f2f2f2;   /* the Puppet: white mask */
-  --c-stf: #ffa21f;   /* the staff bot: caution orange */
+  --c-stf: #ffffff;   /* the Nightmare staff bot: black and white (the black parts are .acc-black) */
   --c-nfr: #b35c3a;   /* Nightmare Freddy: dark, rotten brown */
   --c-wfx: #e0603a;   /* Withered Foxy: rusty red */
   --c-mon: #c8d4ff;   /* Sleepy Moon: moonlight */
@@ -52,7 +52,7 @@
   --c-rbw: #ff6ec7;   /* Chica's Magic Rainbow (drawn in rainbow colors where there's room) */
   --c-rsb: #4f7dff;   /* Rockstar Bonnie: deep blue */
   --c-tsp: #b04dff;   /* Toxic Springtrap: toxic purple */
-  --c-dee: #ff6f91;   /* Dee Dee: pink */
+  --c-dee: #3fd6c6;   /* Dee Dee: teal (she was pink, like too many others) */
   --c-ffx: #ffb0c8;   /* Funtime Foxy: white and pink */
   --c-fox: #ff7a2e;   /* Foxy: fox orange */
   --c-sbn: #8a8aa8;   /* Shadow Bonnie: a shadow you can still just see */
@@ -163,6 +163,9 @@ pre .c-ffx, pre .c-fox, pre .c-sbn, pre .c-twf { font-weight: 600; }
 .acc-green { color: #8fe39a; } .acc-blue { color: #6fb7ff; } .acc-violet { color: #b04dff; }
 .acc-pink { color: #ff4fa3; } .acc-gold { color: #ffc94a; } .acc-bonbon { color: var(--c-bb); }
 .acc-sky { color: #9fe3ff; } .acc-lime { color: #b6ff3b; }   /* White Tiger's eyes */
+/* The Nightmare staff bot's black parts. Black alone would vanish on the dark background, so a thin
+   white glow (text-shadow) outlines each character. */
+.acc-black { color: #0a0a0a; text-shadow: 0 0 1px #fff, 0 0 1px #fff, 0 0 2px #fff, 0 0 3px rgba(255,255,255,.5); }
 /* Chica and Nightmare Chica's cupcake on the cameras: clickable, with a bigger invisible box. */
 .chi-hit, .nch-hit, .coin-hit, .twf-hit, .duct { position: relative; cursor: pointer; }
 .chi-hit::after, .nch-hit::after, .coin-hit::after, .twf-hit::after { content: ""; position: absolute; inset: -4px -2px; }

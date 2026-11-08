@@ -115,6 +115,7 @@ const ICON_ACCENTS = {
   rbw: ['roygb', '', 'roygb'],            // rainbow stripes
   pup: ['', '', ' r r'],                  // red cheeks
   rsb: ['', ' k k'],                      // gold star eyes
+  stf: ['xxxxx', 'x   x', 'x   x'],       // the staff bot: black head, white eyes and teeth
 };
 // One line of text as HTML, with the characters its accent mask marks wrapped in their color.
 const accentText = (line, mask = '') => Array.from(line).map((ch, k) =>
@@ -732,8 +733,25 @@ SPRITES.gol.scare = SPRITES.fre.scare.map(line => line.replace(/O/g, '.'));
 // drawing is used.
 const ACCENT = {
   r: 'acc-red', o: 'acc-orange', y: 'acc-yellow', g: 'acc-green', b: 'acc-blue', v: 'acc-violet',
-  p: 'acc-pink', k: 'acc-gold', c: 'acc-sky', l: 'acc-lime', B: 'acc-bonbon',
+  p: 'acc-pink', k: 'acc-gold', c: 'acc-sky', l: 'acc-lime', B: 'acc-bonbon', x: 'acc-black',
 };
+// The Nightmare staff bot, black and white (on request): a black body and head, his face in white.
+SPRITES.stf.office.accent = art(String.raw`
+ x x
+x   x
+xxxxx
+x   x`);
+SPRITES.stf.scare.accent = art(String.raw`
+        xxxxxxxxx
+       x         x
+      x           x
+      x           x
+      x           x
+      x           x
+       xxxxxxxxxxx
+          xxxxx
+      xxxxxxxxxxxxx
+     x    xxxxx    x`);
 SPRITES.fun.cam.accent = art(String.raw`
  ppp
 

@@ -159,6 +159,7 @@ function drawVisitors(g, now) {
   if (S.level > 0) {
     const blinkOn = S.active && Math.floor(now / 250) % 2 === 0;
     const lines = SPRITES.stf.office.slice();
+    lines.accent = SPRITES.stf.office.accent;   // slice() copies the lines but not the color mask
     if (S.active) lines[1] = blinkOn ? '[* *]' : '[o o]';
     sprite(g, ...STAFF_SPOT, lines, 'c-stf' + (blinkOn ? ' blink' : ''));
     if (S.active) write(g, STAFF_SPOT[0] - 1, S.side === 'L' ? 0 : 5, S.side === 'L' ? '<<<' : '>>>', 'c-stf blink');
