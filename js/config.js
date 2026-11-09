@@ -311,12 +311,12 @@ const twistTime = level => byLevel(level, 15, 10);
 // ======================= the fourth batch (2026-11-08, the owner's designs) =======================
 
 // ---------- Foxy and Withered Foxy's run ----------
-// (Reworked on request: "have them get you when the running sound stops".) A run now lasts
-// foxyRunTime seconds: the FOXY_RUN it takes to get down the hall plus the reaction time you used to get
-// in the doorway, so the time you have is the same as before. You hear running steps the whole way
-// (one every RUN_STEP seconds) and see him rushing in the left doorway; when the steps stop, the door had
-// better be shut.
-const foxyRunTime = level => FOXY_RUN + reactWindow(level);
+// (Reworked on request: "have them get you when the running sound stops".) A run lasts foxyRunTime
+// seconds. You hear running steps the whole way (one every RUN_STEP seconds) and see him rushing in the
+// left doorway; when the steps stop, the door had better be shut. Phantom Foxy runs just as long.
+// (It was FOXY_RUN + reactWindow, about 6 to 6.5 s, until shortened on request: "make the running last
+// way less time". Now 3.5 s at level 1 down to about 3 s at level 20.)
+const foxyRunTime = level => byLevel(level, 3.5, 2.5);
 const RUN_STEP = 0.17;
 
 // ---------- Phantom Foxy ----------

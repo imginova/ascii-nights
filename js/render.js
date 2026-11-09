@@ -339,12 +339,13 @@ function renderFeed(now) {
       else if (FX.stage === 1) sprite(g, 5, 18, SPRITES.fox.peek, 'c-fox');
       else if (FX.stage === 2) sprite(g, 4, 16, SPRITES.fox.half, 'c-fox');
     }
-    // (Each fox is in the hall for the first FOXY_RUN seconds of his run; after that he's at your door.)
-    const inHall = X => X.phase === 'run' && X.runTotal - X.runT < FOXY_RUN;
-    if (room === 'whall' && inHall(FX)) sprite(g, 5, 8 + Math.floor((FX.runTotal - FX.runT) * 6), SPRITES.fox.run, 'c-fox');
+    // (Each fox crosses the hall in the first half of his run, 8 columns to about 26; after that he's at
+    // your door.) `hallPos` is how far across he is, from 0 to 1, or null when he isn't in the hall.
+    const hallPos = X => X.phase === 'run' && X.runTotal - X.runT < X.runTotal / 2 ? (X.runTotal - X.runT) / (X.runTotal / 2) : null;
+    if (room === 'whall' && hallPos(FX) != null) sprite(g, 5, 8 + Math.floor(hallPos(FX) * 18), SPRITES.fox.run, 'c-fox');
     // Withered Foxy running down the West Hall (he turns up there now, see updateFoxy).
     const X = G.wfx;
-    if (room === 'whall' && inHall(X)) sprite(g, 2, 8 + Math.floor((X.runTotal - X.runT) * 6), SPRITES.wfx.run, 'c-wfx');
+    if (room === 'whall' && hallPos(X) != null) sprite(g, 2, 8 + Math.floor(hallPos(X) * 18), SPRITES.wfx.run, 'c-wfx');
     // Twisted Foxy digging up out of the floor on CAM 7 ("twf-hit": click him).
     if (room === 'prize' && G.twf.active) sprite(g, ...G.twf.spot, SPRITES.twf.cam, 'c-twf twf-hit');
     // A Fazcoin lying here ("coin-hit": click it to pick it up).
