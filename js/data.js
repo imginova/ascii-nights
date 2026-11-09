@@ -313,7 +313,6 @@ const PRESETS = [
   // Chica joined both when she was added (v3).
   { name: 'The classics', v: 6, levels: lv({ fre: 8, bon: 8, chi: 8, fox: 8, gol: 5 }) },
   { name: 'Heat wave', v: 3, levels: lv({ end: 15, stf: 8, fre: 8, tsp: 10 }) },             // v3: + Toxic Springtrap (the fan again)
-  { name: 'Withered away', v: 5, levels: lv({ wbn: 16, wfx: 16 }) },
   { name: 'Hot and sleepy', v: 3, levels: lv({ end: 16, mon: 16 }) },
   { name: 'Crawl space', v: 1, levels: lv({ tbo: 10, tch: 10, ned: 10, fre: 6 }) },        // new with the third batch
   { name: 'Wind it up', v: 4, levels: lv({ pup: 14, bon: 8, pch: 8, chi: 8 }) },             // v3: + Chica (whatever walks in)
@@ -417,6 +416,11 @@ const PRESETS = [
   // Stare down: the mask characters, White Tiger (who breaks the mask if it stays on too long), and three who
   // need the monitor, which the mask blocks. 20 / 14.
   { name: 'Stare down', v: 1, levels: lv({ gol: 20, wbn: 20, tbo: 20, nfr: 20, wti: 20, pup: 18, mon: 16, nch: 16 }) },
+  // Withered away: everyone who looks worn out in their official design (torn suits, burns, rot, exposed
+  // parts), not just the two with "Withered" in their name (on request, 2026-11-08). It was Withered Bonnie
+  // and Withered Foxy at 16 near the start of the list; with ten characters it's harder (v6) and sits here.
+  // Bot: 14 / 13 of 20, mostly Toxic Springtrap, Nightmare Chica and Twisted Foxy.
+  { name: 'Withered away', v: 6, levels: these(10, ['fox', 'wbn', 'wfx', 'pch', 'pfx', 'nfr', 'nfx', 'nch', 'twf', 'tsp']) },
   // Last of the bridge: the bot (as a beginner) lost it 3 times in 10, all to Plushtrap.
   { name: 'Bad dreams', v: 2, levels: these(12, ['pch', 'nfr', 'nfx', 'nch', 'plu', 'ned', 'rbw', 'twf', 'sbn', 'pup']) },
   // Feeding time (the fourth batch): everyone fighting over your coins. Piranha Plushtrap eats them, Funtime
