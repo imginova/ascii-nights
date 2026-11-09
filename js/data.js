@@ -351,7 +351,12 @@ const PRESETS = [
   // v3: the office heat (like every challenge). v4: Sleepy Moon's rework (like every challenge he's in).
   // v5: Withered Foxy's rework. v6: + Foxy, Funtime Foxy and White Tiger at 12 (on request): Foxy's slam
   // costs power, Funtime Foxy needs a door at the right moment, and White Tiger punishes leaving things on.
-  { name: 'Power hungry', v: 9, levels: lv({ end: 14, mon: 14, stf: 14, wfx: 14, pch: 14, fox: 12, ffx: 12, wti: 12 }) },
+  // Then (on request, 2026-11-09: "update power hungry"): Phantom Chica out (she breaks the doors now, she
+  // doesn't take power), and in at 12 the newer characters who cost power: Toxic Springtrap (the fan),
+  // Nedd Bear (the heater for the ducts), Phantom Foxy (the flashlight) and Funtime Chica (dearer batteries).
+  // Not harder for the bot (20 / 20 of 20; beginners 15 / 15 with about 42% power left, against 12 / 15 and
+  // 47% before, mostly lost to Phantom Chica), so it kept v9 and its ✓.
+  { name: 'Power hungry', v: 9, levels: lv({ end: 14, mon: 14, stf: 14, wfx: 14, fox: 12, ffx: 12, wti: 12, tsp: 12, ned: 12, pfx: 12, fch: 12 }) },
   // v3: the Puppet and Sleepy Moon added (on request): they make you use the monitor, and every time you
   // look away from it the other three can be waiting.
   // v4: + Nightmare Chica (another reason you need the monitor).
@@ -409,7 +414,10 @@ const PRESETS = [
   { name: 'The other half', v: 1, levels: these(10, ['rbw', 'dee', 'sec', 'fun', 'ffx', 'bnt', 'lol', 'twf', 'rsb', 'ned', 'fch', 'mop', 'end', 'tsp', 'pir', 'stf', 'wti', 'mon']) },
   // v3: + Nedd Bear and the Magic Rainbow (on request: "everyone who came later" should include them).
   // The bot then won it 17 / 15 of 20 (average / beginner), mostly losing to Bonnet, so it moved here.
-  { name: 'Behind the curtain', v: 4, levels: these(12, ['fun', 'ffx', 'bnt', 'rsb', 'ned', 'twf', 'rbw', 'dee', 'end', 'tsp', 'stf', 'wti', 'mon']) },
+  // Then + Security, Lolbit, Funtime Chica, the Mop bucket and Piranha Plushtrap (on request, 2026-11-09: the
+  // fourth batch came later too): the same 18 characters as The other half, but at 12 instead of 10. With more
+  // characters each one moves slower, and the bot won 18 / 17, so it wasn't harder and kept v4 and its ✓.
+  { name: 'Behind the curtain', v: 4, levels: these(12, ['rbw', 'dee', 'sec', 'fun', 'ffx', 'bnt', 'lol', 'twf', 'rsb', 'ned', 'fch', 'mop', 'end', 'tsp', 'pir', 'stf', 'wti', 'mon']) },
   // Half the gang: FNAF 1 to FNAF 4 (17 characters). It gained Phantom Foxy, Nightmare Chica and Plushtrap,
   // which made it harder: v4, 18 / 14 (it was the first 14 characters, at the bridge's start).
   { name: 'Half the gang', v: 5, levels: these(10, ['fre', 'bon', 'chi', 'fox', 'gol', 'tbo', 'tch', 'wbn', 'wfx', 'pup', 'sbn', 'pch', 'pfx', 'nfr', 'nfx', 'nch', 'plu']) },
@@ -479,7 +487,7 @@ const FLAVOR = {
   'Nightmare crew': 'Every nightmare in the building is awake.',
   'Door duty': 'Your hands never leave the door buttons.',
   'Masquerade': 'The mask is barely off before you need it again.',
-  'Power hungry': 'Doors, lights, the fan and a cupcake thief. Watch your battery.',
+  'Power hungry': 'Doors, lights, the fan, the heater, and batteries that cost more. Watch your power.',
   'Click frenzy': 'Fast hands and sharp eyes win tonight.',
   'Fun time': 'Showtime! Watch the halls, the doors and the floor.',
   'Patrol': 'Keep your eyes on the cameras. They are not making a sound.',
